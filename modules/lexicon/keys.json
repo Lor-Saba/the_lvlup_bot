@@ -1,0 +1,17 @@
+{
+    "CHALLENGE_AVAILABLE": {
+        "en": "Challenge avaliable! Type /challengeme to drop the glove."
+    },
+    "CHALLENGE_WON_BY": {
+        "en": "$(userName) won!"
+    },
+    "CHALLENGE_TIMEOUT": {
+        "en": "Next challenge in $(timeout)."
+    },
+    "CHALLENGE_RULES": {
+        "en": "..."
+    },
+    "USER_LEVEL_UP": {
+        "en": "$(userName) is now at level $(level)!"
+    }
+}

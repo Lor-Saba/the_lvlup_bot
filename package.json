@@ -1,0 +1,18 @@
+{
+  "name": "lvlup",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "l.sabatelli",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "canvas": "^2.6.1",
+    "dotenv": "^8.2.0",
+    "md5": "^2.3.0",
+    "mongodb": "^3.6.1",
+    "telegraf": "^3.38.0"
+  }
+}
