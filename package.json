@@ -4,7 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "./node_modules/.bin/gulp"
   },
   "author": "l.sabatelli",
   "license": "GPL-3.0",
@@ -14,5 +15,11 @@
     "md5": "^2.3.0",
     "mongodb": "^3.6.1",
     "telegraf": "^3.38.0"
+  },
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "gulp-clean": "^0.4.0",
+    "gulp-copy": "^4.0.1",
+    "gulp-shell": "^0.8.0"
   }
 }
