@@ -116,7 +116,7 @@ function init(){
     .then(() => {
         // Avvia il bot
         bot.launch();
-        console.log('---\nBot running!')
+        console.log('-----\nBot running!')
     })
     .catch(() => {
         // Errore
