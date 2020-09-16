@@ -13,5 +13,14 @@
     },
     "USER_LEVEL_UP": {
         "en": "$(userName) is now at level $(level)!"
+    },
+    "USER_PRESTIGE_AVAILABLE": {
+        "en": "$(userName), with a level of $(level) you can now prestige! type /prestige to preceed"
+    },
+    "USER_PRESTIGE_SUCCESS": {
+        "en": "$(userName) prestiged! \nCurrent prestige level: $(prestige)"
+    },
+    "USER_PRESTIGE_FAIL": {
+        "en": "You can't prestige yet $(userName)."
     }
 }
