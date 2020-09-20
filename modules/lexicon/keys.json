@@ -11,7 +11,9 @@
     "CHALLENGE_RULES": {
         "en": "..."
     },
-    "USER_LEVEL_UP": {
+
+
+    "USER_LEVELUP": {
         "en": "$(userName) is now at level $(level)!"
     },
     "USER_PRESTIGE_AVAILABLE": {
@@ -22,5 +24,30 @@
     },
     "USER_PRESTIGE_FAIL": {
         "en": "You can't prestige yet $(userName)."
+    },
+
+
+    "SETTING_START_USER": {
+        "en": "Settings for user: $(userName)"
+    },
+    "SETTING_START_GROUP": {
+        "en": "Settings for group: $(chatTitle)"
+    },
+    "SETTING_BACK": {
+        "en": "<< Back"
+    },
+    "SETTING_NOTIFY_LEVELUP": {
+        "en": "Notify on level up"
+    },
+    "SETTING_NOTIFY_PRESTIGE_AVAILABLE": {
+        "en": "Notify when prestige is available"
+    },
+
+    
+    "REPLY_YES": {
+        "en": "Yes"
+    },
+    "REPLY_NO": {
+        "en": "No"
     }
 }

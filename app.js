@@ -2,7 +2,7 @@
 // configurazione di sviluppo
 const dotenv = require('dotenv').config();
 // corelib per le api di telegram
-const { Telegraf, Markup, Extra } = require('telegraf');
+const { Telegraf, Markup } = require('telegraf');   // { Telegraf, Markup, Extra }
 // modulo per poter generare hash md5
 const md5 = require('md5');
 // modulo per gestire le traduzioni delle label
@@ -11,6 +11,8 @@ const lexicon = require('./modules/lexicon');
 const storage = require('./modules/storage');
 // modulo con vari metodi di utilità
 const utils = require('./modules/utils');
+// modulo per gestire i markup per i messaggi con bottoni
+const markup = require('./modules/markup');
 // istanza del bot 
 var bot = null;
 
@@ -52,33 +54,30 @@ function connectMongoDB(){
 function setBotCommands(){
 
     // admin: 95d23b82ee9ef1b94f48bbc3870819c0
+
+    bot.command('admin', function(ctx){
+        var userId = ctx.update.message.from.id;
+        var chatId = ctx.update.message.chat.id;
+
+        if (md5(userId) === 'be6d916dafd19cddfd2573f8bb0cee4f') {
+            ctx.reply('Hello Master.')
+        } else {
+            ctx.reply('Who de fak are iuu.. Who de fak are iuu.. whu iu iiss... who iu BE.. UH?')
+        }
+    })
     
     bot.command('setting', function(ctx){
+        var userId = ctx.update.message.from.id;
+        const markupData = markup.get('SETTING_START', ctx.update.message);
 
+        console.log(ctx.update.message)
+
+        bot.telegram.sendMessage(userId, markupData.text, markupData.buttons).catch(function(err){
+            console.log('<ERR>', err)
+        });
     });
     
     bot.command('test', function(ctx){
-        // ctx.reply(JSON.stringify(ctx.update.message));
-
-        //console.log(ctx);
-
-        //ctx.getChatAdministrators(ctx.update.message.chat.id).then(function(res){
-        //    ctx.reply(res);
-        //})
-        
-
-       //const mainMenu = [
-       //    [
-       //        m.callbackButton('A', 'a')
-       //    ],
-       //    [
-       //        m.callbackButton('B', 'b'),
-       //        m.callbackButton('C', 'c')
-       //    ]
-       //];
-
-       //ctx.replyWithMarkdown('test', Extra.markdown().markup(m => m.inlineKeyboard(mainMenu)));
-
     });
     
     bot.command('prestige', function(ctx){
@@ -174,7 +173,7 @@ function setBotEvents(){
 
             // notifica l'utente se è salito di livello
             if (Math.floor(chat.level) < Math.floor(newLevel)) {
-                ctx.reply(lexicon.get('USER_LEVEL_UP', { userName: userName, level: Math.floor(newLevel) }));
+                ctx.reply(lexicon.get('USER_LEVELUP', { userName: userName, level: Math.floor(newLevel) }));
             }
 
             // notifica l'utente che puo' prestigiare
@@ -193,11 +192,35 @@ function setBotEvents(){
         return storage.updateUserChatData(userid, chatid, chat);
     });
 
-    // bot.on('callback_query', function(ctx){
-    //     var cbQuery = ctx.update.callback_query;
-    //     
-    //     return ctx.reply(cbQuery.data);
-    // });
+    bot.on('callback_query', function(ctx){ 
+        var query = ctx.update.callback_query;
+        var markupData = markup.getData(query.data);
+        var messageId = query.message.id;
+
+        console.log(query, markupData);
+        
+        return;
+
+        switch(markupData.action){
+
+            case 'SETTING_START': 
+                //bot.telegram.sendMessage(userId, markupData.text, markupData.buttons);
+                break;
+
+            case 'SETTING_NOTIFY_LEVELUP': 
+                //bot.telegram.sendMessage(userId, markupData.text, markupData.buttons);
+                break;
+
+            case 'SETTING_NOTIFY_PRESTIGE_AVAILABLE':
+                //bot.telegram.sendMessage(userId, markupData.text, markupData.buttons);
+                break;
+        }
+
+        console.log(bot.telegram)
+        console.log(ctx)
+        console.log(query);
+        console.log(markupData);
+    });
 }
 
 /**
