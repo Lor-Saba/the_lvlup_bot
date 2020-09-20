@@ -55,28 +55,6 @@ function errorlog(msg) {
 }
 
 /**
- * 
- * @param {id} chatId Id chat dove inviare il messaggio
- * @param {string} text Testo del messaggio
- * @param {array} buttons Array di Array. Rappresenta la griglia dei bottoni da mostrare
- */
-function sendInlineMessage(bot, chatId, text, buttons){
-
-    // var mex = ctx.update.message;
-    // 
-    // sendMessage(
-    //     mex.chat.id,
-    //     'Test messaggio con opzioni',
-    //     [
-    //         [{ text: '1', callback_data: 'd1' },{ text: '2', callback_data: 'd2' }],
-    //         [{ text: '3', callback_data: 'd3' }]
-    //     ]
-    // );
-
-    return bot.telegram.sendMessage(chatId, text, { reply_markup: { inline_keyboard: buttons } } );
-}
-
-/**
  * Controlla la differenza tra le due date passate. 
  * Fallisce se la differenza è inferioriore al terzo argomento passato (2 di default, in secondi)
  * 
@@ -159,7 +137,6 @@ module.exports = {
     each,
     calcExpFromLevel,
     calcLevelFromExp,
-    sendInlineMessage,
     checkifSpam,
     formatBytes,
     roughSizeOfObject,
