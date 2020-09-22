@@ -1,4 +1,8 @@
-{
+const keys = {
+
+
+    // Challenge
+
     "CHALLENGE_AVAILABLE": {
         "en": "Challenge avaliable! Type /challengeme to drop the glove."
     },
@@ -13,6 +17,8 @@
     },
 
 
+    // User
+
     "USER_LEVELUP": {
         "en": "$(userName) is now at level $(level)!"
     },
@@ -26,6 +32,8 @@
         "en": "You can't prestige yet $(userName)."
     },
 
+
+    // Setting
 
     "SETTING_START_USER": {
         "en": "Settings for user: $(userName)"
@@ -44,10 +52,14 @@
     },
 
     
+    // Others
+    
     "REPLY_YES": {
         "en": "Yes"
     },
     "REPLY_NO": {
         "en": "No"
     }
-}
+};
+
+module.exports = keys;

@@ -1,5 +1,5 @@
 
-var keys = require('./keys.json');
+var keys = require('./keys');
 
 /**
  * 
