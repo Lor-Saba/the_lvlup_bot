@@ -14,7 +14,8 @@
     "dotenv": "^8.2.0",
     "md5": "^2.3.0",
     "mongodb": "^3.6.1",
-    "telegraf": "^3.38.0"
+    "telegraf": "^3.38.0",
+    "telegraf-command-parts": "^1.0.3"
   },
   "devDependencies": {
     "gulp": "^4.0.2",

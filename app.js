@@ -3,6 +3,8 @@
 const dotenv = require('dotenv').config();
 // corelib per le api di telegram
 const { Telegraf, Markup } = require('telegraf');   // { Telegraf, Markup, Extra }
+// estensione per poter leggere  eventuali parametri ai comanti
+const commandParts = require('telegraf-command-parts');
 // modulo per poter generare hash md5
 const md5 = require('md5');
 // modulo per gestire le traduzioni delle label
@@ -25,6 +27,7 @@ function connectTelegramAPI(){
 
         bot = new Telegraf(process.env["accessToken"]);
 
+        setBotMiddlewares();
         setBotCommands();
         setBotActions();
         setBotEvents();
@@ -49,6 +52,14 @@ function connectMongoDB(){
 }
 
 /**
+ * 
+ */
+function setBotMiddlewares(){
+
+    bot.use(commandParts());
+}
+
+/**
  * assegnazione degli handlers per i comandi disponibili
  */
 function setBotCommands(){
@@ -68,52 +79,46 @@ function setBotCommands(){
     
     bot.command('setting', function(ctx){
         var userId = ctx.update.message.from.id;
-        const markupData = markup.get('SETTING_START', ctx.update.message);
+        var chatId = ctx.update.message.chat.id;
+        const markupData = markup.get('SETTING_START', ctx.update.message, { chatId: chatId });
 
-        console.log(ctx.update.message)
-
-        bot.telegram.sendMessage(userId, markupData.text, markupData.buttons).catch(function(err){
-            console.log('<ERR>', err)
-        });
+        bot.telegram.sendMessage(userId, markupData.text, markupData.buttons).catch(utils.errorlog);
     });
     
     bot.command('test', function(ctx){
     });
     
     bot.command('prestige', function(ctx){
+
+        var mexData = utils.getMessageData(ctx);
         
-        if (ctx.update.message.from.is_bot) return;
+        if (mexData.isBot) return;
 
-        var messageDate = ctx.update.message.date;
-        var userName = ctx.update.message.from.first_name || ctx.update.message.from.username;
-        var userid = ctx.update.message.from.id;
-        var chatid = ctx.update.message.chat.id;
-
-        var user = storage.getUser(userid);
+        var user = storage.getUser(mexData.userId);
 
         if (!user) return;
-        if (!user.chats[chatid]) return;
+        if (!user.chats[mexData.chatId]) return;
 
         // salva il riferimento alla chat
-        var chat = user.chats[chatid]; 
+        var chat = user.chats[mexData.chatId]; 
 
         if (chat.prestigeAvailable) {
             chat.exp = 0;
             chat.level = 0;
             chat.prestigePower += 1;
 
-            ctx.reply(lexicon.get('USER_PRESTIGE_SUCCESS', { userName: userName, prestige: chat.prestigePower }));
+            ctx.reply(lexicon.get('USER_PRESTIGE_SUCCESS', { userName: mexData.userName, prestige: chat.prestigePower }));
         } else {
 
             // Controlla se la richiesta  è spam (60 secondi di timeout)
-            if (!utils.checkifSpam(chat.lastMessage, messageDate, 60)) {
-                chat.lastMessage = messageDate;
+            if (!utils.checkifSpam(chat.lastMessage, mexData.date, 60)) {
+                chat.lastMessage = mexData.date;
 
-                ctx.reply(lexicon.get('USER_PRESTIGE_FAIL', { userName: userName }));
+                ctx.reply(lexicon.get('USER_PRESTIGE_FAIL', { userName: mexData.userName }));
             }
         }
 
-        return storage.updateUserChatData(userid, chatid, chat);
+        return storage.updateUserChatData(mexData.userId, mexData.chatId, chat);
     });
     
 }
@@ -141,30 +146,27 @@ function setBotEvents(){
 
     bot.on('message', function(ctx){
 
-        if (ctx.update.message.from.is_bot) return;
+        var mexData = utils.getMessageData(ctx);
 
-        var messageDate = ctx.update.message.date;
-        var userName = ctx.update.message.from.first_name || ctx.update.message.from.username;
-        var userid = ctx.update.message.from.id;
-        var chatid = ctx.update.message.chat.id;
+        if (mexData.isBot) return;
 
-        var user =  storage.getUser(userid);
+        var user =  storage.getUser(mexData.userId);
 
         // imposta l'oggetto dell'utente se non esiste
         if (!user) {
-            user = storage.setUser(userid, { id: userid, username: userName });
+            user = storage.setUser(mexData.userId, { id: mexData.userId, username: mexData.userName });
         }
 
         // imposta l'oggetto della chat se non esiste
-        if (!user.chats[chatid]){
-            user.chats[chatid] = storage.setUserChat(userid, chatid, {});
+        if (!user.chats[mexData.chatId]){
+            user.chats[mexData.chatId] = storage.setUserChat(mexData.userId, mexData.chatId, {});
         }
 
         // salva il riferimento alla chat
-        var chat = user.chats[chatid]; 
+        var chat = user.chats[mexData.chatId]; 
 
         // Controlla se è spam
-        if (!utils.checkifSpam(chat.lastMessage, messageDate)) {
+        if (!utils.checkifSpam(chat.lastMessage, mexData.date)) {
             
             // add exp based on prestige power
             var expGain = utils.calcExpGain(chat.prestigePower);
@@ -173,12 +175,12 @@ function setBotEvents(){
 
             // notifica l'utente se è salito di livello
             if (Math.floor(chat.level) < Math.floor(newLevel)) {
-                ctx.reply(lexicon.get('USER_LEVELUP', { userName: userName, level: Math.floor(newLevel) }));
+                ctx.reply(lexicon.get('USER_LEVELUP', { userName: mexData.userName, level: Math.floor(newLevel) }));
             }
 
             // notifica l'utente che puo' prestigiare
             if (newLevel >= 10 * expGain && chat.prestigeAvailable == false) {
-                ctx.reply(lexicon.get('USER_PRESTIGE_AVAILABLE', { userName: userName, level: newLevel }));
+                ctx.reply(lexicon.get('USER_PRESTIGE_AVAILABLE', { userName: mexData.userName, level: newLevel }));
                 chat.prestigeAvailable = true;
             }
 
@@ -187,9 +189,9 @@ function setBotEvents(){
             chat.level = newLevel;
         }
 
-        chat.lastMessage = messageDate;
+        chat.lastMessage = mexData.date;
 
-        return storage.updateUserChatData(userid, chatid, chat);
+        return storage.updateUserChatData(mexData.userId, mexData.chatId, chat);
     });
 
     bot.on('callback_query', function(ctx){ 
@@ -197,22 +199,24 @@ function setBotEvents(){
         var markupData = markup.getData(query.data);
         var messageId = query.message.id;
 
-        console.log(query, markupData);
+        console.log(query);
+        console.log(markupData);
+        console.log(bot.telegram);
         
         return;
 
         switch(markupData.action){
 
             case 'SETTING_START': 
-                //bot.telegram.sendMessage(userId, markupData.text, markupData.buttons);
+                bot.telegram.sendMessage(userId, markupData.text, markupData.buttons).catch(utils.errorlog);
                 break;
 
             case 'SETTING_NOTIFY_LEVELUP': 
-                //bot.telegram.sendMessage(userId, markupData.text, markupData.buttons);
+                bot.telegram.sendMessage(userId, markupData.text, markupData.buttons).catch(utils.errorlog);
                 break;
 
             case 'SETTING_NOTIFY_PRESTIGE_AVAILABLE':
-                //bot.telegram.sendMessage(userId, markupData.text, markupData.buttons);
+                bot.telegram.sendMessage(userId, markupData.text, markupData.buttons).catch(utils.errorlog);
                 break;
         }
 
@@ -241,7 +245,7 @@ function init(){
     })
     .catch(() => {
         // Errore
-        errorlog('Errors in initialization, Bot not launched.')
+        utils.errorlog('Errors in initialization, Bot not launched.')
         console.error(arguments);
     });
 }

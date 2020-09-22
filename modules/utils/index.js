@@ -50,7 +50,6 @@ function each(obj, fn){
  * @param {string} msg messaggio di errore da loggare
  */
 function errorlog(msg) {
-    console.log('---');
     console.log('<!> ERROR:', msg);
 }
 
@@ -132,13 +131,26 @@ function formatBytes(bytes, decimals = 2) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
+function getMessageData(ctx){
+    const messageData = {
+        isBot: ctx.update.message.from.is_bot,
+        date: ctx.update.message.date,
+        userName: ctx.update.message.from.first_name || ctx.update.message.from.username,
+        userId: ctx.update.message.from.id,
+        chatId: ctx.update.message.chat.id
+    };
+
+    return messageData;
+}
+
 module.exports = {
     errorlog,
     each,
     calcExpFromLevel,
     calcLevelFromExp,
+    calcExpGain,
     checkifSpam,
     formatBytes,
     roughSizeOfObject,
-    calcExpGain
+    getMessageData
 };
