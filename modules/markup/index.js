@@ -46,7 +46,7 @@ var markup = {
                 markupButton(message, lexicon.get('REPLY_NO')   , Object.assign(data, { action: 'SETTING_NOTIFY_LEVELUP', chatId: chatId, value: false })) 
             ],
             [ 
-                markupButton(message, lexicon.get('SETTING_BACK'), Object.assign(data, { action: 'SETTING_START', chatId: chatId }) 
+                markupButton(message, lexicon.get('SETTING_BACK'), Object.assign(data, { action: 'SETTING_START', chatId: chatId })) 
             ]
         ]);
 
