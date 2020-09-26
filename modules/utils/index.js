@@ -133,11 +133,13 @@ function formatBytes(bytes, decimals = 2) {
 
 function getMessageData(ctx){
     const messageData = {
-        isBot: ctx.update.message.from.is_bot,
         date: ctx.update.message.date,
+        isBot: ctx.update.message.from.is_bot,
+        isPrivate: ctx.update.message.chat.type === 'private',
         userName: ctx.update.message.from.first_name || ctx.update.message.from.username,
         userId: ctx.update.message.from.id,
-        chatId: ctx.update.message.chat.id
+        chatId: ctx.update.message.chat.id,
+        chatTitle: ctx.update.message.chat.title
     };
 
     return messageData;
