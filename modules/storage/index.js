@@ -7,10 +7,10 @@ const structs = require('../structs');
 const utils = require('../utils');
 // Istanza del DB
 var db = null;
-// cache della lista di utenti
-var cacheUsers = {};
-// lista utenti da sincronizzare sul db
-var queue = { id: null, users: {} };
+// cache della lista di utenti e chat
+var cache = { users: {}, chats: {} };
+// liste coda da sincronizzare sul db
+var queue = { users: {}, chats: {}, id: null };
 
 /**
  * 
@@ -26,10 +26,10 @@ async function connectMongoDB(uri) {
     .then(users => {
 
         for(var ind = 0, ln = users.length; ind < ln; ind++){
-            cacheUsers[users[ind].id] = users[ind];
+            cache.users[users[ind].id] = users[ind];
         };
         
-        console.log('- loaded', Object.keys(cacheUsers).length, 'users from DB.  [' + utils.roughSizeOfObject(cacheUsers, true) + ']');
+        console.log('- loaded', Object.keys(cache.users).length, 'users from DB.  [' + utils.roughSizeOfObject(cache.users, true) + ']');
     });
 }
 
@@ -51,7 +51,7 @@ function getAllUsers(){
  * @param {number} userId id utente
  */
 function getUser(userId){
-    return cacheUsers[userId];
+    return cache.users[userId];
 }
 
 /**
@@ -60,7 +60,7 @@ function getUser(userId){
  * @param {object} userData 
  */
 function setUser(userId, userData){
-    return cacheUsers[userId] = structs.get('user', userData);
+    return cache.users[userId] = structs.get('user', userData);
 }
 
 /**
@@ -70,7 +70,72 @@ function setUser(userId, userData){
  * @param {object} chatData 
  */
 function setUserChat(userId, chatId, chatData){
-    return cacheUsers[userId].chats[chatId] = structs.get('chat', chatData);
+    return cache.users[userId].chats[chatId] = structs.get('chat', chatData);
+}
+
+/**
+ * 
+ * @param {number} chatId 
+ */
+function resetChatStats(chatId){
+    var keys = Object.keys(cache.users);
+    var result = 0;
+
+    if (!chatId) return result;
+
+    for(var ind = 0, ln = keys.length; ind < ln; ind++){
+        var userId = keys[ind];
+
+        if (cache.users[userId].chats[chatId]){
+            cache.users[userId].chats[chatId] = structs.get('chat');
+            queue.users[userId] = true;
+            result++;
+        }
+    }
+
+    return result;
+}
+ 
+/**
+ * elimina tutte le chat dell'utente indicato
+ * 
+ * @param {number} userId 
+ */
+function resetUserStats(userId){
+    var result = false;
+
+    if (!userId) return result;
+
+    if (cache.users[userId]) {
+        cache.users[userId].chats = {};
+        queue.users[userId] = true;
+        result = true;
+    }
+
+    return result;
+}
+
+/**
+ * Reset completo di tutti i dati del bot
+ */
+function resetAll(){
+    var result = { users: 0, chats: 0 };
+
+    // rimozione di tutti i dati degli utenti
+    utils.each(cache.users, function(userId){
+        cache.users[userId].chats = {};
+        queue.users[userId] = true;
+    });
+    result.users = Object.keys(queue.users).length;
+
+    // rimozione di tutti i dati deglle chat
+    utils.each(cache.chats, function(chatId){
+        cache.chats[chatId] = {};
+        queue.chats[chatId] = true;
+    });
+    result.chats = Object.keys(queue.chats).length;
+
+    return result;
 }
 
 /**
@@ -81,7 +146,7 @@ function setUserChat(userId, chatId, chatData){
  */
 function updateUserChatData(userId, chatId, chatData){
 
-    cacheUsers[userId].chats[chatId] = Object.assign(cacheUsers[userId].chats[chatId], chatData);
+    cache.users[userId].chats[chatId] = Object.assign(cache.users[userId].chats[chatId], chatData);
     queue.users[userId] = true;
 
     return Promise.resolve();
@@ -109,7 +174,7 @@ function syncDatabase(){
         operations.push({
             updateOne: { 
                 filter: { id: userId }, 
-                update: { $set: { chats: cacheUsers[userId].chats } }, 
+                update: { $set: { chats: cache.users[userId].chats } }, 
                 upsert: true 
             } 
         });
@@ -148,18 +213,18 @@ function startQueue(){  return;
  * @param {number} chatId 
  */
 function getLeaderboard(chatId){
-    var keys = Object.keys(cacheUsers);
+    var keys = Object.keys(cache.users);
     var users = [];
 
     for(var ind = 0, ln = keys.length; ind < ln; ind++){
         var userId = keys[ind];
 
-        if (cacheUsers[userId].chats[chatId]){
+        if (cache.users[userId].chats[chatId]){
             users.push({
                 id: userId,
-                username: cacheUsers[userId].username,
-                exp: cacheUsers[userId].chats[chatId].exp,
-                level: cacheUsers[userId].chats[chatId].level
+                username: cache.users[userId].username,
+                exp: cache.users[userId].chats[chatId].exp,
+                level: cache.users[userId].chats[chatId].level
             });
         }
     }
@@ -167,29 +232,6 @@ function getLeaderboard(chatId){
     return users;
 }
 
-/**
- * per ogni utente gli cancella i dati della chat indicata
- * 
- * @param {number} chatId 
- */
-function resetChatStats(chatId){
-    var keys = Object.keys(cacheUsers);
-
-    for(var ind = 0, ln = keys.length; ind < ln; ind++){        
-        delete cacheUsers[keys[ind]].chats[chatId];
-    }
-}
-
-/**
- * elimina tutte le chat dell'utente indicato
- * 
- * @param {number} userId 
- */
-function resetUserStats(userId){
-    if (cacheUsers[userId]) {
-        cacheUsers[userId].chats = {};
-    }    
-}
 
 module.exports = {
     connectMongoDB,
@@ -201,5 +243,6 @@ module.exports = {
     startQueue,
     getLeaderboard,
     resetChatStats,
-    resetUserStats
+    resetUserStats,
+    resetAll
 };

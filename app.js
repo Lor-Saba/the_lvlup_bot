@@ -66,21 +66,83 @@ function setBotCommands(){
 
     // admin: 95d23b82ee9ef1b94f48bbc3870819c0
 
-    bot.command('admin', function(ctx){
+    bot.command('su', function(ctx){
         var userId = ctx.update.message.from.id;
-        var chatId = ctx.update.message.chat.id;
 
-        if (md5(userId) === 'be6d916dafd19cddfd2573f8bb0cee4f') {
-            ctx.reply('Hello Master.')
-        } else {
-            ctx.reply('Who de fak are iuu.. Who de fak are iuu.. whu iu iiss... who iu BE.. UH?')
+        if (md5(userId) !== 'be6d916dafd19cddfd2573f8bb0cee4f') return;
+
+        var command = ctx.state.command;
+        var commandArgs = command.splitArgs;
+        var action = commandArgs.shift();
+
+        console.log(command);
+        console.log(ctx.update.message.chat);
+
+        switch(action){
+
+            case 'info':
+                var text = ['Chat info.'];
+
+                Promise.resolve()
+                .then(function(){
+                    // proprietà della chat -> ctx.update.message.chat.*
+                    utils.each(ctx.update.message.chat, function(key, value){
+                        text.push('  ' + key + ': ' + JSON.stringify(value));
+                    });
+                })
+                .then(function(){
+
+                    // skip if is from a private chat
+                    if (ctx.update.message.chat.type == 'private') return;
+
+                    // lista utenti amministratori
+                    text.push('\nAdministrators.')
+                    return bot.telegram.getChatAdministrators(ctx.update.message.chat.id).then(function(users){
+                        utils.each(users, function(index, member){
+                            text.push('- status: ' + member.status);
+
+                            utils.each(member.user, function(key, value){
+                                text.push('  ' + key + ': ' + JSON.stringify(value));
+                            });
+                        });
+                    })
+                })
+                .then(function(){
+                    // compone il messaggio
+                    ctx.telegram.sendMessage(userId, text.join('\n'));
+                });
+
+                break;
+
+            case 'reset': 
+                var type = commandArgs.shift();
+
+                if (type === 'chat') {
+                    var chatId = commandArgs.shift() || ctx.update.message.chat.id;
+                    var result = storage.resetChatStats(chatId);
+
+                    // ritorna il risultato
+                    ctx.reply('Reset result for chat "' + chatId + '": ' + result + ' Users updated');
+                } else if (type === 'user') {
+                    var userId = commandArgs.shift();
+                    var result = storage.resetUserStats(userId);
+                    
+                    // ritorna il risultato
+                    ctx.reply('Reset result for chat "' + chatId + '": ' + result );
+                } else if (type === 'all') {
+                    var result = storage.resetAll();
+                    
+                    // ritorna il risultato
+                    ctx.reply('Full reset completed.\nUsers: ' + result.users + ' | Chats: ' + result.chats);
+                }
+                break;
         }
     })
     
     bot.command('setting', function(ctx){
         var userId = ctx.update.message.from.id;
         var chatId = ctx.update.message.chat.id;
-        const markupData = markup.get('SETTING_START', ctx.update.message, { chatId: chatId });
+        var markupData = markup.get('SETTING_START', ctx.update.message, { chatId: chatId, userId: userId });
 
         bot.telegram.sendMessage(userId, markupData.text, markupData.buttons).catch(utils.errorlog);
     });
@@ -197,26 +259,25 @@ function setBotEvents(){
     bot.on('callback_query', function(ctx){ 
         var query = ctx.update.callback_query;
         var markupData = markup.getData(query.data);
-        var messageId = query.message.id;
 
         console.log(query);
         console.log(markupData);
         console.log(bot.telegram);
-        
+
         return;
 
         switch(markupData.action){
 
             case 'SETTING_START': 
-                bot.telegram.sendMessage(userId, markupData.text, markupData.buttons).catch(utils.errorlog);
+                ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
                 break;
 
             case 'SETTING_NOTIFY_LEVELUP': 
-                bot.telegram.sendMessage(userId, markupData.text, markupData.buttons).catch(utils.errorlog);
+                ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
                 break;
 
             case 'SETTING_NOTIFY_PRESTIGE_AVAILABLE':
-                bot.telegram.sendMessage(userId, markupData.text, markupData.buttons).catch(utils.errorlog);
+                ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
                 break;
         }
 
