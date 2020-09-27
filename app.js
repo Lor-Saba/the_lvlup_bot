@@ -2,7 +2,7 @@
 // configurazione di sviluppo
 const dotenv = require('dotenv').config();
 // corelib per le api di telegram
-const { Telegraf, Markup } = require('telegraf');   // { Telegraf, Markup, Extra }
+const { Telegraf, Markup } = require('telegraf');
 // estensione per poter leggere  eventuali parametri ai comanti
 const commandParts = require('telegraf-command-parts');
 // modulo per poter generare hash md5
@@ -38,7 +38,7 @@ function connectTelegramAPI(){
 }
 
 /**
- * Connessione al mongodb di cloudno.de e salvataggio dell'istanza
+ * Connessione al mongodb 
  */
 function connectMongoDB(){
     return new Promise(function(ok, ko){
@@ -75,8 +75,7 @@ function setBotCommands(){
         var commandArgs = command.splitArgs;
         var action = commandArgs.shift();
 
-        console.log(command);
-        console.log(ctx.update.message.chat);
+        console.log('=====\n/SU Command:\n-----\n', command);
 
         switch(action){
 
@@ -136,6 +135,14 @@ function setBotCommands(){
                     ctx.reply('Full reset completed.\nUsers: ' + result.users + ' | Chats: ' + result.chats);
                 }
                 break;
+
+            case 'cache':
+                storage.debugCache();
+                break;
+
+            case 'queue':
+                storage.debugQueue();
+                break;
         }
     })
     
@@ -144,10 +151,11 @@ function setBotCommands(){
         var chatId = ctx.update.message.chat.id;
         var markupData = markup.get('SETTING_START', ctx.update.message, { chatId: chatId, userId: userId });
 
-        bot.telegram.sendMessage(userId, markupData.text, markupData.buttons).catch(utils.errorlog);
-    });
-    
-    bot.command('test', function(ctx){
+        bot.telegram
+        .sendMessage(userId, markupData.text, markupData.buttons)
+        .catch(function(){
+            console.log(arguments);
+        });
     });
     
     bot.command('prestige', function(ctx){
@@ -167,9 +175,9 @@ function setBotCommands(){
         if (chat.prestigeAvailable) {
             chat.exp = 0;
             chat.level = 0;
-            chat.prestigePower += 1;
+            chat.prestige += 1;
 
-            ctx.reply(lexicon.get('USER_PRESTIGE_SUCCESS', { userName: mexData.userName, prestige: chat.prestigePower }));
+            ctx.reply(lexicon.get('USER_PRESTIGE_SUCCESS', { userName: mexData.userName, prestige: chat.prestige }));
         } else {
 
             // Controlla se la richiesta  è spam (60 secondi di timeout)
@@ -183,6 +191,12 @@ function setBotCommands(){
         return storage.updateUserChatData(mexData.userId, mexData.chatId, chat);
     });
     
+    
+    bot.command('leaderboard', function(ctx){
+        var chatId = ctx.update.message.chat.id;
+
+        console.log(storage.getChatLeaderboard(chatId));
+    });
 }
 
 /**
@@ -231,7 +245,7 @@ function setBotEvents(){
         if (!utils.checkifSpam(chat.lastMessage, mexData.date)) {
             
             // add exp based on prestige power
-            var expGain = utils.calcExpGain(chat.prestigePower);
+            var expGain = utils.calcExpGain(chat.prestige);
             var newExp = chat.exp + expGain;
             var newLevel = utils.calcLevelFromExp(newExp);
 

@@ -7,7 +7,7 @@
  * @param {number} exp Calcola il livello in base al valore dell'esperienza passata
  */
 function calcLevelFromExp(exp) {
-    return Math.sqrt(exp) * 0.35 + 1;
+    return Math.sqrt(exp) * 0.42 + 1;
 }
 
 /**
@@ -15,16 +15,16 @@ function calcLevelFromExp(exp) {
  * @param {number} level Calcola l'esperienza in base al valore del livello passata
  */
 function calcExpFromLevel(level) {
-    return Math.pow((level - 1) / 0.35, 2);
+    return Math.pow((level - 1) / 0.42, 2);
 }
 
 /**
  * calcola il guadagno di exp in base alla forza del prestigio
  * 
- * @param {number} prestigePower 
+ * @param {number} prestige 
  */
-function calcExpGain(prestigePower) {
-    return Math.sqrt(Math.pow(2, prestigePower));
+function calcExpGain(prestige) {
+    return Math.sqrt(Math.pow(2, prestige));
 }
 
 /**

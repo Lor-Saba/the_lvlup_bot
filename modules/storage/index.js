@@ -16,7 +16,7 @@ var queue = { users: {}, chats: {}, id: null };
  * 
  * @param {string} uri URI di connessione per il mongodb
  */
-async function connectMongoDB(uri) {
+function connectMongoDB(uri) {
     var client = new MongoClient(uri, { useUnifiedTopology: true });
 
     return client.connect()
@@ -70,7 +70,7 @@ function setUser(userId, userData){
  * @param {object} chatData 
  */
 function setUserChat(userId, chatId, chatData){
-    return cache.users[userId].chats[chatId] = structs.get('chat', chatData);
+    return cache.users[userId].chats[chatId] = structs.get('user_chat', chatData);
 }
 
 /**
@@ -167,18 +167,15 @@ function syncDatabase(){
 
     queue.users = {};
 
-    for(var ind = 0, ln = keys.length; ind < ln; ind++){
-
-        var userId = keys[ind];
-
+    utils.each(keys, function(index, userId){
         operations.push({
-            updateOne: { 
+            replaceOne: { 
                 filter: { id: userId }, 
-                update: { $set: { chats: cache.users[userId].chats } }, 
+                replacement: cache.users[userId], 
                 upsert: true 
             } 
         });
-    }
+    });
 
     try {
         db.collection("lvlup_users").bulkWrite(operations);
@@ -201,7 +198,7 @@ function stopQueue(){
 /**
  * avvia l'intervallo di sincronizzazione
  */
-function startQueue(){  return;
+function startQueue(){
 
     stopQueue();
 
@@ -212,26 +209,52 @@ function startQueue(){  return;
  * 
  * @param {number} chatId 
  */
-function getLeaderboard(chatId){
-    var keys = Object.keys(cache.users);
-    var users = [];
+function getChatLeaderboard(chatId){
+    var LBUsers = [];
 
-    for(var ind = 0, ln = keys.length; ind < ln; ind++){
-        var userId = keys[ind];
-
-        if (cache.users[userId].chats[chatId]){
-            users.push({
-                id: userId,
-                username: cache.users[userId].username,
-                exp: cache.users[userId].chats[chatId].exp,
-                level: cache.users[userId].chats[chatId].level
-            });
+    var getUserData = function(user){
+        return {
+            username: user.username,
+            exp: user.chats[chatId].exp,
+            level: user.chats[chatId].level,
+            prestige: user.chats[chatId].prestige
         }
-    }
+    };
 
-    return users;
+    utils.each(cache.users, function(userId, user){
+        if (!user.chats[chatId]) return true;
+
+        var added = false;
+
+        utils.each(LBUsers, function(index, LBUser){
+            if (LBUser.exp < user.chats[chatId].exp) {
+                LBUsers.splice(index, 0, getUserData(user));
+                added = true;
+                return false;
+            } 
+        });    
+        
+        if (!added) {
+            LBUsers.push(getUserData(user));
+        }
+    });
+
+    return LBUsers;
 }
 
+/**
+ * Debug per l'oggetto cache
+ */
+function debugCache(){
+    console.log(cache);
+}
+
+/**
+ * Debug per l'oggetto queue
+ */
+function debugQueue(){
+    console.log(queue);
+}
 
 module.exports = {
     connectMongoDB,
@@ -241,8 +264,10 @@ module.exports = {
     setUserChat,
     updateUserChatData,
     startQueue,
-    getLeaderboard,
+    getChatLeaderboard,
     resetChatStats,
     resetUserStats,
-    resetAll
+    resetAll,
+    debugCache,
+    debugQueue
 };
