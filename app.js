@@ -27,12 +27,12 @@ function connectTelegramAPI(){
 
         bot = new Telegraf(process.env["accessToken"]);
 
+        console.log("> Telegram connected");
+
         setBotMiddlewares();
         setBotCommands();
         setBotActions();
         setBotEvents();
-
-        console.log("> Telegram connected");
         ok();
     });
 }
@@ -44,8 +44,6 @@ function connectMongoDB(){
     return new Promise(function(ok, ko){
         storage.connectMongoDB(process.env['mongodb']).then(function(){
             storage.startQueue();
-            
-            console.log("> MongoDB Connected");
             ok();
         });
     });
@@ -57,6 +55,8 @@ function connectMongoDB(){
 function setBotMiddlewares(){
 
     bot.use(commandParts());
+            
+    console.log("  - loaded bot middlewares");
 }
 
 /**
@@ -75,7 +75,7 @@ function setBotCommands(){
         var commandArgs = command.splitArgs;
         var action = commandArgs.shift();
 
-        console.log('=====\n/SU Command:\n-----\n', command);
+        console.log('=====\n/SU Command:\n', command);
 
         switch(action){
 
@@ -191,12 +191,13 @@ function setBotCommands(){
         return storage.updateUserChatData(mexData.userId, mexData.chatId, chat);
     });
     
-    
     bot.command('leaderboard', function(ctx){
         var chatId = ctx.update.message.chat.id;
 
         console.log(storage.getChatLeaderboard(chatId));
     });
+    
+    console.log("  - loaded bot commands");
 }
 
 /**
@@ -213,6 +214,8 @@ function setBotActions(){
     // bot.action('markdown-test-2', function(ctx){
     //     ctx.reply('markdown-test-2');
     // });
+    
+    console.log("  - loaded bot actions");
 }
 
 /**
@@ -300,6 +303,8 @@ function setBotEvents(){
         console.log(query);
         console.log(markupData);
     });
+    
+    console.log("  - loaded bot general events");
 }
 
 /**

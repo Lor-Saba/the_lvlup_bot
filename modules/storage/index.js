@@ -21,26 +21,55 @@ function connectMongoDB(uri) {
 
     return client.connect()
     .then(() => db = client.db("mymdb"))
-    .then(getAllUsers)
-    .then(cursor => cursor.toArray())
-    .then(users => {
+    .then(checkCollections)
+    .then(function(){
+        return getCollectionContent('lvlup_users')
+        .then(users => {
+    
+            for(var ind = 0, ln = users.length; ind < ln; ind++){
+                cache.users[users[ind].id] = users[ind];
+            };
+        });
+    })
+    .then(function(){
+        return getCollectionContent('lvlup_chats')
+        .then(chats => {
+    
+            for(var ind = 0, ln = chats.length; ind < ln; ind++){
+                cache.chats[chats[ind].id] = chats[ind];
+            };
+        });
+    })
+    .then(function(){
 
-        for(var ind = 0, ln = users.length; ind < ln; ind++){
-            cache.users[users[ind].id] = users[ind];
-        };
-        
-        console.log('- loaded', Object.keys(cache.users).length, 'users from DB.  [' + utils.roughSizeOfObject(cache.users, true) + ']');
+        // connessione al db completata
+        console.log("> MongoDB Connected");
+
+        // loagga il contenuto della cache
+        utils.each(cache, function(key, data){
+            console.log('  - loaded', Object.keys(data).length, key, 'from DB.  [' + utils.roughSizeOfObject(data, true) + ']');
+        });
     });
 }
 
+function checkCollections(){
+    return Promise.resolve()
+    .then(function(){
+        return db.createCollection('lvlup_users').catch(err => {});
+    })
+    .then(function(res){
+        return db.createCollection('lvlup_chats').catch(err => {});
+    })
+}
+
 /**
- * Restituisce la lista di tutti gli utenti salvati nel db
+ * Restituisce la lista di tutti i documenti salvati nella collezione
  */
-function getAllUsers(){
+function getCollectionContent(collectionName){
     var filter = {};
     
     try {
-        return db.collection("lvlup_users").find(filter);
+        return db.collection(collectionName).find(filter).toArray();
     } catch(err) {
         return Promise.reject(err);
     }
@@ -157,34 +186,63 @@ function updateUserChatData(userId, chatId, chatData){
  */
 function syncDatabase(){
 
-    var keys = Object.keys(queue.users);
-    var operations = [];
-
-    // interrompe se in coda non ci sono modifiche da applicare
-    if (keys.length === 0) return;
-
-    console.log('Saving queue to db..', keys.length + ' users');
+    var usersIdList = Object.keys(queue.users);
+    var chatsIdList = Object.keys(queue.chats);
 
     queue.users = {};
+    queue.chats = {};
 
-    utils.each(keys, function(index, userId){
-        operations.push({
-            replaceOne: { 
-                filter: { id: userId }, 
-                replacement: cache.users[userId], 
-                upsert: true 
-            } 
+    // se in coda ci sono modifiche da applicare per gli utenti..
+    if (usersIdList.length > 0) {
+        var operations = [];
+
+        console.log('Saving queue to db..', usersIdList.length + ' users');
+
+        utils.each(usersIdList, function(index, userId){
+            operations.push({
+                replaceOne: { 
+                    filter: { id: userId }, 
+                    replacement: cache.users[userId], 
+                    upsert: true 
+                } 
+            });
         });
-    });
 
-    try {
-        db.collection("lvlup_users").bulkWrite(operations);
-    } catch(err) {
-        console.log(err);
+        try {
+            db.collection("lvlup_users").bulkWrite(operations);
+        } catch(err) {
+            console.log(err);
+        }
+
+        usersIdList.length = 0;
+        operations.length = 0;
     }
 
-    keys.length = 0;
-    operations.length = 0;
+    // se in coda ci sono modifiche da applicare per le classi..
+    if (chatsIdList.length > 0) {
+        var operations = [];
+
+        console.log('Saving queue to db..', chatsIdList.length + ' chats');
+
+        utils.each(chatsIdList, function(index, chatId){
+            operations.push({
+                replaceOne: { 
+                    filter: { id: chatId }, 
+                    replacement: cache.chats[chatId], 
+                    upsert: true 
+                } 
+            });
+        });
+
+        try {
+            db.collection("lvlup_chats").bulkWrite(operations);
+        } catch(err) {
+            console.log(err);
+        }
+
+        chatsIdList.length = 0;
+        operations.length = 0;
+    }
 }
 
 /**
@@ -258,7 +316,6 @@ function debugQueue(){
 
 module.exports = {
     connectMongoDB,
-    getAllUsers,
     getUser,
     setUser,
     setUserChat,
