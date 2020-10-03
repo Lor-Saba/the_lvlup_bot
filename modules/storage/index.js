@@ -148,21 +148,23 @@ function resetUserStats(userId){
  * Reset completo di tutti i dati del bot
  */
 function resetAll(){
-    var result = { users: 0, chats: 0 };
 
-    // rimozione di tutti i dati degli utenti
-    utils.each(cache.users, function(userId){
-        cache.users[userId].chats = {};
-        queue.users[userId] = true;
-    });
-    result.users = Object.keys(queue.users).length;
+    var result = { 
+        users: Object.keys(queue.users).length, 
+        chats: Object.keys(queue.chats).length
+    };
 
-    // rimozione di tutti i dati deglle chat
-    utils.each(cache.chats, function(chatId){
-        cache.chats[chatId] = {};
-        queue.chats[chatId] = true;
-    });
-    result.chats = Object.keys(queue.chats).length;
+    // pulisce la cache
+    cache.users = {};
+    cache.chats = {};
+
+    // pulisce la coda di salvataggio
+    queue.users = {};
+    queue.chats = {};
+
+    // elimina il db di tutti i documenti
+    db.collection("lvlup_users").deleteMany({});
+    db.collection("lvlup_chats").deleteMany({});
 
     return result;
 }
@@ -201,7 +203,7 @@ function syncDatabase(){
         utils.each(usersIdList, function(index, userId){
             operations.push({
                 replaceOne: { 
-                    filter: { id: userId }, 
+                    filter: { id: Number(userId) }, 
                     replacement: cache.users[userId], 
                     upsert: true 
                 } 
@@ -227,7 +229,7 @@ function syncDatabase(){
         utils.each(chatsIdList, function(index, chatId){
             operations.push({
                 replaceOne: { 
-                    filter: { id: chatId }, 
+                    filter: { id: Number(chatId) }, 
                     replacement: cache.chats[chatId], 
                     upsert: true 
                 } 
@@ -260,7 +262,7 @@ function startQueue(){
 
     stopQueue();
 
-    queue.id = setInterval(syncDatabase, 1000 * 60 * 2); // 5 minuti
+    queue.id = setInterval(syncDatabase, 1000 * 60 * 5); // 5 minuti     1000 * 60 * 2
 }
 
 /**
@@ -327,5 +329,6 @@ module.exports = {
     resetUserStats,
     resetAll,
     debugCache,
-    debugQueue
+    debugQueue,
+    syncDatabase
 };

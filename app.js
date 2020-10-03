@@ -145,6 +145,10 @@ function setBotCommands(){
             case 'queue':
                 storage.debugQueue();
                 break;
+                
+            case 'sync':
+                storage.syncDatabase();
+                break;
         }
     })
     
