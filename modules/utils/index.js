@@ -7,7 +7,7 @@
  * @param {number} exp Calcola il livello in base al valore dell'esperienza passata
  */
 function calcLevelFromExp(exp) {
-    return Math.sqrt(exp) * 0.42 + 1;
+    return Math.sqrt(exp) * 0.44272 + 1;
 }
 
 /**
@@ -15,7 +15,7 @@ function calcLevelFromExp(exp) {
  * @param {number} level Calcola l'esperienza in base al valore del livello passata
  */
 function calcExpFromLevel(level) {
-    return Math.pow((level - 1) / 0.42, 2);
+    return Math.pow((level - 1) / 0.44272, 2);
 }
 
 /**
@@ -131,6 +131,11 @@ function formatBytes(bytes, decimals = 2) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
+/**
+ * ritorna un insieme delle proprietà piu utilizzate 
+ * 
+ * @param {object} ctx oggetto di risposta di un messaggio
+ */
 function getMessageData(ctx){
     const messageData = {
         date: ctx.update.message.date,
@@ -145,6 +150,22 @@ function getMessageData(ctx){
     return messageData;
 }
 
+function convertNumToExponential(num, limitValue = 100000000, decimals = 3) {
+    num = Number(num);
+
+    if (isNaN(num)) return null;
+
+    if (num > limitValue) {
+        return num.toExponential(decimals);
+    } else {
+        if (num % 1 != 0){
+            return num.toFixed(decimals);
+        } else {
+            return num;
+        }
+    }
+}
+
 module.exports = {
     errorlog,
     each,
@@ -154,5 +175,6 @@ module.exports = {
     checkifSpam,
     formatBytes,
     roughSizeOfObject,
-    getMessageData
+    getMessageData,
+    convertNumToExponential
 };

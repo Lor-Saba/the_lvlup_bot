@@ -15,6 +15,8 @@ const storage = require('./modules/storage');
 const utils = require('./modules/utils');
 // modulo per gestire i markup per i messaggi con bottoni
 const markup = require('./modules/markup');
+// modulo per creare immagini con canvas
+//const canvas = require('./modules/canvas');
 // istanza del bot 
 var bot = null;
 
@@ -192,11 +194,120 @@ function setBotCommands(){
     });
     
     bot.command('leaderboard', function(ctx){
-        var chatId = ctx.update.message.chat.id;
 
-        console.log(storage.getChatLeaderboard(chatId));
+        if (ctx.update.message.chat.type === 'private') return;
+
+        var chatId = ctx.update.message.chat.id;
+        var usersData = storage.getChatLeaderboard(chatId);
+        var lbList = [];
+
+        utils.each(usersData, function(index, user){
+            var text = '';
+
+            //text += index === 0 ? '👑 ' : ' ';
+            text += '#' + (index + 1) + ' *' + user.username + '*';
+            text += '\n';
+            text += '       ';
+            text += '‎_';
+            text += user.prestige > 0 ? 'prg: ' + user.prestige + ' • ' : '';
+            text += 'lv: ' + utils.convertNumToExponential(Math.floor(user.level)) + ' • ';
+            text += 'exp: ' + utils.convertNumToExponential(user.exp);
+            text += '_';
+
+            lbList.push(text);
+        });
+
+        ctx.replyWithMarkdown(lbList.join('\n'));
+
+        //bot.telegram.sendMessage(chatId, lbList.join('\n'), {
+        //    parse_mode: 'markdown',
+        //    reply_to_message_id: ctx.update.message.message_id
+        //});
     });
     
+    bot.command('stats', function(ctx){
+
+        if (ctx.update.message.chat.type === 'private') {
+            return ctx.reply(lexicon.get('STATS_GROUPONLY'));
+        }
+        
+        var mexData = utils.getMessageData(ctx);
+        var user = storage.getUser(mexData.userId);
+        var userStats = user.chats[mexData.chatId];
+        var leaderboardPosition = -1;
+        var barsMaxLength = 12;
+        var text = '';
+
+        if (!user || !userStats) {
+            return ctx.reply(lexicon.get('STATS_NOUSER', { userName: mexData.userName }));
+        }
+
+        var leaderboard = storage.getChatLeaderboard(mexData.chatId);
+        var userInLB = leaderboard.filter(userData => userData.id === user.id)[0];
+
+        leaderboardPosition = leaderboard.indexOf(userInLB);
+
+        text += lexicon.get('STATS_INFO', { userName: mexData.userName });
+        text += '\n';
+
+        // 🥇🥈🥉🏆👑
+
+        if (leaderboardPosition != -1) {
+            text += '\n' + lexicon.get('STATS_LEADERBOARD_POSITION') + ':';
+
+            if (leaderboardPosition === 0) text += '  🥇';
+            if (leaderboardPosition === 1) text += '  🥈';
+            if (leaderboardPosition === 2) text += '  🥉';
+
+            text += ' #' + (leaderboardPosition + 1);
+            text += '\n';
+        }
+
+        if (userStats.exp > 0) {
+            text += '\n' + lexicon.get('LABEL_EXP') + ': ' + utils.convertNumToExponential(userStats.exp);
+        }
+        if (userStats.level > 0) {
+            text += '\n' + lexicon.get('LABEL_LEVEL') + ': ' + utils.convertNumToExponential(Math.floor(userStats.level));
+        }
+        if (userStats.prestige > 0){
+            text += '\n' + lexicon.get('LABEL_PRESTIGE') + ': ' + userStats.prestige;
+        }
+
+        text += '\n';
+
+        // Level diff bar
+        if (userStats.level > 0) {
+
+            var levelDiff = userStats.level - Math.floor(userStats.level);
+
+            text += '\n' + lexicon.get('STATS_LEVEL_PROGRESS', { 
+                percentage: (levelDiff * 100).toFixed(2)
+            });
+            text += '\n';
+
+            for(var ind = 0; ind < barsMaxLength; ind++){
+                text += (ind / barsMaxLength < levelDiff) ? '🟩' : '⬜️';
+            }            
+        }
+
+        // Prestige diff bar
+        if (userStats.prestige > 0) {
+
+            var prestigeDiff = userStats.exp / utils.calcExpFromLevel(utils.calcExpGain(userStats.prestige) * 15);
+
+            text += '\n' + lexicon.get('STATS_PRESTIGE_PROGRESS', { 
+                percentage: (prestigeDiff * 100).toFixed(2)
+            });
+            text += '\n';
+
+            for(var ind = 0; ind < barsMaxLength; ind++){
+                text += (ind / barsMaxLength < prestigeDiff) ? '🟦' : '⬜️';
+            }            
+        }
+
+        ctx.replyWithMarkdown(text);
+    });
+
     console.log("  - loaded bot commands");
 }
 
@@ -258,7 +369,7 @@ function setBotEvents(){
             }
 
             // notifica l'utente che puo' prestigiare
-            if (newLevel >= 10 * expGain && chat.prestigeAvailable == false) {
+            if (newLevel >= 15 * expGain && chat.prestigeAvailable == false) {
                 ctx.reply(lexicon.get('USER_PRESTIGE_AVAILABLE', { userName: mexData.userName, level: newLevel }));
                 chat.prestigeAvailable = true;
             }

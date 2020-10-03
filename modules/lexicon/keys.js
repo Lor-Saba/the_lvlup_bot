@@ -33,6 +33,32 @@ const keys = {
     },
 
 
+    // Stats
+
+    "STATS_INFO": {
+        "en": "📈 Stats of *$(userName)*."
+    },
+    "STATS_NOUSER": {
+        "en": "$(userName), seems like you don't have stats yet.\nStart chatting to gain exp! :)"
+    },
+    "STATS_GROUPONLY": {
+        "en": "Stats can only be seen in group chats."
+    },
+    "STATS_LEVEL_PROGRESS": {
+        "en": "To next Level: $(percentage)%"
+    },
+    "STATS_PRESTIGE_PROGRESS": {
+        "en": "To next Prestige: $(percentage)%"
+    },
+    "STATS_FOR_NEXT_LEVEL": {
+        "en": "_($(missingExp) Exp)_"
+    },
+    "STATS_LEADERBOARD_POSITION": {
+        "en": "Position in /leaderboard"
+    },
+    
+
+
     // Setting
 
     "SETTING_START_USER": {
@@ -59,6 +85,15 @@ const keys = {
     },
     "REPLY_NO": {
         "en": "No"
+    },
+    "LABEL_EXP": {
+        "en": "Exp"
+    },
+    "LABEL_LEVEL": {
+        "en": "Level"
+    },
+    "LABEL_PRESTIGE": {
+        "en": "Prestige"
     }
 };
 

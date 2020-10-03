@@ -25,19 +25,19 @@ function connectMongoDB(uri) {
     .then(function(){
         return getCollectionContent('lvlup_users')
         .then(users => {
-    
-            for(var ind = 0, ln = users.length; ind < ln; ind++){
-                cache.users[users[ind].id] = users[ind];
-            };
+            utils.each(users, function(index, user){
+                delete user._id;
+                cache.users[user.id] = user;
+            });
         });
     })
     .then(function(){
         return getCollectionContent('lvlup_chats')
         .then(chats => {
-    
-            for(var ind = 0, ln = chats.length; ind < ln; ind++){
-                cache.chats[chats[ind].id] = chats[ind];
-            };
+            utils.each(chats, function(index, chat){
+                delete chat._id;
+                cache.chats[chat.id] = chat;
+            });
         });
     })
     .then(function(){
@@ -260,7 +260,7 @@ function startQueue(){
 
     stopQueue();
 
-    queue.id = setInterval(syncDatabase, 1000 * 60 * 5); // 5 minuti
+    queue.id = setInterval(syncDatabase, 1000 * 60 * 2); // 5 minuti
 }
 
 /**
@@ -272,6 +272,7 @@ function getChatLeaderboard(chatId){
 
     var getUserData = function(user){
         return {
+            id: user.id,
             username: user.username,
             exp: user.chats[chatId].exp,
             level: user.chats[chatId].level,
