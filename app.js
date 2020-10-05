@@ -66,7 +66,14 @@ function setBotMiddlewares(){
  */
 function setBotCommands(){
 
-    // admin: 95d23b82ee9ef1b94f48bbc3870819c0
+    /*
+        Lista comandi:
+
+        prestige - Give up all your exp and levels to gain a prestige! This will let you grow faster.
+        leaderboard - Check who's the boss of the chat.
+        stats - Check your user stats in the current chat
+
+    */
 
     bot.command('su', function(ctx){
         var userId = ctx.update.message.from.id;
@@ -176,25 +183,25 @@ function setBotCommands(){
         if (!user.chats[mexData.chatId]) return;
 
         // salva il riferimento alla chat
-        var chat = user.chats[mexData.chatId]; 
+        var userStats = user.chats[mexData.chatId]; 
 
-        if (chat.prestigeAvailable) {
-            chat.exp = 0;
-            chat.level = 0;
-            chat.prestige += 1;
+        if (userStats.prestigeAvailable) {
+            userStats.exp = 0;
+            userStats.level = 0;
+            userStats.prestige += 1;
 
-            ctx.reply(lexicon.get('USER_PRESTIGE_SUCCESS', { userName: mexData.userName, prestige: chat.prestige }));
+            ctx.reply(lexicon.get('USER_PRESTIGE_SUCCESS', { userName: mexData.userName, prestige: userStats.prestige }));
         } else {
 
             // Controlla se la richiesta  è spam (60 secondi di timeout)
-            if (!utils.checkifSpam(chat.lastMessage, mexData.date, 60)) {
-                chat.lastMessage = mexData.date;
+            if (!utils.checkifSpam(userStats.lastMessage, mexData.date, 60)) {
+                userStats.lastMessage = mexData.date;
 
                 ctx.reply(lexicon.get('USER_PRESTIGE_FAIL', { userName: mexData.userName }));
             }
         }
 
-        return storage.updateUserChatData(mexData.userId, mexData.chatId, chat);
+        return storage.updateUserChatData(mexData.userId, mexData.chatId, userStats);
     });
     
     bot.command('leaderboard', function(ctx){
@@ -202,20 +209,20 @@ function setBotCommands(){
         if (ctx.update.message.chat.type === 'private') return;
 
         var chatId = ctx.update.message.chat.id;
-        var usersData = storage.getChatLeaderboard(chatId);
+        var leaderboard = storage.getChatLeaderboard(chatId);
         var lbList = [];
 
-        utils.each(usersData, function(index, user){
+        utils.each(leaderboard, function(index, userStats){
             var text = '';
 
             //text += index === 0 ? '👑 ' : ' ';
-            text += '#' + (index + 1) + ' *' + user.username + '*';
+            text += '#' + (index + 1) + ' *' + userStats.username + '*';
             text += '\n';
             text += '       ';
             text += '‎_';
-            text += user.prestige > 0 ? 'prg: ' + user.prestige + ' • ' : '';
-            text += 'lv: ' + utils.convertNumToExponential(Math.floor(user.level)) + ' • ';
-            text += 'exp: ' + utils.convertNumToExponential(user.exp);
+            text += userStats.prestige > 0 ? 'prg: ' + userStats.prestige + ' • ' : '';
+            text += 'lv: ' + utils.convertNumToExponential(Math.floor(userStats.level)) + ' • ';
+            text += 'exp: ' + utils.convertNumToExponential(userStats.exp);
             text += '_';
 
             lbList.push(text);
@@ -238,7 +245,6 @@ function setBotCommands(){
         var mexData = utils.getMessageData(ctx);
         var user = storage.getUser(mexData.userId);
         var userStats = user.chats[mexData.chatId];
-        var leaderboardPosition = -1;
         var barsMaxLength = 12;
         var text = '';
 
@@ -248,8 +254,7 @@ function setBotCommands(){
 
         var leaderboard = storage.getChatLeaderboard(mexData.chatId);
         var userInLB = leaderboard.filter(userData => userData.id === user.id)[0];
-
-        leaderboardPosition = leaderboard.indexOf(userInLB);
+        var leaderboardPosition = leaderboard.indexOf(userInLB);
 
         text += lexicon.get('STATS_INFO', { userName: mexData.userName });
         text += '\n';
@@ -259,11 +264,11 @@ function setBotCommands(){
         if (leaderboardPosition != -1) {
             text += '\n' + lexicon.get('STATS_LEADERBOARD_POSITION') + ':';
 
-            if (leaderboardPosition === 0) text += '  🥇';
-            if (leaderboardPosition === 1) text += '  🥈';
-            if (leaderboardPosition === 2) text += '  🥉';
+                 if (leaderboardPosition === 0) text += '  🥇';
+            else if (leaderboardPosition === 1) text += '  🥈';
+            else if (leaderboardPosition === 2) text += '  🥉';
+            else text += '  #' + (leaderboardPosition + 1);
 
-            text += ' #' + (leaderboardPosition + 1);
             text += '\n';
         }
 
@@ -356,36 +361,36 @@ function setBotEvents(){
             user.chats[mexData.chatId] = storage.setUserChat(mexData.userId, mexData.chatId, {});
         }
 
-        // salva il riferimento alla chat
-        var chat = user.chats[mexData.chatId]; 
+        // ottiene il riferimento alle stast dell'utente per la chat corrente
+        var userStats = user.chats[mexData.chatId]; 
 
         // Controlla se è spam
-        if (!utils.checkifSpam(chat.lastMessage, mexData.date)) {
+        if (!utils.checkifSpam(userStats.lastMessage, mexData.date)) {
             
             // add exp based on prestige power
-            var expGain = utils.calcExpGain(chat.prestige);
-            var newExp = chat.exp + expGain;
+            var expGain = utils.calcExpGain(userStats.prestige);
+            var newExp = userStats.exp + expGain;
             var newLevel = utils.calcLevelFromExp(newExp);
 
             // notifica l'utente se è salito di livello
-            if (Math.floor(chat.level) < Math.floor(newLevel)) {
+            if (Math.floor(userStats.level) < Math.floor(newLevel)) {
                 ctx.reply(lexicon.get('USER_LEVELUP', { userName: mexData.userName, level: Math.floor(newLevel) }));
             }
 
             // notifica l'utente che puo' prestigiare
-            if (newLevel >= 15 * expGain && chat.prestigeAvailable == false) {
+            if (newLevel >= 15 * expGain && userStats.prestigeAvailable == false) {
                 ctx.reply(lexicon.get('USER_PRESTIGE_AVAILABLE', { userName: mexData.userName, level: newLevel }));
-                chat.prestigeAvailable = true;
+                userStats.prestigeAvailable = true;
             }
 
             // assegna i nuovi dati
-            chat.exp = newExp;
-            chat.level = newLevel;
+            userStats.exp = newExp;
+            userStats.level = newLevel;
         }
 
-        chat.lastMessage = mexData.date;
+        userStats.lastMessage = mexData.date;
 
-        return storage.updateUserChatData(mexData.userId, mexData.chatId, chat);
+        return storage.updateUserChatData(mexData.userId, mexData.chatId, userStats);
     });
 
     bot.on('callback_query', function(ctx){ 
