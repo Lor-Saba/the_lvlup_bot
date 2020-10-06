@@ -130,7 +130,7 @@ function setBotCommands(){
                     var result = storage.resetChatStats(chatId);
 
                     // ritorna il risultato
-                    ctx.reply('Reset result for chat "' + chatId + '": ' + result + ' Users updated');
+                    ctx.reply('Reset result for chat "' + chatId + '": ' + result + ' users updated');
                 } else if (type === 'user') {
                     var userId = commandArgs.shift();
                     var result = storage.resetUserStats(userId);
@@ -141,16 +141,20 @@ function setBotCommands(){
                     var result = storage.resetAll();
                     
                     // ritorna il risultato
-                    ctx.reply('Full reset completed.\nUsers: ' + result.users + ' | Chats: ' + result.chats);
+                    ctx.reply('Full reset completed.\nRemoved ' + result.users + ' users and ' + result.chats + ' chats');
                 }
                 break;
 
             case 'cache':
-                storage.debugCache();
+                var res = storage.debugCache();
+
+                ctx.reply('Users: ' + res.users + '\nChats: ' + res.chats + '\n\nCache size: ' + res.size);
                 break;
 
             case 'queue':
-                storage.debugQueue();
+                var res = storage.debugQueue();
+
+                ctx.reply('Users: ' + res.users + '\nChats: ' + res.chats + '\n\nCache size: ' + res.size);
                 break;
                 
             case 'sync':
@@ -181,6 +185,7 @@ function setBotCommands(){
 
         if (!user) return;
         if (!user.chats[mexData.chatId]) return;
+        if (mexData.date - user.lastCommandDate < 4) return;    // <- anti-spam
 
         // salva il riferimento alla chat
         var userStats = user.chats[mexData.chatId]; 
@@ -190,16 +195,13 @@ function setBotCommands(){
             userStats.level = 0;
             userStats.prestige += 1;
 
-            ctx.reply(lexicon.get('USER_PRESTIGE_SUCCESS', { userName: mexData.userName, prestige: userStats.prestige }));
+            ctx.reply(lexicon.get('USER_PRESTIGE_SUCCESS', { username: mexData.username, prestige: userStats.prestige }));
         } else {
-
-            // Controlla se la richiesta  è spam (60 secondi di timeout)
-            if (!utils.checkifSpam(userStats.lastMessage, mexData.date, 60)) {
-                userStats.lastMessage = mexData.date;
-
-                ctx.reply(lexicon.get('USER_PRESTIGE_FAIL', { userName: mexData.userName }));
-            }
+                
+            ctx.reply(lexicon.get('USER_PRESTIGE_FAIL', { username: mexData.username }));
         }
+
+        user.lastCommandDate = mexData.date;
 
         return storage.updateUserChatData(mexData.userId, mexData.chatId, userStats);
     });
@@ -244,23 +246,32 @@ function setBotCommands(){
         
         var mexData = utils.getMessageData(ctx);
         var user = storage.getUser(mexData.userId);
-        var userStats = user.chats[mexData.chatId];
-        var barsMaxLength = 12;
-        var text = '';
 
-        if (!user || !userStats) {
-            return ctx.reply(lexicon.get('STATS_NOUSER', { userName: mexData.userName }));
+        if (!user) {
+            return ctx.reply(lexicon.get('STATS_NOUSER', { username: mexData.username }));
         }
 
+        var userStats = user.chats[mexData.chatId];
+
+        if (!userStats) {
+            return ctx.reply(lexicon.get('STATS_NOUSER', { username: mexData.username }));
+        }
+
+        if (mexData.date - user.lastCommandDate < 5) return;    // <- anti-spam
+
+        user.lastCommandDate = mexData.date;
+
+        var barsMaxLength = 12;
         var leaderboard = storage.getChatLeaderboard(mexData.chatId);
         var userInLB = leaderboard.filter(userData => userData.id === user.id)[0];
         var leaderboardPosition = leaderboard.indexOf(userInLB);
+        var text = '';
 
-        text += lexicon.get('STATS_INFO', { userName: mexData.userName });
+        // aggiunge il nome e titolo
+        text += lexicon.get('STATS_INFO', { username: mexData.username });
         text += '\n';
 
-        // 🥇🥈🥉🏆👑
-
+        // aggiunge la posizione dell'utente nella leaderboard se
         if (leaderboardPosition != -1) {
             text += '\n' + lexicon.get('STATS_LEADERBOARD_POSITION') + ':';
 
@@ -272,6 +283,7 @@ function setBotCommands(){
             text += '\n';
         }
 
+        // agiunge le statistiche basi: Exp, Level, Prestige
         if (userStats.exp > 0) {
             text += '\n' + lexicon.get('LABEL_EXP') + ': ' + utils.convertNumToExponential(userStats.exp);
         }
@@ -282,9 +294,19 @@ function setBotCommands(){
             text += '\n' + lexicon.get('LABEL_PRESTIGE') + ': ' + userStats.prestige;
         }
 
+        // aggiunge il livello di penalità attivo
+        text += '\n';
+        text += '\n' + lexicon.get('STATS_PENALITY_LEVEL');
+
+        if (mexData.date > user.penality.resetDate) {
+            text += '🟢';
+        } else {
+            text += ['🟢','🟡','🟠','🔴','❌'][user.penality.level];
+        }
+
         text += '\n';
 
-        // Level diff bar
+        // aggiunge la barre che mostra il progresso per il prossimo livello
         if (userStats.level > 0) {
 
             var levelDiff = userStats.level - Math.floor(userStats.level);
@@ -299,7 +321,7 @@ function setBotCommands(){
             }            
         }
 
-        // Prestige diff bar
+        // aggiunge la barre che mostra il progresso per il prossimo prestigio
         if (userStats.prestige > 0) {
 
             var prestigeDiff = userStats.exp / utils.calcExpFromLevel(utils.calcExpGain(userStats.prestige) * 15);
@@ -349,48 +371,60 @@ function setBotEvents(){
 
         if (mexData.isBot) return;
 
+        // ottiene il riferimento all'utente
         var user =  storage.getUser(mexData.userId);
 
         // imposta l'oggetto dell'utente se non esiste
         if (!user) {
-            user = storage.setUser(mexData.userId, { id: mexData.userId, username: mexData.userName });
+            user = storage.setUser(mexData.userId, { id: mexData.userId, username: mexData.username });
         }
 
-        // imposta l'oggetto della chat se non esiste
-        if (!user.chats[mexData.chatId]){
-            user.chats[mexData.chatId] = storage.setUserChat(mexData.userId, mexData.chatId, {});
-        }
-
-        // ottiene il riferimento alle stast dell'utente per la chat corrente
+        // ottiene il riferimento alle stats dell'utente per la chat corrente
         var userStats = user.chats[mexData.chatId]; 
 
-        // Controlla se è spam
-        if (!utils.checkifSpam(userStats.lastMessage, mexData.date)) {
-            
-            // add exp based on prestige power
-            var expGain = utils.calcExpGain(userStats.prestige);
-            var newExp = userStats.exp + expGain;
-            var newLevel = utils.calcLevelFromExp(newExp);
-
-            // notifica l'utente se è salito di livello
-            if (Math.floor(userStats.level) < Math.floor(newLevel)) {
-                ctx.reply(lexicon.get('USER_LEVELUP', { userName: mexData.userName, level: Math.floor(newLevel) }));
-            }
-
-            // notifica l'utente che puo' prestigiare
-            if (newLevel >= 15 * expGain && userStats.prestigeAvailable == false) {
-                ctx.reply(lexicon.get('USER_PRESTIGE_AVAILABLE', { userName: mexData.userName, level: newLevel }));
-                userStats.prestigeAvailable = true;
-            }
-
-            // assegna i nuovi dati
-            userStats.exp = newExp;
-            userStats.level = newLevel;
+        // imposta l'oggetto delle statistiche dell'utente nella chat corrente se non esiste
+        if (!userStats){
+            userStats = storage.setUserChat(mexData.userId, mexData.chatId, {});
         }
 
-        userStats.lastMessage = mexData.date;
+        // gestione della penalità in caso di spam
+        var oldPenalityLevel = user.penality.level;
+        var isSpam = utils.calcPenality(user, mexData.date, 1);
+        if (isSpam) {
 
-        return storage.updateUserChatData(mexData.userId, mexData.chatId, userStats);
+            if (oldPenalityLevel == 1) {
+                ctx.replyWithMarkdown(lexicon.get('PENALITY_LEVEL_2', { username: mexData.username }));
+            }
+            if (oldPenalityLevel == 3) {
+                ctx.replyWithMarkdown(lexicon.get('PENALITY_LEVEL_4', { username: mexData.username }));
+            }
+        }
+            
+        // calcola le nuove statistiche
+        var expGain = utils.calcExpGain(userStats.prestige, user.penality.level);
+        var newExp = userStats.exp + expGain;
+        var newLevel = utils.calcLevelFromExp(newExp);
+        var nextPrestige = utils.calcNextPrestigeLevel(userStats.prestige);
+
+        // notifica l'utente se è salito di livello
+        if (Math.floor(userStats.level) < Math.floor(newLevel)) {
+            ctx.reply(lexicon.get('USER_LEVELUP', { username: mexData.username, level: Math.floor(newLevel) }));
+        }
+        
+        // notifica l'utente che puo' prestigiare
+        if (newLevel >= nextPrestige && userStats.prestigeAvailable == false) {
+            ctx.reply(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: mexData.username, level: newLevel }));
+            userStats.prestigeAvailable = true;
+        }
+
+        // assegna i nuovi dati
+        userStats.exp = newExp;
+        userStats.level = newLevel;
+
+        user.username = mexData.username;
+        user.lastMessageDate = mexData.date;
+
+        return storage.addUserToQueue(mexData.userId);
     });
 
     bot.on('callback_query', function(ctx){ 

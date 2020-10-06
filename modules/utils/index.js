@@ -22,9 +22,21 @@ function calcExpFromLevel(level) {
  * calcola il guadagno di exp in base alla forza del prestigio
  * 
  * @param {number} prestige 
+ * @param {number} penalityLevel 
  */
-function calcExpGain(prestige) {
-    return Math.sqrt(Math.pow(2, prestige));
+function calcExpGain(prestige, penalityLevel) {
+
+    var expGain = Math.sqrt(Math.pow(2, prestige));
+    var penalityMultiplier = 1;
+
+    if (penalityLevel === 2){
+        penalityMultiplier = .25;
+    }
+    if (penalityLevel === 4){
+        penalityMultiplier = 0;
+    }
+
+    return expGain * penalityMultiplier;
 }
 
 /**
@@ -54,15 +66,45 @@ function errorlog(msg) {
 }
 
 /**
- * Controlla la differenza tra le due date passate. 
- * Fallisce se la differenza è inferioriore al terzo argomento passato (2 di default, in secondi)
  * 
- * @param {number} dateOld  
- * @param {number} DateNew 
- * @param {number} minDiff 
+ * @param {object} user oggetto db dell'utente
+ * @param {number} dateNow timestamp della data attuale (del messaggio)
+ * @param {number} dateDiff tempo in secondi usato per validare lo stato di spam
  */
-function checkifSpam(dateOld, DateNew, minDiff = 1){
-    return (DateNew - dateOld) < minDiff;
+function calcPenality(user, dateNow, dateDiff = 1){
+
+    var isSpam = dateNow - user.lastMessageDate < dateDiff;
+
+    // controllo per gestire un possibile spam di messaggi
+    // (viene considerato spam se è stato inviato un altro messaggio meno di 1 secondo fa)
+    if (isSpam) {
+        user.penality.level = Math.min(user.penality.level + 1, 4);
+        user.penality.resetDate = dateNow + (user.penality.level * Math.pow(2, user.penality.level) * 5);
+
+        /*
+            reset date:
+                0 🟢 - 0s       <- normal state
+                1 🟡 - 10s
+                2 🟠 - 40s      <- 25% exp gain
+                3 🔴 - 120s
+                4 ❌ - 320s     <-  0% exp gain
+        */
+    } else {
+        if (user.penality.level > 0 && user.penality.resetDate - dateNow < 0) {
+            user.penality.level = 0;
+            user.penality.resetDate = 0;
+        }
+    }
+
+    return isSpam;
+}
+
+/**
+ * 
+ * @param {number} prestige 
+ */
+function calcNextPrestigeLevel(prestige){
+    return calcExpGain(prestige, 0) * 15;
 }
 
 /**
@@ -141,7 +183,7 @@ function getMessageData(ctx){
         date: ctx.update.message.date,
         isBot: ctx.update.message.from.is_bot,
         isPrivate: ctx.update.message.chat.type === 'private',
-        userName: ctx.update.message.from.first_name || ctx.update.message.from.username,
+        username: ctx.update.message.from.first_name || ctx.update.message.from.username,
         userId: ctx.update.message.from.id,
         chatId: ctx.update.message.chat.id,
         chatTitle: ctx.update.message.chat.title
@@ -150,7 +192,7 @@ function getMessageData(ctx){
     return messageData;
 }
 
-function convertNumToExponential(num, limitValue = 100000000, decimals = 3) {
+function convertNumToExponential(num, limitValue = 100000000, decimals = 2) {
     num = Number(num);
 
     if (isNaN(num)) return null;
@@ -172,7 +214,8 @@ module.exports = {
     calcExpFromLevel,
     calcLevelFromExp,
     calcExpGain,
-    checkifSpam,
+    calcPenality,
+    calcNextPrestigeLevel,
     formatBytes,
     roughSizeOfObject,
     getMessageData,

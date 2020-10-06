@@ -7,7 +7,7 @@ const keys = {
         "en": "Challenge avaliable! Type /challengeme to drop the glove."
     },
     "CHALLENGE_WON_BY": {
-        "en": "$(userName) won!"
+        "en": "$(username) won!"
     },
     "CHALLENGE_TIMEOUT": {
         "en": "Next challenge in $(timeout)."
@@ -20,26 +20,26 @@ const keys = {
     // User
 
     "USER_LEVELUP": {
-        "en": "$(userName) is now at level $(level)!"
+        "en": "$(username) is now at level $(level)!"
     },
     "USER_PRESTIGE_AVAILABLE": {
-        "en": "$(userName), with a level of $(level) you can now prestige! type /prestige to preceed"
+        "en": "$(username), with a level of $(level) you can now prestige! type /prestige to preceed"
     },
     "USER_PRESTIGE_SUCCESS": {
-        "en": "$(userName) prestiged! \nCurrent prestige level: $(prestige)"
+        "en": "$(username) prestiged! \nCurrent prestige level: $(prestige)"
     },
     "USER_PRESTIGE_FAIL": {
-        "en": "You can't prestige yet $(userName)."
+        "en": "You can't prestige yet $(username)."
     },
 
 
     // Stats
 
     "STATS_INFO": {
-        "en": "📈 Stats of *$(userName)*."
+        "en": "📈 Stats of *$(username)*."
     },
     "STATS_NOUSER": {
-        "en": "$(userName), seems like you don't have stats yet.\nStart chatting to gain exp! :)"
+        "en": "$(username), seems like you don't have stats yet.\nStart chatting to gain exp! :)"
     },
     "STATS_GROUPONLY": {
         "en": "Stats can only be seen in group chats."
@@ -56,13 +56,25 @@ const keys = {
     "STATS_LEADERBOARD_POSITION": {
         "en": "Position in /leaderboard"
     },
+    "STATS_PENALITY_LEVEL": {
+        "en": "Penality level: "
+    },
+
+
+    // Penality
     
+    "PENALITY_LEVEL_2": {
+        "en": "Spam detected *$(username)*.\nYour exp gain is reduced by 75% for 40s."
+    },
+    "PENALITY_LEVEL_4": {
+        "en": "Too much spam *$(username)*.\nYour exp gain is blocked for 5m."
+    },
 
 
     // Setting
 
     "SETTING_START_USER": {
-        "en": "Settings for user: $(userName)"
+        "en": "Settings for user: $(username)"
     },
     "SETTING_START_GROUP": {
         "en": "Settings for group: $(chatTitle)"

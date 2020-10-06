@@ -150,8 +150,8 @@ function resetUserStats(userId){
 function resetAll(){
 
     var result = { 
-        users: Object.keys(queue.users).length, 
-        chats: Object.keys(queue.chats).length
+        users: Object.keys(cache.users).length, 
+        chats: Object.keys(cache.chats).length
     };
 
     // pulisce la cache
@@ -180,6 +180,28 @@ function updateUserChatData(userId, chatId, chatData){
     cache.users[userId].chats[chatId] = Object.assign(cache.users[userId].chats[chatId], chatData);
     queue.users[userId] = true;
 
+    return Promise.resolve();
+}
+
+/**
+ * 
+ * @param {number} userId id dell'utente da aggiornare
+ */
+function addUserToQueue(userId){
+
+    queue.users[userId] = true;
+    
+    return Promise.resolve();
+}
+
+/**
+ * 
+ * @param {number} chatId id della chat da aggiornare
+ */
+function addChatToQueue(chatId){
+
+    queue.chats[chatId] = true;
+    
     return Promise.resolve();
 }
 
@@ -308,6 +330,12 @@ function getChatLeaderboard(chatId){
  */
 function debugCache(){
     console.log(cache);
+
+    return {
+        users: Object.keys(cache.users),
+        chats: Object.keys(cache.chats),
+        size: utils.roughSizeOfObject(cache, true)
+    }
 }
 
 /**
@@ -315,6 +343,12 @@ function debugCache(){
  */
 function debugQueue(){
     console.log(queue);
+
+    return {
+        users: Object.keys(queue.users),
+        chats: Object.keys(queue.chats),
+        size: utils.roughSizeOfObject(queue, true)
+    }
 }
 
 module.exports = {
@@ -330,5 +364,7 @@ module.exports = {
     resetAll,
     debugCache,
     debugQueue,
-    syncDatabase
+    syncDatabase,
+    addUserToQueue,
+    addChatToQueue
 };

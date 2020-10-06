@@ -10,7 +10,7 @@ var dataMap = {}
 var markup = {
 
     'SETTING_START': function(message, data){
-        var userName = message.from.first_name || message.from.username;
+        var username = message.from.first_name || message.from.username;
         var chatType = message.chat.type;
         var chatTitle = message.chat.title;
         var result = {};
@@ -18,7 +18,7 @@ var markup = {
         removePreviousMap(message);
 
         if (chatType == 'private') {
-            result.text = lexicon.get('SETTING_START_USER', { userName: userName });
+            result.text = lexicon.get('SETTING_START_USER', { username: username });
             result.buttons = markupWrap([
                 [ markupButton(message, lexicon.get('SETTING_NOTIFY_LEVELUP')           , Object.assign(data, { action: 'SETTING_NOTIFY_LEVELUP' }))            ],
                 [ markupButton(message, lexicon.get('SETTING_NOTIFY_PRESTIGE_AVAILABLE'), Object.assign(data, { action: 'SETTING_NOTIFY_PRESTIGE_AVAILABLE' })) ]
