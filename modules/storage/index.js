@@ -1,6 +1,8 @@
 
 // IModulo per il database 
 const MongoClient = require('mongodb').MongoClient;
+// modulo per gestire i numeri
+const BigNumber = require('bignumber.js');
 // modulo con le strutture
 const structs = require('../structs');
 // modulo per gestire le operazioni di salvataggio e caricamento dati dal DB
@@ -85,11 +87,22 @@ function getUser(userId){
 
 /**
  * 
+ * @param {number} chatId id chat
+ */
+function getChat(chatId){
+    return cache.chats[chatId];
+}
+
+/**
+ * 
  * @param {number} userId 
  * @param {object} userData 
  */
 function setUser(userId, userData){
-    return cache.users[userId] = structs.get('user', userData);
+    cache.users[userId] = structs.get('user', userData);
+    queue.users[userId] = true;
+
+    return cache.users[userId];
 }
 
 /**
@@ -99,7 +112,22 @@ function setUser(userId, userData){
  * @param {object} chatData 
  */
 function setUserChat(userId, chatId, chatData){
-    return cache.users[userId].chats[chatId] = structs.get('user_chat', chatData);
+    cache.users[userId].chats[chatId] = structs.get('user_chat', chatData);
+    queue.users[userId] = true;
+
+    return cache.users[userId].chats[chatId];
+}
+
+/**
+ * 
+ * @param {number} chatId 
+ * @param {object} chatData 
+ */
+function setChat(chatId, chatData){
+    cache.chats[chatId] = structs.get('chat', chatData);
+    queue.chats[chatId] = true;
+    
+    return cache.chats[chatId];
 }
 
 /**
@@ -167,20 +195,6 @@ function resetAll(){
     db.collection("lvlup_chats").deleteMany({});
 
     return result;
-}
-
-/**
- * 
- * @param {number} userId id dell'utente da aggiornare
- * @param {number} chatId id della chat da aggiornare
- * @param {object} chatData oggetto contenente i dati da aggiornare
- */
-function updateUserChatData(userId, chatId, chatData){
-
-    cache.users[userId].chats[chatId] = Object.assign(cache.users[userId].chats[chatId], chatData);
-    queue.users[userId] = true;
-
-    return Promise.resolve();
 }
 
 /**
@@ -310,7 +324,7 @@ function getChatLeaderboard(chatId){
         var added = false;
 
         utils.each(LBUsers, function(index, LBUser){
-            if (LBUser.exp < user.chats[chatId].exp) {
+            if (BigNumber(LBUser.exp).isLessThan(BigNumber(user.chats[chatId].exp))) {
                 LBUsers.splice(index, 0, getUserData(user));
                 added = true;
                 return false;
@@ -354,9 +368,10 @@ function debugQueue(){
 module.exports = {
     connectMongoDB,
     getUser,
+    getChat,
     setUser,
+    setChat,
     setUserChat,
-    updateUserChatData,
     startQueue,
     getChatLeaderboard,
     resetChatStats,

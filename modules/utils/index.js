@@ -1,21 +1,26 @@
 
-// var lvl = Math.floor(Math.sqrt(exp) * 0.5) + 1;
-// var revExp = Math.pow((lvl - 1) / 0.5, 2);
+// modulo per gestire i numeri
+const BigNumber = require('bignumber.js');
+
+// configurazione del BigNumber
+BigNumber.config({ EXPONENTIAL_AT: 6, ROUNDING_MODE: 3 });
 
 /**
  * 
  * @param {number} exp Calcola il livello in base al valore dell'esperienza passata
  */
 function calcLevelFromExp(exp) {
-    return Math.sqrt(exp) * 0.44272 + 1;
+    // Math.sqrt(exp) * 0.44272 + 1;
+    return BigNumber(exp).sqrt().multipliedBy(0.44272).plus('1');  
 }
 
 /**
  * 
  * @param {number} level Calcola l'esperienza in base al valore del livello passata
  */
-function calcExpFromLevel(level) {
-    return Math.pow((level - 1) / 0.44272, 2);
+function calcExpFromLevel(level) {    
+    // Math.pow((level - 1) / 0.44272, 2);
+    return BigNumber(level).minus('1').dividedBy(0.44272).pow(2);
 }
 
 /**
@@ -25,8 +30,9 @@ function calcExpFromLevel(level) {
  * @param {number} penalityLevel 
  */
 function calcExpGain(prestige, penalityLevel) {
-
-    var expGain = Math.sqrt(Math.pow(2, prestige));
+    
+    // Math.sqrt(Math.pow(2, prestige))
+    var expGain = BigNumber(2).pow(BigNumber(prestige)).sqrt(); 
     var penalityMultiplier = 1;
 
     if (penalityLevel === 2){
@@ -36,7 +42,7 @@ function calcExpGain(prestige, penalityLevel) {
         penalityMultiplier = 0;
     }
 
-    return expGain * penalityMultiplier;
+    return expGain.multipliedBy(penalityMultiplier);
 }
 
 /**
@@ -104,7 +110,7 @@ function calcPenality(user, dateNow, dateDiff = 1){
  * @param {number} prestige 
  */
 function calcNextPrestigeLevel(prestige){
-    return calcExpGain(prestige, 0) * 15;
+    return calcExpGain(prestige, 0).multipliedBy(15);
 }
 
 /**
@@ -192,20 +198,18 @@ function getMessageData(ctx){
     return messageData;
 }
 
-function convertNumToExponential(num, limitValue = 100000000, decimals = 2) {
-    num = Number(num);
+function roundNumber(num, decimals = 5){
+    num = BigNumber(num);
 
-    if (isNaN(num)) return null;
-
-    if (num > limitValue) {
-        return num.toExponential(decimals);
+    if (num.isGreaterThan(99999)) {
+        return num.toPrecision(5);
     } else {
-        if (num % 1 != 0){
-            return num.toFixed(decimals);
-        } else {
-            return num;
-        }
+        return num.toFixed(decimals)
     }
+}
+
+function toFloor(num){
+    return BigNumber(num).toFixed(0, 1);
 }
 
 module.exports = {
@@ -219,5 +223,6 @@ module.exports = {
     formatBytes,
     roughSizeOfObject,
     getMessageData,
-    convertNumToExponential
+    roundNumber,
+    toFloor
 };

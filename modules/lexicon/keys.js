@@ -23,7 +23,7 @@ const keys = {
         "en": "$(username) is now at level $(level)!"
     },
     "USER_PRESTIGE_AVAILABLE": {
-        "en": "$(username), with a level of $(level) you can now prestige! type /prestige to preceed"
+        "en": "$(username), with a level of $(level) you can now prestige! type /prestige to preceed."
     },
     "USER_PRESTIGE_SUCCESS": {
         "en": "$(username) prestiged! \nCurrent prestige level: $(prestige)"

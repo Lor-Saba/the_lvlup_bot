@@ -10,6 +10,7 @@
   "author": "l.sabatelli",
   "license": "GPL-3.0",
   "dependencies": {
+    "bignumber.js": "^9.0.1",
     "canvas": "^2.6.1",
     "dotenv": "^8.2.0",
     "md5": "^2.3.0",

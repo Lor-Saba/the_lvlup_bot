@@ -3,6 +3,7 @@
     "username": "<unknown>",
     "lastMessageDate": 0,
     "lastCommandDate": 0,
+    "lastChallengeDate": 0,
     "penality": {
         "level": 0,
         "resetDate": 0

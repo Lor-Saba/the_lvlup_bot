@@ -3,10 +3,12 @@
 const dotenv = require('dotenv').config();
 // corelib per le api di telegram
 const { Telegraf, Markup } = require('telegraf');
-// estensione per poter leggere  eventuali parametri ai comanti
+// estensione per poter leggere eventuali parametri ai comanti
 const commandParts = require('telegraf-command-parts');
 // modulo per poter generare hash md5
 const md5 = require('md5');
+// modulo per gestire i numeri
+const BigNumber = require('bignumber.js');
 // modulo per gestire le traduzioni delle label
 const lexicon = require('./modules/lexicon');
 // modulo per gestire le operazioni di salvataggio e caricamento dati dal DB
@@ -181,19 +183,20 @@ function setBotCommands(){
         
         if (mexData.isBot) return;
 
+        // ottiene il riferimento all'utente
         var user = storage.getUser(mexData.userId);
 
         if (!user) return;
         if (!user.chats[mexData.chatId]) return;
         if (mexData.date - user.lastCommandDate < 4) return;    // <- anti-spam
 
-        // salva il riferimento alla chat
+        // ottiene il riferimento alle stats dell'utente per la chat corrente
         var userStats = user.chats[mexData.chatId]; 
 
         if (userStats.prestigeAvailable) {
-            userStats.exp = 0;
-            userStats.level = 0;
-            userStats.prestige += 1;
+            userStats.exp = '0';
+            userStats.level = '0';
+            userStats.prestige = BigNumber(userStats.prestige).plus(1).valueOf();
 
             ctx.reply(lexicon.get('USER_PRESTIGE_SUCCESS', { username: mexData.username, prestige: userStats.prestige }));
         } else {
@@ -203,7 +206,7 @@ function setBotCommands(){
 
         user.lastCommandDate = mexData.date;
 
-        return storage.updateUserChatData(mexData.userId, mexData.chatId, userStats);
+        return storage.addUserToQueue(mexData.userId);
     });
     
     bot.command('leaderboard', function(ctx){
@@ -222,9 +225,9 @@ function setBotCommands(){
             text += '\n';
             text += '       ';
             text += '‎_';
-            text += userStats.prestige > 0 ? 'prg: ' + userStats.prestige + ' • ' : '';
-            text += 'lv: ' + utils.convertNumToExponential(Math.floor(userStats.level)) + ' • ';
-            text += 'exp: ' + utils.convertNumToExponential(userStats.exp);
+            text += BigNumber(userStats.prestige).isGreaterThan(0) ? 'ptg: ' + userStats.prestige + ' • ' : '';
+            text += 'lv: ' + utils.roundNumber(utils.toFloor(userStats.level)) + ' • ';
+            text += 'exp: ' + utils.roundNumber(userStats.exp);
             text += '_';
 
             lbList.push(text);
@@ -261,10 +264,9 @@ function setBotCommands(){
 
         user.lastCommandDate = mexData.date;
 
-        var barsMaxLength = 12;
         var leaderboard = storage.getChatLeaderboard(mexData.chatId);
-        var userInLB = leaderboard.filter(userData => userData.id === user.id)[0];
-        var leaderboardPosition = leaderboard.indexOf(userInLB);
+        var leaderboardPosition = leaderboard.indexOf(leaderboard.filter(userData => userData.id === user.id)[0]);
+        var maxBarsLength = 12;
         var text = '';
 
         // aggiunge il nome e titolo
@@ -284,14 +286,14 @@ function setBotCommands(){
         }
 
         // agiunge le statistiche basi: Exp, Level, Prestige
-        if (userStats.exp > 0) {
-            text += '\n' + lexicon.get('LABEL_EXP') + ': ' + utils.convertNumToExponential(userStats.exp);
+        if (BigNumber(userStats.exp).isGreaterThan(0)) {
+            text += '\n' + lexicon.get('LABEL_EXP') + ': ' + utils.roundNumber(userStats.exp, 2);
         }
-        if (userStats.level > 0) {
-            text += '\n' + lexicon.get('LABEL_LEVEL') + ': ' + utils.convertNumToExponential(Math.floor(userStats.level));
+        if (BigNumber(userStats.level).isGreaterThan(0)) {
+            text += '\n' + lexicon.get('LABEL_LEVEL') + ': ' + utils.roundNumber(utils.toFloor(userStats.level), 0);
         }
-        if (userStats.prestige > 0){
-            text += '\n' + lexicon.get('LABEL_PRESTIGE') + ': ' + userStats.prestige;
+        if (BigNumber(userStats.prestige).isGreaterThan(0)){
+            text += '\n' + lexicon.get('LABEL_PRESTIGE') + ': ' + utils.roundNumber(userStats.prestige, 0);
         }
 
         // aggiunge il livello di penalità attivo
@@ -307,34 +309,38 @@ function setBotCommands(){
         text += '\n';
 
         // aggiunge la barre che mostra il progresso per il prossimo livello
-        if (userStats.level > 0) {
+        if (BigNumber(userStats.level).isGreaterThan(0)) {
 
-            var levelDiff = userStats.level - Math.floor(userStats.level);
+            var levelDiff = BigNumber(userStats.level).minus(utils.toFloor(userStats.level));
+                levelDiff = Number(levelDiff.valueOf());
 
             text += '\n' + lexicon.get('STATS_LEVEL_PROGRESS', { 
                 percentage: (levelDiff * 100).toFixed(2)
             });
             text += '\n';
 
-            for(var ind = 0; ind < barsMaxLength; ind++){
-                text += (ind / barsMaxLength < levelDiff) ? '🟩' : '⬜️';
+            for(var ind = 0; ind < maxBarsLength; ind++){
+                text += (ind / maxBarsLength < levelDiff) ? '🟩' : '⬜️';
             }            
         }
 
         // aggiunge la barre che mostra il progresso per il prossimo prestigio
-        if (userStats.prestige > 0) {
+        if (BigNumber(userStats.prestige).isGreaterThan(0)) {
 
-            var prestigeDiff = userStats.exp / utils.calcExpFromLevel(utils.calcExpGain(userStats.prestige) * 15);
+            var prestigeDiff = BigNumber(userStats.exp).dividedBy(utils.calcExpFromLevel(utils.calcNextPrestigeLevel(userStats.prestige)));
+                prestigeDiff = Number(prestigeDiff.valueOf());
 
             text += '\n' + lexicon.get('STATS_PRESTIGE_PROGRESS', { 
                 percentage: (prestigeDiff * 100).toFixed(2)
             });
             text += '\n';
 
-            for(var ind = 0; ind < barsMaxLength; ind++){
-                text += (ind / barsMaxLength < prestigeDiff) ? '🟦' : '⬜️';
+            for(var ind = 0; ind < maxBarsLength; ind++){
+                text += (ind / maxBarsLength < prestigeDiff) ? '🟦' : '⬜️';
             }            
         }
+
+        // storage.addUserToQueue(user.id);
 
         ctx.replyWithMarkdown(text);
     });
@@ -402,24 +408,24 @@ function setBotEvents(){
             
         // calcola le nuove statistiche
         var expGain = utils.calcExpGain(userStats.prestige, user.penality.level);
-        var newExp = userStats.exp + expGain;
+        var newExp = BigNumber(userStats.exp).plus(expGain);
         var newLevel = utils.calcLevelFromExp(newExp);
         var nextPrestige = utils.calcNextPrestigeLevel(userStats.prestige);
 
         // notifica l'utente se è salito di livello
-        if (Math.floor(userStats.level) < Math.floor(newLevel)) {
-            ctx.reply(lexicon.get('USER_LEVELUP', { username: mexData.username, level: Math.floor(newLevel) }));
+        if (BigNumber(utils.toFloor(userStats.level)).isLessThan(utils.toFloor(newLevel))) {
+            ctx.reply(lexicon.get('USER_LEVELUP', { username: mexData.username, level: utils.toFloor(newLevel) }));
         }
         
         // notifica l'utente che puo' prestigiare
-        if (newLevel >= nextPrestige && userStats.prestigeAvailable == false) {
-            ctx.reply(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: mexData.username, level: newLevel }));
+        if (BigNumber(newLevel).isGreaterThanOrEqualTo(nextPrestige) && userStats.prestigeAvailable == false) {
+            ctx.reply(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: mexData.username, level: utils.toFloor(newLevel) }));
             userStats.prestigeAvailable = true;
         }
 
         // assegna i nuovi dati
-        userStats.exp = newExp;
-        userStats.level = newLevel;
+        userStats.exp = BigNumber(newExp).valueOf();
+        userStats.level = BigNumber(newLevel).valueOf();
 
         user.username = mexData.username;
         user.lastMessageDate = mexData.date;
@@ -468,7 +474,10 @@ function init(){
     // clear console log 
     console.clear();
 
-    // catena di metodi necessari per l'inizializzazione
+    // configurazione del BigNumber
+    BigNumber.config({ EXPONENTIAL_AT: 6, ROUNDING_MODE: 3 });
+
+    // catena di metodi per l'inizializzazione
     Promise.resolve()
     .then(connectMongoDB)
     .then(connectTelegramAPI)
