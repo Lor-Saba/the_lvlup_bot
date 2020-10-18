@@ -198,13 +198,13 @@ function getMessageData(ctx){
     return messageData;
 }
 
-function roundNumber(num, decimals = 5){
+function formatNumber(num, decimals = 2){
     num = BigNumber(num);
 
     if (num.isGreaterThan(99999)) {
         return num.toPrecision(5);
     } else {
-        return num.toFixed(decimals)
+        return num.toFixed(num.isInteger() ? 0 : decimals)
     }
 }
 
@@ -223,6 +223,6 @@ module.exports = {
     formatBytes,
     roughSizeOfObject,
     getMessageData,
-    roundNumber,
+    formatNumber,
     toFloor
 };

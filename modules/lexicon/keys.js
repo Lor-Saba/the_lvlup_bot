@@ -41,9 +41,6 @@ const keys = {
     "STATS_NOUSER": {
         "en": "$(username), seems like you don't have stats yet.\nStart chatting to gain exp! :)"
     },
-    "STATS_GROUPONLY": {
-        "en": "Stats can only be seen in group chats."
-    },
     "STATS_LEVEL_PROGRESS": {
         "en": "To next Level: $(percentage)%"
     },
@@ -106,6 +103,9 @@ const keys = {
     },
     "LABEL_PRESTIGE": {
         "en": "Prestige"
+    },
+    "LABEL_GROUPONLY_COMMAND": {
+        "en": "This command can only be used in group chats."
     }
 };
 
