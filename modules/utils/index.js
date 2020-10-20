@@ -192,7 +192,8 @@ function getMessageData(ctx){
         username: ctx.update.message.from.first_name || ctx.update.message.from.username,
         userId: ctx.update.message.from.id,
         chatId: ctx.update.message.chat.id,
-        chatTitle: ctx.update.message.chat.title
+        chatTitle: ctx.update.message.chat.title,
+        lang: ctx.update.message.from.language_code
     };
 
     return messageData;

@@ -10,7 +10,7 @@ const md5 = require('md5');
 // modulo per gestire i numeri
 const BigNumber = require('bignumber.js');
 // modulo per gestire le traduzioni delle label
-const lexicon = require('./modules/lexicon');
+const Lexicon = require('./modules/lexicon');
 // modulo per gestire le operazioni di salvataggio e caricamento dati dal DB
 const storage = require('./modules/storage');
 // modulo con vari metodi di utilità
@@ -63,6 +63,7 @@ function setBotMiddlewares(){
 
         // crea un oggetto contenente le informazioni generiche del messaggio ricevuto
         var mexData = utils.getMessageData(ctx);
+        var lexicon = Lexicon.lang(mexData.lang);
         var user =  null;
         var userStats = null;
         var chat = null;
@@ -81,10 +82,6 @@ function setBotMiddlewares(){
         
         // aggiorna il nome dell'utente
         user.username = mexData.username;
-        
-        // protezione spam dei comandi
-        if (mexData.date - user.lastCommandDate < 2) return false;    
-        user.lastCommandDate = mexData.date;
         
         // calcolo dati relativi alla chat corrente se si tratta di un gruppo
         if (!mexData.isPrivate) {
@@ -126,10 +123,19 @@ function setBotMiddlewares(){
 
         // aggiunge l'utente in queue
         storage.addUserToQueue(user.id);
+        
+        // protezione spam dei comandi
+        if (ctx.state.command) {
+            if (mexData.date - user.lastCommandDate < 2) return false;   
+             
+            user.lastCommandDate = mexData.date;   
+        }
 
         // salva i dati del messaggio per l'handler successivo 
         ctx.state.mexData = mexData;
+        ctx.state.lexicon = lexicon;
         ctx.state.isSpam = isSpam;
+        ctx.state.lang = mexData.lang;
         ctx.state.user = user;
         ctx.state.userStats = userStats;
         ctx.state.chat = chat;
@@ -244,20 +250,45 @@ function setBotCommands(){
     })
     
     bot.command('setting', function(ctx){
-        var userId = ctx.update.message.from.id;
-        var chatId = ctx.update.message.chat.id;
-        var markupData = markup.get('SETTING_START', ctx.update.message, { chatId: chatId, userId: userId });
+        var lexicon = ctx.state.lexicon;
+        var mexData = ctx.state.mexData;
 
-        bot.telegram
-        .sendMessage(userId, markupData.text, markupData.buttons)
-        .catch(function(){
-            console.log(arguments);
+        if (mexData.isPrivate) {
+            return ctx.reply(lexicon.get('LABEL_GROUPONLY_COMMAND'));
+        }
+
+        bot.telegram.getChatAdministrators(mexData.chatId)
+        .then(administrators => {
+            var hasPermission = false;
+
+            utils.each(administrators, function(index, data){
+                if (data.user.id === mexData.userId) {
+                    hasPermission = true;
+                }
+            })
+
+            return hasPermission;
+        })
+        .then(permission => {
+
+            if (permission) {
+
+                var markupData = markup.get('SETTING_START', ctx.update.message, { chatId: mexData.chatId });
+
+                bot.telegram.sendMessage(mexData.userId, markupData.text, markupData.buttons).catch(() => {});
+
+                return ctx.replyWithMarkdown(lexicon.get('SETTING_PRIVATE_MESSAGE_SENT', { username: mexData.username }));
+            } else {
+
+                return ctx.replyWithMarkdown(lexicon.get('SETTING_NOPERMISSION', { username: mexData.username }));
+            }
         });
     });
     
     bot.command('prestige', function(ctx){
-
+        var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
+
         if (mexData.isPrivate) {
             return ctx.reply(lexicon.get('LABEL_GROUPONLY_COMMAND'));
         }
@@ -280,8 +311,9 @@ function setBotCommands(){
     });
     
     bot.command('leaderboard', function(ctx){
-
+        var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
+
         if (mexData.isPrivate) {
             return ctx.reply(lexicon.get('LABEL_GROUPONLY_COMMAND'));
         }
@@ -314,8 +346,9 @@ function setBotCommands(){
     });
     
     bot.command('stats', function(ctx){
-
+        var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
+
         if (mexData.isPrivate) {
             return ctx.reply(lexicon.get('LABEL_GROUPONLY_COMMAND'));
         }
@@ -432,8 +465,10 @@ function setBotActions(){
 function setBotEvents(){
 
     bot.on('message', function(ctx){
-
+        var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
+
+        // esce se non è un messaggio scritto 
         if (mexData.isPrivate) return;
 
         // ottiene il riferimento all'utente

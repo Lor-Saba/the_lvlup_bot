@@ -24,6 +24,20 @@ function get(key, data = {}, lang = 'en'){
     return keys[key][lang].replace(/\$\(([^\)]+)?\)/g, ($1, $2) => data[$2]);
 }
 
+/**
+ * Crea un wrapper del .get con assegnata di default la lingua passata
+ * 
+ * @param {string} defaultLang lingua con cui cercare il lexicon richiesto
+ */
+function lang(defaultLang = 'en'){
+    return {
+        get: function(key, data, lang){
+            return get(key, data, lang || defaultLang);
+        }
+    }
+}
+
 module.exports = {
-    get
+    get,
+    lang
 };

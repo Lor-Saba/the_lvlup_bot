@@ -20,7 +20,8 @@ const keys = {
     // User
 
     "USER_LEVELUP": {
-        "en": "$(username) is now at level $(level)!"
+        "en": "$(username) is now at level $(level)!",
+        //"it": "$(username) è salito al livello $(level)!"
     },
     "USER_PRESTIGE_AVAILABLE": {
         "en": "$(username), with a level of $(level) you can now prestige! type /prestige to preceed."
@@ -70,31 +71,40 @@ const keys = {
 
     // Setting
 
-    "SETTING_START_USER": {
-        "en": "Settings for user: $(username)"
+    "SETTING_TITLE": {
+        "en": "⚙️ Settings modal for:\n*$(chatTitle)*\n\n"
     },
-    "SETTING_START_GROUP": {
-        "en": "Settings for group: $(chatTitle)"
+    "SETTING_START": {
+        "en": "Choose which option to change:"
     },
     "SETTING_BACK": {
         "en": "<< Back"
     },
+    "SETTING_NOTIFY_PENALITY": {
+        "en": "Notify penality changes to users."
+    },
     "SETTING_NOTIFY_LEVELUP": {
-        "en": "Notify on level up"
+        "en": "Notify on level up."
     },
     "SETTING_NOTIFY_PRESTIGE_AVAILABLE": {
-        "en": "Notify when prestige is available"
+        "en": "Notify when prestige is available."
+    },
+    "SETTING_NOPERMISSION": {
+        "en": "Sorry *$(username)*, only admins can change the bot settings."
+    },
+    "SETTING_PRIVATE_MESSAGE_SENT": {
+        "en": "*$(username)* check your private chat with the bot to continue."
+    },
+    "SETTINGS_REPLY_YES": {
+        "en": "Yes"
+    },
+    "SETTINGS_REPLY_NO": {
+        "en": "No"
     },
 
     
     // Others
     
-    "REPLY_YES": {
-        "en": "Yes"
-    },
-    "REPLY_NO": {
-        "en": "No"
-    },
     "LABEL_EXP": {
         "en": "Exp"
     },
