@@ -185,15 +185,19 @@ function formatBytes(bytes, decimals = 2) {
  * @param {object} ctx oggetto di risposta di un messaggio
  */
 function getMessageData(ctx){
+
+    var message = (ctx.message || ctx.editedMessage || ctx.callbackQuery && ctx.callbackQuery.message || {});
+    
     const messageData = {
-        date: ctx.update.message.date,
-        isBot: ctx.update.message.from.is_bot,
-        isPrivate: ctx.update.message.chat.type === 'private',
-        username: ctx.update.message.from.first_name || ctx.update.message.from.username,
-        userId: ctx.update.message.from.id,
-        chatId: ctx.update.message.chat.id,
-        chatTitle: ctx.update.message.chat.title,
-        lang: ctx.update.message.from.language_code
+        message:    message,
+        date:       message.date,
+        isBot:      message.from.is_bot,
+        isPrivate:  message.chat.type === 'private',
+        username:   message.from.first_name || message.from.username,
+        userId:     message.from.id,
+        chatId:     message.chat.id,
+        chatTitle:  message.chat.title,
+        lang:       message.from.language_code
     };
 
     return messageData;

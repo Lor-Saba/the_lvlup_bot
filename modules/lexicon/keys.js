@@ -101,6 +101,9 @@ const keys = {
     "SETTINGS_REPLY_NO": {
         "en": "No"
     },
+    "SETTING_ERROR_CHATNOTFOUND": {
+        "en": "Modal disabled because something went wrong or too old."
+    },
 
     
     // Others

@@ -64,14 +64,36 @@ function setBotMiddlewares(){
         // crea un oggetto contenente le informazioni generiche del messaggio ricevuto
         var mexData = utils.getMessageData(ctx);
         var lexicon = Lexicon.lang(mexData.lang);
+        var isSpam = null;
         var user =  null;
         var userStats = null;
         var chat = null;
-        var isSpam = null;
         var oldPenalityLevel = 0;
 
-        // blocca completamente se è un messaggio che arriva da un bot
-        if (mexData.isBot) return false;
+        // metodo che salva lo stato delle variabili
+        var saveState = function(){
+            ctx.state.mexData = mexData;
+            ctx.state.lang = mexData.lang;
+            ctx.state.lexicon = lexicon;
+            ctx.state.isSpam = isSpam;
+            ctx.state.user = user;
+            ctx.state.userStats = userStats;
+            ctx.state.chat = chat;
+        };
+
+        // se è un messaggio che arriva da un bot
+        if (mexData.isBot) {
+
+            // interrompe il middlewaree continua se ci troviamo in una chat privata
+            // altrimenti interrompe l'esecuzione del messaggio ricevuto
+            if (mexData.isPrivate) {
+                // salva i dati del messaggio per l'handler successivo 
+                saveState();
+                return next();
+            } else {
+                return false;
+            }
+        }
 
         // crea l'oggetto dell'utente se non esiste
         user = storage.getUser(mexData.userId);
@@ -132,13 +154,7 @@ function setBotMiddlewares(){
         }
 
         // salva i dati del messaggio per l'handler successivo 
-        ctx.state.mexData = mexData;
-        ctx.state.lexicon = lexicon;
-        ctx.state.isSpam = isSpam;
-        ctx.state.lang = mexData.lang;
-        ctx.state.user = user;
-        ctx.state.userStats = userStats;
-        ctx.state.chat = chat;
+        saveState();
 
         // continua con l'handler successivo
         return next();
@@ -273,7 +289,7 @@ function setBotCommands(){
 
             if (permission) {
 
-                var markupData = markup.get('SETTING_START', ctx.update.message, { chatId: mexData.chatId });
+                var markupData = markup.get('SETTING_START', ctx.update.message, { chatTitle: mexData.chatTitle, chatId: mexData.chatId });
 
                 bot.telegram.sendMessage(mexData.userId, markupData.text, markupData.buttons).catch(() => {});
 
@@ -501,34 +517,71 @@ function setBotEvents(){
     });
 
     bot.on('callback_query', function(ctx){ 
-        var query = ctx.update.callback_query;
-        var markupData = markup.getData(query.data);
+        var lexicon = ctx.state.lexicon;
+        var mexData = ctx.state.mexData;
+        var queryData = markup.getData(ctx.update.callback_query.data);
+        var newQueryData = {};
 
-        console.log(query);
-        console.log(markupData);
-        console.log(bot.telegram);
+        if (!queryData) return ctx.editMessageText(lexicon.get('SETTING_ERROR_CHATNOTFOUND'));
 
-        return;
-
-        switch(markupData.action){
+        switch(queryData.action){
 
             case 'SETTING_START': 
-                ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
+                newQueryData = { chatTitle: queryData.chatTitle, chatId: queryData.chatId };
+                break;
+
+            case 'SETTING_NOTIFY_PENALITY':
+                var chat = storage.getChat(queryData.chatId);
+                
+                if (!chat) return ctx.editMessageText(lexicon.get('SETTING_ERROR_CHATNOTFOUND'));
+
+                if (typeof queryData.value === "boolean") {
+                    chat.settings.notifyPenality = queryData.value;
+                }
+                
+                newQueryData = { 
+                    chatTitle: chat.title, 
+                    chatId: chat.id, 
+                    value: chat.settings.notifyPenality 
+                };
                 break;
 
             case 'SETTING_NOTIFY_LEVELUP': 
-                ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
+                var chat = storage.getChat(queryData.chatId);
+                
+                if (!chat) return ctx.editMessageText(lexicon.get('SETTING_ERROR_CHATNOTFOUND'));
+
+                if (typeof queryData.value === "boolean") {
+                    chat.settings.notifyUserLevelup = queryData.value;
+                }
+                
+                newQueryData = { 
+                    chatTitle: chat.title, 
+                    chatId: chat.id, 
+                    value: chat.settings.notifyUserLevelup 
+                };
                 break;
 
             case 'SETTING_NOTIFY_PRESTIGE_AVAILABLE':
-                ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
+                var chat = storage.getChat(queryData.chatId);
+                
+                if (!chat) return ctx.editMessageText(lexicon.get('SETTING_ERROR_CHATNOTFOUND'));
+
+                if (typeof queryData.value === "boolean") {
+                    chat.settings.notifyUserPrestige = queryData.value;
+                }
+                
+                newQueryData = { 
+                    chatTitle: chat.title, 
+                    chatId: chat.id, 
+                    value: chat.settings.notifyUserPrestige 
+                };
                 break;
         }
 
-        console.log(bot.telegram)
-        console.log(ctx)
-        console.log(query);
-        console.log(markupData);
+        var markupData = markup.get(queryData.action, mexData.message, newQueryData);
+
+        ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
     });
     
     console.log("  - loaded bot general events");
