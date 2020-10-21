@@ -129,7 +129,7 @@ function setBotMiddlewares(){
             oldPenalityLevel = user.penality.level;
             isSpam = utils.calcPenality(user, mexData.date, 1);
 
-            if (isSpam) {
+            if (isSpam && chat.settings.notifyPenality) {
 
                 if (oldPenalityLevel == 1) {
                     ctx.replyWithMarkdown(lexicon.get('PENALITY_LEVEL_2', { username: mexData.username }));
@@ -489,6 +489,8 @@ function setBotEvents(){
 
         // ottiene il riferimento all'utente
         var user = ctx.state.user;
+        // ottiene il riferimento alla chat
+        var chat = ctx.state.chat;
         // ottiene il riferimento alle stats dell'utente per la chat corrente
         var userStats = ctx.state.userStats;
             
@@ -500,13 +502,18 @@ function setBotEvents(){
 
         // notifica l'utente se è salito di livello
         if (BigNumber(utils.toFloor(userStats.level)).isLessThan(utils.toFloor(newLevel))) {
-            ctx.reply(lexicon.get('USER_LEVELUP', { username: mexData.username, level: utils.toFloor(newLevel) }));
+            if (chat.settings.notifyUserLevelup) {
+                ctx.reply(lexicon.get('USER_LEVELUP', { username: mexData.username, level: utils.toFloor(newLevel) }));
+            }
         }
         
         // notifica l'utente che puo' prestigiare
         if (BigNumber(newLevel).isGreaterThanOrEqualTo(nextPrestige) && userStats.prestigeAvailable == false) {
-            ctx.reply(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: mexData.username, level: utils.toFloor(newLevel) }));
             userStats.prestigeAvailable = true;
+
+            if (chat.settings.notifyUserPrestige) {
+                ctx.reply(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: mexData.username, level: utils.toFloor(newLevel) }));
+            }
         }
 
         // assegna i nuovi dati

@@ -78,16 +78,16 @@ const keys = {
         "en": "Choose which option to change:"
     },
     "SETTING_BACK": {
-        "en": "<< Back"
+        "en": "« Back"
     },
     "SETTING_NOTIFY_PENALITY": {
-        "en": "Notify penality changes to users."
+        "en": "Notify user's penality changes."
     },
     "SETTING_NOTIFY_LEVELUP": {
-        "en": "Notify on level up."
+        "en": "Notify when an user level up."
     },
     "SETTING_NOTIFY_PRESTIGE_AVAILABLE": {
-        "en": "Notify when prestige is available."
+        "en": "Notify when an user can prestige."
     },
     "SETTING_NOPERMISSION": {
         "en": "Sorry *$(username)*, only admins can change the bot settings."
