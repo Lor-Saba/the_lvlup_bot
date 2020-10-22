@@ -171,9 +171,11 @@ function setBotCommands(){
     /*
         Lista comandi:
 
+        help - Print some Info
         prestige - Give up all your exp and levels to gain a prestige! This will let you grow faster.
         leaderboard - Check who's the boss of the chat.
-        stats - Check your user stats in the current chat
+        stats - Check your stats in the current chat.
+        settings - Configure the bot (Admins only)
 
     */
 
@@ -265,7 +267,13 @@ function setBotCommands(){
         }
     })
     
-    bot.command('setting', function(ctx){
+    bot.command('help', function(ctx){
+        var lexicon = ctx.state.lexicon;
+
+        // ctx.reply(lexicon.get('INFO'))
+    });
+
+    bot.command('settings', function(ctx){
         var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
 
@@ -289,14 +297,14 @@ function setBotCommands(){
 
             if (permission) {
 
-                var markupData = markup.get('SETTING_START', ctx.update.message, { chatTitle: mexData.chatTitle, chatId: mexData.chatId });
+                var markupData = markup.get('SETTINGS_START', ctx.update.message, { chatTitle: mexData.chatTitle, chatId: mexData.chatId });
 
                 bot.telegram.sendMessage(mexData.userId, markupData.text, markupData.buttons).catch(() => {});
 
-                return ctx.replyWithMarkdown(lexicon.get('SETTING_PRIVATE_MESSAGE_SENT', { username: mexData.username }));
+                return ctx.replyWithMarkdown(lexicon.get('SETTINGS_PRIVATE_MESSAGE_SENT', { username: mexData.username }));
             } else {
 
-                return ctx.replyWithMarkdown(lexicon.get('SETTING_NOPERMISSION', { username: mexData.username }));
+                return ctx.replyWithMarkdown(lexicon.get('SETTINGS_NOPERMISSION', { username: mexData.username }));
             }
         });
     });
@@ -529,18 +537,18 @@ function setBotEvents(){
         var queryData = markup.getData(ctx.update.callback_query.data);
         var newQueryData = {};
 
-        if (!queryData) return ctx.editMessageText(lexicon.get('SETTING_ERROR_CHATNOTFOUND'));
+        if (!queryData) return ctx.editMessageText(lexicon.get('SETTINGS_ERROR_CHATNOTFOUND'));
 
         switch(queryData.action){
 
-            case 'SETTING_START': 
+            case 'SETTINGS_START': 
                 newQueryData = { chatTitle: queryData.chatTitle, chatId: queryData.chatId };
                 break;
 
-            case 'SETTING_NOTIFY_PENALITY':
+            case 'SETTINGS_NOTIFY_PENALITY':
                 var chat = storage.getChat(queryData.chatId);
                 
-                if (!chat) return ctx.editMessageText(lexicon.get('SETTING_ERROR_CHATNOTFOUND'));
+                if (!chat) return ctx.editMessageText(lexicon.get('SETTINGS_ERROR_CHATNOTFOUND'));
 
                 if (typeof queryData.value === "boolean") {
                     chat.settings.notifyPenality = queryData.value;
@@ -553,10 +561,10 @@ function setBotEvents(){
                 };
                 break;
 
-            case 'SETTING_NOTIFY_LEVELUP': 
+            case 'SETTINGS_NOTIFY_LEVELUP': 
                 var chat = storage.getChat(queryData.chatId);
                 
-                if (!chat) return ctx.editMessageText(lexicon.get('SETTING_ERROR_CHATNOTFOUND'));
+                if (!chat) return ctx.editMessageText(lexicon.get('SETTINGS_ERROR_CHATNOTFOUND'));
 
                 if (typeof queryData.value === "boolean") {
                     chat.settings.notifyUserLevelup = queryData.value;
@@ -569,10 +577,10 @@ function setBotEvents(){
                 };
                 break;
 
-            case 'SETTING_NOTIFY_PRESTIGE_AVAILABLE':
+            case 'SETTINGS_NOTIFY_PRESTIGE_AVAILABLE':
                 var chat = storage.getChat(queryData.chatId);
                 
-                if (!chat) return ctx.editMessageText(lexicon.get('SETTING_ERROR_CHATNOTFOUND'));
+                if (!chat) return ctx.editMessageText(lexicon.get('SETTINGS_ERROR_CHATNOTFOUND'));
 
                 if (typeof queryData.value === "boolean") {
                     chat.settings.notifyUserPrestige = queryData.value;

@@ -71,28 +71,28 @@ const keys = {
 
     // Setting
 
-    "SETTING_TITLE": {
+    "SETTINGS_TITLE": {
         "en": "⚙️ Settings modal for:\n*$(chatTitle)*\n\n"
     },
-    "SETTING_START": {
+    "SETTINGS_START": {
         "en": "Choose which option to change:"
     },
-    "SETTING_BACK": {
+    "SETTINGS_BACK": {
         "en": "« Back"
     },
-    "SETTING_NOTIFY_PENALITY": {
+    "SETTINGS_NOTIFY_PENALITY": {
         "en": "Notify user's penality changes."
     },
-    "SETTING_NOTIFY_LEVELUP": {
+    "SETTINGS_NOTIFY_LEVELUP": {
         "en": "Notify when an user level up."
     },
-    "SETTING_NOTIFY_PRESTIGE_AVAILABLE": {
+    "SETTINGS_NOTIFY_PRESTIGE_AVAILABLE": {
         "en": "Notify when an user can prestige."
     },
-    "SETTING_NOPERMISSION": {
+    "SETTINGS_NOPERMISSION": {
         "en": "Sorry *$(username)*, only admins can change the bot settings."
     },
-    "SETTING_PRIVATE_MESSAGE_SENT": {
+    "SETTINGS_PRIVATE_MESSAGE_SENT": {
         "en": "*$(username)* check your private chat with the bot to continue."
     },
     "SETTINGS_REPLY_YES": {
@@ -101,7 +101,7 @@ const keys = {
     "SETTINGS_REPLY_NO": {
         "en": "No"
     },
-    "SETTING_ERROR_CHATNOTFOUND": {
+    "SETTINGS_ERROR_CHATNOTFOUND": {
         "en": "Modal disabled because something went wrong or too old."
     },
 

@@ -9,74 +9,74 @@ var dataMap = {}
 // lista dei markup disponibili
 var markup = {
 
-    'SETTING_START': function(message, data, lexicon){
+    'SETTINGS_START': function(message, data, lexicon){
         var result = {};
 
-        result.text  = lexicon.get('SETTING_TITLE', { chatTitle: data.chatTitle });
-        result.text += lexicon.get('SETTING_START');
+        result.text  = lexicon.get('SETTINGS_TITLE', { chatTitle: data.chatTitle });
+        result.text += lexicon.get('SETTINGS_START');
         result.buttons = markupWrap([
-            [ markupButton(message, lexicon.get('SETTING_NOTIFY_PENALITY')           , Object.assign(data, { action: 'SETTING_NOTIFY_PENALITY' }))           ],
-            [ markupButton(message, lexicon.get('SETTING_NOTIFY_LEVELUP')            , Object.assign(data, { action: 'SETTING_NOTIFY_LEVELUP' }))            ],
-            [ markupButton(message, lexicon.get('SETTING_NOTIFY_PRESTIGE_AVAILABLE') , Object.assign(data, { action: 'SETTING_NOTIFY_PRESTIGE_AVAILABLE' })) ]
+            [ markupButton(message, lexicon.get('SETTINGS_NOTIFY_PENALITY')           , Object.assign(data, { action: 'SETTINGS_NOTIFY_PENALITY' }))           ],
+            [ markupButton(message, lexicon.get('SETTINGS_NOTIFY_LEVELUP')            , Object.assign(data, { action: 'SETTINGS_NOTIFY_LEVELUP' }))            ],
+            [ markupButton(message, lexicon.get('SETTINGS_NOTIFY_PRESTIGE_AVAILABLE') , Object.assign(data, { action: 'SETTINGS_NOTIFY_PRESTIGE_AVAILABLE' })) ]
         ]);
 
         return result;
     },
 
-    'SETTING_NOTIFY_PENALITY': function(message, data, lexicon){
+    'SETTINGS_NOTIFY_PENALITY': function(message, data, lexicon){
         var result = {};
         var iconYes = data.value === true ? '✅ ': '';
         var iconNo = data.value === false ? '✅ ': '';
 
-        result.text  = lexicon.get('SETTING_TITLE', { chatTitle: data.chatTitle });
-        result.text += lexicon.get('SETTING_NOTIFY_PENALITY');
+        result.text  = lexicon.get('SETTINGS_TITLE', { chatTitle: data.chatTitle });
+        result.text += lexicon.get('SETTINGS_NOTIFY_PENALITY');
         result.buttons = markupWrap([
             [ 
-                markupButton(message, iconYes + lexicon.get('SETTINGS_REPLY_YES') , Object.assign(data, { action: 'SETTING_NOTIFY_PENALITY', value: true })),
-                markupButton(message, iconNo + lexicon.get('SETTINGS_REPLY_NO')   , Object.assign(data, { action: 'SETTING_NOTIFY_PENALITY', value: false })) 
+                markupButton(message, iconYes + lexicon.get('SETTINGS_REPLY_YES') , Object.assign(data, { action: 'SETTINGS_NOTIFY_PENALITY', value: true })),
+                markupButton(message, iconNo + lexicon.get('SETTINGS_REPLY_NO')   , Object.assign(data, { action: 'SETTINGS_NOTIFY_PENALITY', value: false })) 
             ],
             [ 
-                markupButton(message, lexicon.get('SETTING_BACK') , Object.assign(data, { action: 'SETTING_START' })) 
+                markupButton(message, lexicon.get('SETTINGS_BACK') , Object.assign(data, { action: 'SETTINGS_START' })) 
             ]
         ]);
 
         return result;
     },
 
-    'SETTING_NOTIFY_LEVELUP': function(message, data, lexicon){
+    'SETTINGS_NOTIFY_LEVELUP': function(message, data, lexicon){
         var result = {};
         var iconYes = data.value === true ? '✅ ': '';
         var iconNo = data.value === false ? '✅ ': '';
 
-        result.text  = lexicon.get('SETTING_TITLE', { chatTitle: data.chatTitle });
-        result.text += lexicon.get('SETTING_NOTIFY_LEVELUP');
+        result.text  = lexicon.get('SETTINGS_TITLE', { chatTitle: data.chatTitle });
+        result.text += lexicon.get('SETTINGS_NOTIFY_LEVELUP');
         result.buttons = markupWrap([
             [ 
-                markupButton(message, iconYes + lexicon.get('SETTINGS_REPLY_YES') , Object.assign(data, { action: 'SETTING_NOTIFY_LEVELUP', value: true })),
-                markupButton(message, iconNo + lexicon.get('SETTINGS_REPLY_NO')   , Object.assign(data, { action: 'SETTING_NOTIFY_LEVELUP', value: false })) 
+                markupButton(message, iconYes + lexicon.get('SETTINGS_REPLY_YES') , Object.assign(data, { action: 'SETTINGS_NOTIFY_LEVELUP', value: true })),
+                markupButton(message, iconNo + lexicon.get('SETTINGS_REPLY_NO')   , Object.assign(data, { action: 'SETTINGS_NOTIFY_LEVELUP', value: false })) 
             ],
             [ 
-                markupButton(message, lexicon.get('SETTING_BACK') , Object.assign(data, { action: 'SETTING_START' })) 
+                markupButton(message, lexicon.get('SETTINGS_BACK') , Object.assign(data, { action: 'SETTINGS_START' })) 
             ]
         ]);
 
         return result;
     },
 
-    'SETTING_NOTIFY_PRESTIGE_AVAILABLE': function(message, data, lexicon){
+    'SETTINGS_NOTIFY_PRESTIGE_AVAILABLE': function(message, data, lexicon){
         var result = {};
         var iconYes = data.value === true ? '✅ ': '';
         var iconNo = data.value === false ? '✅ ': '';
 
-        result.text  = lexicon.get('SETTING_TITLE', { chatTitle: data.chatTitle });
-        result.text += lexicon.get('SETTING_NOTIFY_PRESTIGE_AVAILABLE');
+        result.text  = lexicon.get('SETTINGS_TITLE', { chatTitle: data.chatTitle });
+        result.text += lexicon.get('SETTINGS_NOTIFY_PRESTIGE_AVAILABLE');
         result.buttons = markupWrap([
             [ 
-                markupButton(message, iconYes + lexicon.get('SETTINGS_REPLY_YES') , Object.assign(data, { action: 'SETTING_NOTIFY_PRESTIGE_AVAILABLE', value: true })),
-                markupButton(message, iconNo + lexicon.get('SETTINGS_REPLY_NO')   , Object.assign(data, { action: 'SETTING_NOTIFY_PRESTIGE_AVAILABLE', value: false })) 
+                markupButton(message, iconYes + lexicon.get('SETTINGS_REPLY_YES') , Object.assign(data, { action: 'SETTINGS_NOTIFY_PRESTIGE_AVAILABLE', value: true })),
+                markupButton(message, iconNo + lexicon.get('SETTINGS_REPLY_NO')   , Object.assign(data, { action: 'SETTINGS_NOTIFY_PRESTIGE_AVAILABLE', value: false })) 
             ],
             [ 
-                markupButton(message, lexicon.get('SETTING_BACK') , Object.assign(data, { action: 'SETTING_START', }) )
+                markupButton(message, lexicon.get('SETTINGS_BACK') , Object.assign(data, { action: 'SETTINGS_START', }) )
             ]
         ]);
 
