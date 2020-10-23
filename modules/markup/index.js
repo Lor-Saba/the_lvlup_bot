@@ -76,10 +76,23 @@ var markup = {
                 markupButton(message, iconNo + lexicon.get('SETTINGS_REPLY_NO')   , Object.assign(data, { action: 'SETTINGS_NOTIFY_PRESTIGE_AVAILABLE', value: false })) 
             ],
             [ 
-                markupButton(message, lexicon.get('SETTINGS_BACK') , Object.assign(data, { action: 'SETTINGS_START', }) )
+                markupButton(message, lexicon.get('SETTINGS_BACK') , Object.assign(data, { action: 'SETTINGS_START' }) )
             ]
         ]);
 
+        return result;
+    },
+
+    'CHALLENGE_START': function(message, data, lexicon){
+        var result = {};
+
+        result.text = lexicon.get('CHALLENGE_START', { username: data.username });
+        result.buttons = markupWrap([
+            [ 
+                markupButton(message, lexicon.get('CHALLENGE_BUTTON') , Object.assign(data, { action: 'CHALLENGE_BUTTON' }) )
+            ]
+        ]);
+        
         return result;
     }
 
@@ -90,7 +103,8 @@ var markup = {
  * @param {object} message oggetto del messaggio ritornato da telegram
  */
 function getKeyFromMessage(message){
-    return md5('' + message.chat.id + message.from.id + message.date);
+    return md5('' + message.chat.id + message.from.id);
+    //return md5('' + message.chat.id + message.from.id + message.date);
 }
 
 /**
@@ -155,18 +169,26 @@ function getData(mapKey){
 
     var key = mapKey[0];
     var index = mapKey[1];
+    var data = null;
 
     if (dataMap[key]) {
-        var data = dataMap[key].data[index];
+        data = dataMap[key].data[index];
+    }
 
-        if (data) {
-            delete dataMap[key];
-            return data;
-        } else {
-            return null;
-        }
-    } else {
-        return null;
+    return data;
+}
+
+/**
+ * 
+ * @param {string} key chiave utilizzata per riprendere l'oggetto salvato alla creazione di un bottone
+ */
+function deleteData(mapKey) {
+    mapKey = mapKey.split(':');
+
+    var key = mapKey[0];
+
+    if (dataMap[key]) {
+        delete dataMap[key];
     }
 }
 
@@ -187,7 +209,8 @@ setInterval(function(){
 
 module.exports = {
     get,
-    getData
+    getData,
+    deleteData
 };
 
 

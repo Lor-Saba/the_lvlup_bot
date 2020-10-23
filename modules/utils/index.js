@@ -27,22 +27,10 @@ function calcExpFromLevel(level) {
  * calcola il guadagno di exp in base alla forza del prestigio
  * 
  * @param {number} prestige 
- * @param {number} penalityLevel 
  */
-function calcExpGain(prestige, penalityLevel) {
-    
+function calcExpGain(prestige) {
     // Math.sqrt(Math.pow(2, prestige))
-    var expGain = BigNumber(2).pow(BigNumber(prestige)).sqrt(); 
-    var penalityMultiplier = 1;
-
-    if (penalityLevel === 2){
-        penalityMultiplier = .25;
-    }
-    if (penalityLevel === 4){
-        penalityMultiplier = 0;
-    }
-
-    return expGain.multipliedBy(penalityMultiplier);
+    return BigNumber(2).pow(BigNumber(prestige)).sqrt();
 }
 
 /**
@@ -110,7 +98,7 @@ function calcPenality(user, dateNow, dateDiff = 1){
  * @param {number} prestige 
  */
 function calcNextPrestigeLevel(prestige){
-    return calcExpGain(prestige, 0).multipliedBy(15);
+    return calcExpGain(prestige).multipliedBy(1000);
 }
 
 /**
@@ -191,13 +179,14 @@ function getMessageData(ctx){
     const messageData = {
         message:    message,
         date:       message.date,
-        isBot:      message.from.is_bot,
-        isPrivate:  message.chat.type === 'private',
-        username:   message.from.first_name || message.from.username,
-        userId:     message.from.id,
-        chatId:     message.chat.id,
-        chatTitle:  message.chat.title,
-        lang:       message.from.language_code
+        isMarkup:   message.reply_markup !== undefined,
+        isPrivate:  ctx.chat.type === 'private',
+        isBot:      ctx.from.is_bot,
+        username:   ctx.from.first_name || message.from.username,
+        userId:     ctx.from.id,
+        chatId:     ctx.chat.id,
+        chatTitle:  ctx.chat.title,
+        lang:       ctx.from.language_code
     };
 
     return messageData;

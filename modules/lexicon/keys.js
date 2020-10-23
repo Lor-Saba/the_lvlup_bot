@@ -3,34 +3,43 @@ const keys = {
 
     // Challenge
 
+    "CHALLENGE_START": {
+        "en": "*$(username)* asks to be challenged!\nAnyone brave enough to accept?"
+    },
+    "CHALLENGE_BUTTON": {
+        "en": "Challenge!"
+    },
+    "CHALLENGE_ACCEPTED": {
+        "en": "*$(usernameB)* accepted *$(usernameA)*'s challenge!\n\nA dice will be rolled.\nIf an even number comes out *$(usernameA)* wins,\notherwise it's a *$(usernameB)*'s win"
+    },
     "CHALLENGE_AVAILABLE": {
         "en": "Challenge avaliable! Type /challengeme to drop the glove."
     },
-    "CHALLENGE_WON_BY": {
-        "en": "$(username) won!"
+    "CHALLENGE_RESULT": {
+        "en": "It's a $(result)!\nCongratulations *$(usernameW)*, you won! `+$(expGainW) Exp`\n*$(usernameL)* lost `$(expGainL) Exp`."
     },
     "CHALLENGE_TIMEOUT": {
-        "en": "Next challenge in $(timeout)."
-    },
-    "CHALLENGE_RULES": {
-        "en": "..."
+        "en": "*$(username)*, you can ask for a new challenge in _$(timeout)_ seconds."
     },
 
 
     // User
 
     "USER_LEVELUP": {
-        "en": "$(username) is now at level $(level)!",
+        "en": "*$(username)* is now at level  `$(level)`",
         //"it": "$(username) è salito al livello $(level)!"
     },
+    "USER_LEVELDOWN": {
+        "en": "*$(username)* leveled down  `$(level)`",
+    },
     "USER_PRESTIGE_AVAILABLE": {
-        "en": "$(username), with a level of $(level) you can now prestige! type /prestige to preceed."
+        "en": "*$(username)*, with a level of  `$(level)`  you can now prestige! type /prestige to preceed."
     },
     "USER_PRESTIGE_SUCCESS": {
-        "en": "$(username) prestiged! \nCurrent prestige level: $(prestige)"
+        "en": "*$(username)* prestiged! \nCurrent prestige level:  `$(prestige)`"
     },
     "USER_PRESTIGE_FAIL": {
-        "en": "You can't prestige yet $(username)."
+        "en": "You can't prestige yet *$(username)*."
     },
 
 
@@ -40,22 +49,28 @@ const keys = {
         "en": "📈 Stats of *$(username)*."
     },
     "STATS_NOUSER": {
-        "en": "$(username), seems like you don't have stats yet.\nStart chatting to gain exp! :)"
+        "en": "*$(username)*, seems like you don't have stats yet.\nStart chatting to gain exp! :)"
     },
     "STATS_LEVEL_PROGRESS": {
-        "en": "To next Level: $(percentage)%"
+        "en": "To next Level:  `$(percentage)%`"
     },
     "STATS_PRESTIGE_PROGRESS": {
-        "en": "To next Prestige: $(percentage)%"
-    },
-    "STATS_FOR_NEXT_LEVEL": {
-        "en": "_($(missingExp) Exp)_"
+        "en": "To next Prestige:  `$(percentage)%`"
     },
     "STATS_LEADERBOARD_POSITION": {
         "en": "Position in /leaderboard"
     },
     "STATS_PENALITY_LEVEL": {
         "en": "Penality level: "
+    },
+    "STATS_LABEL_EXP": {
+        "en": "Exp:  `$(value)`"
+    },
+    "STATS_LABEL_LEVEL": {
+        "en": "Level:  `$(value)`"
+    },
+    "STATS_LABEL_PRESTIGE": {
+        "en": "Prestige:  `$(value)`"
     },
 
 
@@ -101,9 +116,6 @@ const keys = {
     "SETTINGS_REPLY_NO": {
         "en": "No"
     },
-    "SETTINGS_ERROR_CHATNOTFOUND": {
-        "en": "Modal disabled because something went wrong or too old."
-    },
 
     
     // Others
@@ -119,6 +131,9 @@ const keys = {
     },
     "LABEL_GROUPONLY_COMMAND": {
         "en": "This command can only be used in group chats."
+    },
+    "ERROR_MARKUP_NOTFOUND": {
+        "en": "Modal disabled.\n_(Auto delete in 5 seconds..)_"
     }
 };
 

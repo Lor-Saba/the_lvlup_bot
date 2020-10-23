@@ -61,6 +61,8 @@ function setBotMiddlewares(){
     bot.use(commandParts());
     bot.use(function(ctx, next) {
 
+        if (ctx.updateType == 'edited_message') return false;
+
         // crea un oggetto contenente le informazioni generiche del messaggio ricevuto
         var mexData = utils.getMessageData(ctx);
         var lexicon = Lexicon.lang(mexData.lang);
@@ -82,18 +84,13 @@ function setBotMiddlewares(){
         };
 
         // se è un messaggio che arriva da un bot
-        if (mexData.isBot) {
+        if (mexData.isBot) return false;
 
-            // interrompe il middlewaree continua se ci troviamo in una chat privata
-            // altrimenti interrompe l'esecuzione del messaggio ricevuto
-            if (mexData.isPrivate) {
-                // salva i dati del messaggio per l'handler successivo 
-                saveState();
-                return next();
-            } else {
-                return false;
-            }
-        }
+        // interrompe il middleware e continua se è la selezione di un markup
+        if (mexData.isMarkup) {
+            saveState();
+            return next();
+        } 
 
         // crea l'oggetto dell'utente se non esiste
         user = storage.getUser(mexData.userId);
@@ -175,7 +172,8 @@ function setBotCommands(){
         prestige - Give up all your exp and levels to gain a prestige! This will let you grow faster.
         leaderboard - Check who's the boss of the chat.
         stats - Check your stats in the current chat.
-        settings - Configure the bot (Admins only)
+        challengeme - Drop the glove! challenge others users for more Exp.
+        settings - Configure the bot. (Admins only)
 
     */
 
@@ -278,7 +276,7 @@ function setBotCommands(){
         var mexData = ctx.state.mexData;
 
         if (mexData.isPrivate) {
-            return ctx.reply(lexicon.get('LABEL_GROUPONLY_COMMAND'));
+            return ctx.replyWithMarkdown(lexicon.get('LABEL_GROUPONLY_COMMAND'));
         }
 
         bot.telegram.getChatAdministrators(mexData.chatId)
@@ -314,7 +312,7 @@ function setBotCommands(){
         var mexData = ctx.state.mexData;
 
         if (mexData.isPrivate) {
-            return ctx.reply(lexicon.get('LABEL_GROUPONLY_COMMAND'));
+            return ctx.replyWithMarkdown(lexicon.get('LABEL_GROUPONLY_COMMAND'));
         }
         
         // ottiene il riferimento alle stats dell'utente per la chat corrente
@@ -324,11 +322,12 @@ function setBotCommands(){
             userStats.exp = '0';
             userStats.level = '0';
             userStats.prestige = BigNumber(userStats.prestige).plus(1).valueOf();
+            userStats.prestigeAvailable = false;
 
-            ctx.reply(lexicon.get('USER_PRESTIGE_SUCCESS', { username: mexData.username, prestige: userStats.prestige }));
+            ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_SUCCESS', { username: mexData.username, prestige: userStats.prestige }));
         } else {
                 
-            ctx.reply(lexicon.get('USER_PRESTIGE_FAIL', { username: mexData.username }));
+            ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_FAIL', { username: mexData.username }));
         }
 
         return storage.addUserToQueue(mexData.userId);
@@ -339,7 +338,7 @@ function setBotCommands(){
         var mexData = ctx.state.mexData;
 
         if (mexData.isPrivate) {
-            return ctx.reply(lexicon.get('LABEL_GROUPONLY_COMMAND'));
+            return ctx.replyWithMarkdown(lexicon.get('LABEL_GROUPONLY_COMMAND'));
         }
 
         var leaderboard = storage.getChatLeaderboard(mexData.chatId);
@@ -374,7 +373,7 @@ function setBotCommands(){
         var mexData = ctx.state.mexData;
 
         if (mexData.isPrivate) {
-            return ctx.reply(lexicon.get('LABEL_GROUPONLY_COMMAND'));
+            return ctx.replyWithMarkdown(lexicon.get('LABEL_GROUPONLY_COMMAND'));
         }
 
         // ottiene il riferimento all'utente
@@ -386,7 +385,7 @@ function setBotCommands(){
         if (BigNumber(userStats.exp).isEqualTo(0) 
         &&  BigNumber(userStats.level).isEqualTo(0) 
         &&  BigNumber(userStats.prestige).isEqualTo(0)) {
-            return ctx.reply(lexicon.get('STATS_NOUSER', { username: mexData.username }));
+            return ctx.replyWithMarkdown(lexicon.get('STATS_NOUSER', { username: mexData.username }));
         }
 
         var leaderboard = storage.getChatLeaderboard(mexData.chatId);
@@ -412,13 +411,13 @@ function setBotCommands(){
 
         // agiunge le statistiche basi: Exp, Level, Prestige
         if (BigNumber(userStats.exp).isGreaterThan(0)) {
-            text += '\n' + lexicon.get('LABEL_EXP') + ': ' + utils.formatNumber(userStats.exp);
+            text += '\n' + lexicon.get('STATS_LABEL_EXP', { value: utils.formatNumber(userStats.exp) });
         }
         if (BigNumber(userStats.level).isGreaterThan(0)) {
-            text += '\n' + lexicon.get('LABEL_LEVEL') + ': ' + utils.formatNumber(utils.toFloor(userStats.level), 0);
+            text += '\n' + lexicon.get('STATS_LABEL_LEVEL', { value: utils.formatNumber(utils.toFloor(userStats.level), 0)});
         }
         if (BigNumber(userStats.prestige).isGreaterThan(0)){
-            text += '\n' + lexicon.get('LABEL_PRESTIGE') + ': ' + utils.formatNumber(userStats.prestige, 0);
+            text += '\n' + lexicon.get('STATS_LABEL_PRESTIGE', { value: utils.formatNumber(userStats.prestige, 0)});
         }
 
         // aggiunge il livello di penalità attivo
@@ -446,7 +445,7 @@ function setBotCommands(){
         // aggiunge la barre che mostra il progresso per il prossimo prestigio
         if (BigNumber(userStats.prestige).isGreaterThan(0)) {
 
-            var prestigeDiff = BigNumber(userStats.exp).dividedBy(utils.calcExpFromLevel(utils.calcNextPrestigeLevel(userStats.prestige)));
+            var prestigeDiff = BigNumber(userStats.exp).dividedBy(utils.calcNextPrestigeLevel(userStats.prestige));
                 prestigeDiff = Number(prestigeDiff.valueOf());
 
             text += '\n' + lexicon.get('STATS_PRESTIGE_PROGRESS', { 
@@ -460,6 +459,36 @@ function setBotCommands(){
         }
 
         ctx.replyWithMarkdown(text);
+    });
+
+    bot.command('challengeme', function(ctx){
+        var lexicon = ctx.state.lexicon;
+        var mexData = ctx.state.mexData;
+
+        if (mexData.isPrivate) {
+            return ctx.replyWithMarkdown(lexicon.get('LABEL_GROUPONLY_COMMAND'));
+        }
+
+        // ottiene il riferimento all'utente
+        var user = ctx.state.user;
+
+        // protezione spam dei comandi
+        if (mexData.date - user.lastChallengeDate < 60 * 5) {
+            return ctx.replyWithMarkdown(lexicon.get('CHALLENGE_TIMEOUT', { 
+                username: user.username, 
+                timeout: (user.lastChallengeDate + 60 * 5) - mexData.date
+            }));
+        } else {
+            user.lastChallengeDate = mexData.date;
+        }
+
+        var markupData = markup.get('CHALLENGE_START', ctx.update.message, { 
+            username: mexData.username, 
+            userId: mexData.userId, 
+            chatId: mexData.chatId 
+        });
+
+        bot.telegram.sendMessage(mexData.chatId, markupData.text, markupData.buttons).catch(() => {});
     });
 
     console.log("  - loaded bot commands");
@@ -489,7 +518,6 @@ function setBotActions(){
 function setBotEvents(){
 
     bot.on('message', function(ctx){
-        var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
 
         // esce se non è un messaggio scritto 
@@ -497,36 +525,8 @@ function setBotEvents(){
 
         // ottiene il riferimento all'utente
         var user = ctx.state.user;
-        // ottiene il riferimento alla chat
-        var chat = ctx.state.chat;
-        // ottiene il riferimento alle stats dell'utente per la chat corrente
-        var userStats = ctx.state.userStats;
-            
-        // calcola le nuove statistiche
-        var expGain = utils.calcExpGain(userStats.prestige, user.penality.level);
-        var newExp = BigNumber(userStats.exp).plus(expGain);
-        var newLevel = utils.calcLevelFromExp(newExp);
-        var nextPrestige = utils.calcNextPrestigeLevel(userStats.prestige);
 
-        // notifica l'utente se è salito di livello
-        if (BigNumber(utils.toFloor(userStats.level)).isLessThan(utils.toFloor(newLevel))) {
-            if (chat.settings.notifyUserLevelup) {
-                ctx.reply(lexicon.get('USER_LEVELUP', { username: mexData.username, level: utils.toFloor(newLevel) }));
-            }
-        }
-        
-        // notifica l'utente che puo' prestigiare
-        if (BigNumber(newLevel).isGreaterThanOrEqualTo(nextPrestige) && userStats.prestigeAvailable == false) {
-            userStats.prestigeAvailable = true;
-
-            if (chat.settings.notifyUserPrestige) {
-                ctx.reply(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: mexData.username, level: utils.toFloor(newLevel) }));
-            }
-        }
-
-        // assegna i nuovi dati
-        userStats.exp = BigNumber(newExp).valueOf();
-        userStats.level = BigNumber(newLevel).valueOf();
+        calcUserExpGain(ctx, user, 1);
 
         user.lastMessageDate = mexData.date;
     });
@@ -534,71 +534,205 @@ function setBotEvents(){
     bot.on('callback_query', function(ctx){ 
         var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
-        var queryData = markup.getData(ctx.update.callback_query.data);
-        var newQueryData = {};
+        var query = ctx.update.callback_query.data;
+        var queryData = markup.getData(query);
 
-        if (!queryData) return ctx.editMessageText(lexicon.get('SETTINGS_ERROR_CHATNOTFOUND'));
+        var modalError = function(){
+
+            setTimeout(function(){
+                ctx.deleteMessage();
+            }, 1000 * 5); 
+
+            return ctx.editMessageText(lexicon.get('ERROR_MARKUP_NOTFOUND'), { parse_mode: 'markdown' });
+        }
+
+        if (!queryData) return modalError();
 
         switch(queryData.action){
 
             case 'SETTINGS_START': 
-                newQueryData = { chatTitle: queryData.chatTitle, chatId: queryData.chatId };
+                var markupData = markup.get(queryData.action, mexData.message, { 
+                    chatTitle: queryData.chatTitle, 
+                    chatId: queryData.chatId 
+                });
+                
+                ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
                 break;
 
             case 'SETTINGS_NOTIFY_PENALITY':
                 var chat = storage.getChat(queryData.chatId);
                 
-                if (!chat) return ctx.editMessageText(lexicon.get('SETTINGS_ERROR_CHATNOTFOUND'));
+                if (!chat) return modalError();
 
                 if (typeof queryData.value === "boolean") {
                     chat.settings.notifyPenality = queryData.value;
                 }
-                
-                newQueryData = { 
+
+                var markupData = markup.get(queryData.action, mexData.message, { 
                     chatTitle: chat.title, 
                     chatId: chat.id, 
                     value: chat.settings.notifyPenality 
-                };
+                });
+                
+                ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
+                storage.addChatToQueue(chat.id);
                 break;
 
             case 'SETTINGS_NOTIFY_LEVELUP': 
                 var chat = storage.getChat(queryData.chatId);
                 
-                if (!chat) return ctx.editMessageText(lexicon.get('SETTINGS_ERROR_CHATNOTFOUND'));
+                if (!chat) return modalError();
 
                 if (typeof queryData.value === "boolean") {
                     chat.settings.notifyUserLevelup = queryData.value;
                 }
-                
-                newQueryData = { 
+
+                var markupData = markup.get(queryData.action, mexData.message, { 
                     chatTitle: chat.title, 
                     chatId: chat.id, 
                     value: chat.settings.notifyUserLevelup 
-                };
+                });
+
+                ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
+                storage.addChatToQueue(chat.id);
                 break;
 
             case 'SETTINGS_NOTIFY_PRESTIGE_AVAILABLE':
                 var chat = storage.getChat(queryData.chatId);
                 
-                if (!chat) return ctx.editMessageText(lexicon.get('SETTINGS_ERROR_CHATNOTFOUND'));
+                if (!chat) return modalError();
 
                 if (typeof queryData.value === "boolean") {
                     chat.settings.notifyUserPrestige = queryData.value;
                 }
-                
-                newQueryData = { 
+
+                var markupData = markup.get(queryData.action, mexData.message, { 
                     chatTitle: chat.title, 
                     chatId: chat.id, 
                     value: chat.settings.notifyUserPrestige 
+                });
+
+                ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
+                storage.addChatToQueue(chat.id);
+                break;
+
+            case 'CHALLENGE_BUTTON': 
+                var userA = storage.getUser(queryData.userId);
+                var userB = storage.getUser(mexData.userId);
+
+                if (!userA || !userB) return modalError();
+
+                // interrompe se è lo stesso utente che ha lanciato la sfida
+                if (userA.id === userB.id) return false;
+                
+                markup.deleteData(query);
+                ctx.deleteMessage();
+
+                // timeout concatenabile alla catena di promesse
+                var promiseTimeout = function(timeout){
+                    return arg => { return new Promise(ok => {
+                        setTimeout(() => ok(arg), timeout);
+                    }) };
                 };
+
+                // inizio catena del challenge
+                Promise.resolve()
+                .then(() => {
+                    console.log('userB ha sfida UserA');
+                    ctx.replyWithMarkdown(lexicon.get('CHALLENGE_ACCEPTED', { usernameA: userA.username , usernameB: userB.username }));
+                })
+                .then(promiseTimeout(1000))
+                .then(() => {
+                    console.log('tiro dato');
+                    return ctx.replyWithDice();
+                })
+                .then(promiseTimeout(5000))
+                .then(ctxDice => {
+                    var diceValue = ctxDice.dice.value;
+
+                    var userW = diceValue % 2 ? userB : userA;
+                    var userL = diceValue % 2 ? userA : userB;
+                    var expGainW = calcUserExpGain(ctx, userW, 15, true);
+                    var expGainL = calcUserExpGain(ctx, userL, -15, true);
+
+                    ctx.replyWithMarkdown(lexicon.get('CHALLENGE_RESULT', { 
+                        result: diceValue,
+                        usernameW: userW.username, 
+                        usernameL: userL.username,
+                        expGainW: utils.formatNumber(expGainW),
+                        expGainL: utils.formatNumber(expGainL)
+                    }));
+
+                    storage.addUserToQueue(userA.id);
+                    storage.addUserToQueue(userB.id);
+                });
                 break;
         }
-
-        var markupData = markup.get(queryData.action, mexData.message, newQueryData);
-
-        ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
     });
     
+    var calcUserExpGain = function(ctx, user, messagesPower = 1, forceMute = false) {
+        // se messagesPower è 1 => guadagna l'esperienza di 1 messaggio
+        // se messagesPower è 3 => guadagna l'esperienza di 3 messaggi
+        // se messagesPower è -7 => perde l'esperienza di -7 messaggi
+        // e così via...
+
+        var lexicon = ctx.state.lexicon;
+        var mexData = ctx.state.mexData;
+
+        // ottiene il riferimento alla chat
+        var chat = storage.getChat(mexData.chatId);
+        // ottiene il riferimento alle stats dell'utente per la chat corrente
+        var userStats = user.chats[mexData.chatId];
+        // calcola quanta esperienza va applicata
+        var expGain = utils.calcExpGain(userStats.prestige);
+
+        // applica eventuale debuff in base al livello di penalità dell'utente
+        if (user.penality.level === 2){
+            expGain = BigNumber(expGain).multipliedBy(.25);
+        }
+        if (user.penality.level === 4){
+            expGain = BigNumber(expGain).multipliedBy(0);
+        }
+
+        // applica il numero di messaggi da considerare
+        expGain = BigNumber(expGain).multipliedBy(messagesPower);
+
+        // calcola le nuove statistiche
+        var newExp = BigNumber.maximum(BigNumber(userStats.exp).plus(expGain), 0);
+        var newLevel = utils.calcLevelFromExp(newExp);
+        var nextPrestige = utils.calcNextPrestigeLevel(userStats.prestige);
+
+        // notifica l'utente se è salito di livello
+        if (BigNumber(utils.toFloor(userStats.level)).isLessThan(utils.toFloor(newLevel))) {
+            if (chat.settings.notifyUserLevelup && forceMute == false) {
+                ctx.replyWithMarkdown(lexicon.get('USER_LEVELUP', { username: user.username, level: utils.toFloor(newLevel) }));
+            }
+        }
+
+        // notifica l'utente se è sceso di livello
+        if (BigNumber(utils.toFloor(userStats.level)).isGreaterThan(utils.toFloor(newLevel))) {
+            if (chat.settings.notifyUserLevelup && forceMute == false) {
+                ctx.replyWithMarkdown(lexicon.get('USER_LEVELDOWN', { username: user.username, level: utils.toFloor(newLevel) }));
+            }
+        }
+        
+        // notifica l'utente che puo' prestigiare
+        if (BigNumber(newExp).isGreaterThanOrEqualTo(nextPrestige) && userStats.prestigeAvailable == false) {
+            userStats.prestigeAvailable = true;
+
+            if (chat.settings.notifyUserPrestige && forceMute == false) {
+                ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: user.username, level: utils.toFloor(newLevel) }));
+            }
+        }
+
+        // assegna i nuovi dati
+        userStats.exp = BigNumber(newExp).valueOf();
+        userStats.level = BigNumber(newLevel).valueOf();
+
+        // ritorna il guadagno in exp calcolato
+        return expGain;
+    }
+
     console.log("  - loaded bot general events");
 }
 
