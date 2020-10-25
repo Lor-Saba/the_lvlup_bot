@@ -72,6 +72,15 @@ const keys = {
     "STATS_LABEL_PRESTIGE": {
         "en": "Prestige:  `$(value)`"
     },
+    "STATS_ITEMS": {
+        "en": "Item bonuses:"
+    },
+    "STATS_ITEMS_PERM": {
+        "en": "`+$(value)%`" //" - Permanent: `+$(value)%`"
+    },
+    "STATS_ITEMS_TEMP": {
+        "en": "`x$(value)`" //" - Temporary: `x$(value)`"
+    },
 
 
     // Penality
@@ -104,17 +113,150 @@ const keys = {
     "SETTINGS_NOTIFY_PRESTIGE_AVAILABLE": {
         "en": "Notify when an user can prestige."
     },
+    "SETTINGS_NOTIFY_ITEM_PICKUP": {
+        "en": "Notify when an user pick up an item."
+    },
     "SETTINGS_NOPERMISSION": {
         "en": "Sorry *$(username)*, only admins can change the bot settings."
     },
     "SETTINGS_PRIVATE_MESSAGE_SENT": {
         "en": "*$(username)* check your private chat with the bot to continue."
     },
-    "SETTINGS_REPLY_YES": {
-        "en": "Yes"
+    "SETTINGS_REPLY_ON": {
+        "en": "On"
     },
-    "SETTINGS_REPLY_NO": {
-        "en": "No"
+    "SETTINGS_REPLY_OFF": {
+        "en": "Off"
+    },
+    "SETTINGS_REPLY_FULL": {
+        "en": "Full"
+    },
+    "SETTINGS_REPLY_COMPACT": {
+        "en": "Compact"
+    },
+
+
+    // Items
+
+    "ITEMS_PICKUP_FULL": {
+        "en": "*$(username)* found an item:\n\n$(itemicon)  _$(itemname)_   `$(value)`\n$(itemdescription)"
+    },
+    "ITEMS_PICKUP_COMPACT": {
+        "en": "*$(username)* found an item: _$(itemname)_   `$(value)`"
+    },
+    "ITEMS_TITLE_BAG": {
+        "en": "Bag of money"
+    },
+    "ITEMS_DESCRIPTION_BAG": {
+        "en": "Contains a bit of Exp. It's not a much, but better than nothing."
+    },
+    "ITEMS_TITLE_CHEST": {
+        "en": "Chest"
+    },
+    "ITEMS_DESCRIPTION_CHEST": {
+        "en": "Contains a nice amount of Exp."
+    },
+    "ITEMS_TITLE_TREASURE": {
+        "en": "Treasure"
+    },
+    "ITEMS_DESCRIPTION_TREASURE": {
+        "en": "Bingo! A very big treasure chest which contains a lot of Exp."
+    },
+    "ITEMS_TITLE_DAISY": {
+        "en": "Scented Daisy"
+    },
+    "ITEMS_DESCRIPTION_DAISY": {
+        "en": "It smells nice.. I guess.. You can put it in your pockets and gift it to a sheep if you'll ever find one later."
+    },
+    "ITEMS_TITLE_STONE": {
+        "en": "Small Stone"
+    },
+    "ITEMS_DESCRIPTION_STONE": {
+        "en": "A little stone. Can be found on the side of the road, just be carefull to not picking up the yellow ones.. trust me, leave them there."
+    },
+    "ITEMS_TITLE_BANANA": {
+        "en": "Banana"
+    },
+    "ITEMS_DESCRIPTION_BANANA": {
+        "en": "Just a banana. Can be used as scale unit if needed."
+    },
+    "ITEMS_TITLE_PINEAPPLE": {
+        "en": "Pineapple"
+    },
+    "ITEMS_DESCRIPTION_PINEAPPLE": {
+        "en": "A strange yellow and pointy fruit. It should have a particular effect but I don't remember what for."
+    },
+    "ITEMS_TITLE_APPLE": {
+        "en": "Red Apple"
+    },
+    "ITEMS_DESCRIPTION_APPLE": {
+        "en": "Ah yes, an apple. They grow on the trees, then they fall on the sh\*t on the ground and then we pick them up and eat."
+    },
+    "ITEMS_TITLE_SAUCE": {
+        "en": "Tasty Sauce"
+    },
+    "ITEMS_DESCRIPTION_SAUCE": {
+        "en": "Can not miss on a nice plate of spaghetti. God bless whoever invented it!"
+    },
+    "ITEMS_TITLE_SAUSAGE": {
+        "en": "Big Sausage"
+    },
+    "ITEMS_DESCRIPTION_SAUSAGE": {
+        "en": "It's a sausage! ..and a BIG one! did you bring the BBQ?"
+    },
+    "ITEMS_TITLE_STICK": {
+        "en": "Pointy Stick"
+    },
+    "ITEMS_DESCRIPTION_STICK": {
+        "en": "A sharp and pointy stick, can be used to poke stuff to check if it's alive."
+    },
+    "ITEMS_TITLE_CRYSTAL": {
+        "en": "Crystal"
+    },
+    "ITEMS_DESCRIPTION_CRYSTAL": {
+        "en": "..what do you need to know? It's shiny and colorful, just pick it up and leave."
+    },
+    "ITEMS_TITLE_SUSEYE": {
+        "en": "Suspicious  Eye"
+    },
+    "ITEMS_DESCRIPTION_SUSEYE": {
+        "en": "A kinda SUS eyeball. Found in elettrical. Ah wait, it was Green who told me! I was in security doing tasks."
+    },
+    "ITEMS_TITLE_DRAGONEGG": {
+        "en": "Dragon Egg"
+    },
+    "ITEMS_DESCRIPTION_DRAGONEGG": {
+        "en": "Don't get too excited, it's well done but it's just a plastic model, maybe it belongs to a limited collection. You can use it as a card holder if needed."
+    },
+    "ITEMS_TITLE_RTX3090": {
+        "en": "GeForce RTX™ 3090"
+    },
+    "ITEMS_DESCRIPTION_RTX3090": {
+        "en": "They say it can run Minecraft at 60fps, time travel and solve the world's hunger.. but I'm not sure about the first one."
+    },
+    "ITEMS_TITLE_ELIXIR": {
+        "en": "Elixir"
+    },
+    "ITEMS_DESCRIPTION_ELIXIR": {
+        "en": "Ah yes, The Elixir! (also known as \"Elixir\") it's a drinkable fluid which you can drink and tastes like an Elixir!"
+    },
+    "ITEMS_TITLE_MEGAELIXIR": {
+        "en": "Mega Elixir"
+    },
+    "ITEMS_DESCRIPTION_MEGAELIXIR": {
+        "en": "An Elixir, but bigger! You have to drink it several times to be able to finish it all."
+    },
+    "ITEMS_TITLE_POISON": {
+        "en": "Bad Poison"
+    },
+    "ITEMS_DESCRIPTION_POISON": {
+        "en": "Not a nice looking drink. It is not recommended to drink it but who am I from preventing you from doing it.."
+    },
+    "ITEMS_TITLE_SHIT": {
+        "en": "Smelly Shit"
+    },
+    "ITEMS_DESCRIPTION_SHIT": {
+        "en": "Oh sh\*t, it's a sh\*t. Tt's brown like the sh\*t and smells like a.. ok I gues you got the idea. Also, I don't believe when anyone says it brings good luck.."
     },
 
     

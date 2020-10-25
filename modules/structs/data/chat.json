@@ -4,6 +4,7 @@
     "settings": {
         "notifyPenality": true,
         "notifyUserLevelup": true,
-        "notifyUserPrestige": true
+        "notifyUserPrestige": true,
+        "notifyUserPickupItem": "full"
     }
 }

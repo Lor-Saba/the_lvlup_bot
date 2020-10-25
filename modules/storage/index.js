@@ -5,7 +5,7 @@ const MongoClient = require('mongodb').MongoClient;
 const BigNumber = require('bignumber.js');
 // modulo con le strutture
 const structs = require('../structs');
-// modulo per gestire le operazioni di salvataggio e caricamento dati dal DB
+// modulo con vari metodi di utilità
 const utils = require('../utils');
 // Istanza del DB
 var db = null;
@@ -346,8 +346,8 @@ function debugCache(){
     console.log(cache);
 
     return {
-        users: Object.keys(cache.users),
-        chats: Object.keys(cache.chats),
+        users: Object.keys(cache.users).length,
+        chats: Object.keys(cache.chats).length,
         size: utils.roughSizeOfObject(cache, true)
     }
 }
@@ -359,8 +359,8 @@ function debugQueue(){
     console.log(queue);
 
     return {
-        users: Object.keys(queue.users),
-        chats: Object.keys(queue.chats),
+        users: Object.keys(queue.users).length,
+        chats: Object.keys(queue.chats).length,
         size: utils.roughSizeOfObject(queue, true)
     }
 }

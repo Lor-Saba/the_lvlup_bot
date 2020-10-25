@@ -17,6 +17,8 @@ const storage = require('./modules/storage');
 const utils = require('./modules/utils');
 // modulo per gestire i markup per i messaggi con bottoni
 const markup = require('./modules/markup');
+// modulo per gestire il drop degli oggetti 
+const items = require('./modules/items');
 // modulo per creare immagini con canvas
 //const canvas = require('./modules/canvas');
 // istanza del bot 
@@ -173,6 +175,7 @@ function setBotCommands(){
         leaderboard - Check who's the boss of the chat.
         stats - Check your stats in the current chat.
         challengeme - Drop the glove! challenge others users for more Exp.
+        items - List your picked items.
         settings - Configure the bot. (Admins only)
 
     */
@@ -265,7 +268,7 @@ function setBotCommands(){
         }
     })
     
-    bot.command('help', function(ctx){
+    bot.command('items', function(ctx){
         var lexicon = ctx.state.lexicon;
 
         // ctx.reply(lexicon.get('INFO'))
@@ -420,6 +423,22 @@ function setBotCommands(){
             text += '\n' + lexicon.get('STATS_LABEL_PRESTIGE', { value: utils.formatNumber(userStats.prestige, 0)});
         }
 
+        // aggiunge il bonus degli oggetti raccattati
+        if (Object.keys(userStats.items).length){
+            var itemsBuff = items.getItemsBuff(userStats.items, mexData.date);
+            var valuePerm = ((itemsBuff.perm - 1) * 100).toFixed(1);
+            var valueTemp = (itemsBuff.temp * 100).toFixed(1);
+
+            text += '\n';
+            text += '\n' + lexicon.get('STATS_ITEMS');
+            if (itemsBuff.perm != 1) {
+                text += ' ' + lexicon.get('STATS_ITEMS_PERM', { value: valuePerm });
+            }
+            if (itemsBuff.temp != 1) {
+                text += ' (' + lexicon.get('STATS_ITEMS_TEMP', { value: valueTemp }) + ')';
+            }
+        }
+
         // aggiunge il livello di penalità attivo
         text += '\n';
         text += '\n' + lexicon.get('STATS_PENALITY_LEVEL');
@@ -564,7 +583,7 @@ function setBotEvents(){
                 
                 if (!chat) return modalError();
 
-                if (typeof queryData.value === "boolean") {
+                if (queryData.value !== undefined) {
                     chat.settings.notifyPenality = queryData.value;
                 }
 
@@ -583,7 +602,7 @@ function setBotEvents(){
                 
                 if (!chat) return modalError();
 
-                if (typeof queryData.value === "boolean") {
+                if (queryData.value !== undefined) {
                     chat.settings.notifyUserLevelup = queryData.value;
                 }
 
@@ -602,7 +621,7 @@ function setBotEvents(){
                 
                 if (!chat) return modalError();
 
-                if (typeof queryData.value === "boolean") {
+                if (queryData.value !== undefined) {
                     chat.settings.notifyUserPrestige = queryData.value;
                 }
 
@@ -610,6 +629,25 @@ function setBotEvents(){
                     chatTitle: chat.title, 
                     chatId: chat.id, 
                     value: chat.settings.notifyUserPrestige 
+                });
+
+                ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
+                storage.addChatToQueue(chat.id);
+                break;
+
+            case 'SETTINGS_NOTIFY_ITEM_PICKUP':
+                var chat = storage.getChat(queryData.chatId);
+                
+                if (!chat) return modalError();
+
+                if (queryData.value !== undefined) {
+                    chat.settings.notifyUserPickupItem = queryData.value;
+                }
+
+                var markupData = markup.get(queryData.action, mexData.message, { 
+                    chatTitle: chat.title, 
+                    chatId: chat.id, 
+                    value: chat.settings.notifyUserPickupItem 
                 });
 
                 ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
@@ -670,7 +708,7 @@ function setBotEvents(){
         }
     });
     
-    var calcUserExpGain = function(ctx, user, messagesPower = 1, forceMute = false) {
+    var calcUserExpGain = function(ctx, user, messagesPower = 1, passive = false) {
         // se messagesPower è 1 => guadagna l'esperienza di 1 messaggio
         // se messagesPower è 3 => guadagna l'esperienza di 3 messaggi
         // se messagesPower è -7 => perde l'esperienza di -7 messaggi
@@ -694,6 +732,59 @@ function setBotEvents(){
             expGain = BigNumber(expGain).multipliedBy(0);
         }
 
+        // probabilità di ottenere un oggetto (massimo ogni ora)
+        if (user.lastItemDate + (60 * 60) < mexData.date  // tempo minimo di 1 ora
+        &&  Math.random() < 0.3
+        &&  passive == false) { 
+
+            user.lastItemDate = mexData.date;
+
+            var item = items.pick();
+            var hasItem = userStats.items[item.name];
+            var valueLabel = '';
+
+            if (item.type === 'inst') {
+                var bonusExpGain = calcUserExpGain(ctx, user, item.messages, true);
+
+                valueLabel = '+' + utils.formatNumber(bonusExpGain) + ' ' + lexicon.get('LABEL_EXP');
+            }
+            if (item.type === 'temp') {
+                userStats.items[item.name] = mexData.date;
+
+                valueLabel = (item.power > 1 ? '+': '') + utils.formatNumber((item.power - 1) * 100, 0) + '% ' + lexicon.get('LABEL_EXP') + ' (' + item.timeout + 'h) ';
+            }
+            if (item.type === 'perm') {
+                if (hasItem) {
+                    userStats.items[item.name]++;
+                } else {
+                    userStats.items[item.name] = 1;
+                }
+
+                valueLabel = '+' + (item.power * 100).toFixed(1) + '% ' + lexicon.get('LABEL_EXP');
+            }
+
+            if (chat.settings.notifyUserPickupItem === 'full') {
+                ctx.replyWithMarkdown(lexicon.get('ITEMS_PICKUP_FULL', {
+                    username: user.username,
+                    itemicon: items.getRarityIcon(item.name),
+                    itemname: lexicon.get('ITEMS_TITLE_' + item.name),
+                    itemdescription: lexicon.get('ITEMS_DESCRIPTION_' + item.name),
+                    value: valueLabel
+                }));                
+            }
+            if (chat.settings.notifyUserPickupItem === 'compact') {
+                ctx.replyWithMarkdown(lexicon.get('ITEMS_PICKUP_COMPACT', {
+                    username: user.username,
+                    itemname: lexicon.get('ITEMS_TITLE_' + item.name),
+                    value: valueLabel
+                }));
+            }
+        }
+
+        // applica i bonus degli eventuali oggetti raccolti
+        var itemsBuff = items.getItemsBuff(userStats.items, mexData.date);
+        expGain = BigNumber(expGain).multipliedBy(itemsBuff.perm).multipliedBy(itemsBuff.temp);
+
         // applica il numero di messaggi da considerare
         expGain = BigNumber(expGain).multipliedBy(messagesPower);
 
@@ -704,14 +795,14 @@ function setBotEvents(){
 
         // notifica l'utente se è salito di livello
         if (BigNumber(utils.toFloor(userStats.level)).isLessThan(utils.toFloor(newLevel))) {
-            if (chat.settings.notifyUserLevelup && forceMute == false) {
+            if (chat.settings.notifyUserLevelup && passive == false) {
                 ctx.replyWithMarkdown(lexicon.get('USER_LEVELUP', { username: user.username, level: utils.toFloor(newLevel) }));
             }
         }
 
         // notifica l'utente se è sceso di livello
         if (BigNumber(utils.toFloor(userStats.level)).isGreaterThan(utils.toFloor(newLevel))) {
-            if (chat.settings.notifyUserLevelup && forceMute == false) {
+            if (chat.settings.notifyUserLevelup && passive == false) {
                 ctx.replyWithMarkdown(lexicon.get('USER_LEVELDOWN', { username: user.username, level: utils.toFloor(newLevel) }));
             }
         }
@@ -720,7 +811,7 @@ function setBotEvents(){
         if (BigNumber(newExp).isGreaterThanOrEqualTo(nextPrestige) && userStats.prestigeAvailable == false) {
             userStats.prestigeAvailable = true;
 
-            if (chat.settings.notifyUserPrestige && forceMute == false) {
+            if (chat.settings.notifyUserPrestige && passive == false) {
                 ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: user.username, level: utils.toFloor(newLevel) }));
             }
         }

@@ -192,6 +192,12 @@ function getMessageData(ctx){
     return messageData;
 }
 
+/**
+ * Formatta i numeri di tipo BigNumber con un formato standard
+ * 
+ * @param {number|BigNumber|string} num 
+ * @param {number} decimals 
+ */
 function formatNumber(num, decimals = 2){
     num = BigNumber(num);
 
@@ -202,8 +208,37 @@ function formatNumber(num, decimals = 2){
     }
 }
 
+/**
+ *  Utilizzando la libreria BigNumbers riproduce il "Math.floor(...)"
+ * 
+ * @param {number|BigNumber|string} num 
+ */
 function toFloor(num){
     return BigNumber(num).toFixed(0, 1);
+}
+
+/**
+ * Mescola un array
+ * 
+ * @param {array} array lista da mescolare
+ */
+function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+  
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+  
+      // Pick a remaining element...
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+  
+      // And swap it with the current element.
+      temporaryValue = array[currentIndex];
+      array[currentIndex] = array[randomIndex];
+      array[randomIndex] = temporaryValue;
+    }
+  
+    return array;
 }
 
 module.exports = {
@@ -218,5 +253,6 @@ module.exports = {
     roughSizeOfObject,
     getMessageData,
     formatNumber,
-    toFloor
+    toFloor,
+    shuffle
 };
