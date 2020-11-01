@@ -241,6 +241,19 @@ function shuffle(array) {
     return array;
 }
 
+/**
+ * Formatta un valore in secondi mostrando i rispettivo valore in ore e minuti
+ * 
+ * @param {number} seconds 
+ */
+function secondsToHms(seconds) {
+    var h = Math.floor(seconds / 3600);
+    var m = Math.floor(seconds % 3600 / 60);
+    var s = Math.floor(seconds % 3600 % 60);
+
+    return ('0' + h).slice(-2) + ':' + ('0' + m).slice(-2) + ':' + ('0' + s).slice(-2) + ''; 
+}
+
 module.exports = {
     errorlog,
     each,
@@ -254,5 +267,6 @@ module.exports = {
     getMessageData,
     formatNumber,
     toFloor,
-    shuffle
+    shuffle,
+    secondsToHms
 };

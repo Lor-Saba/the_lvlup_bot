@@ -11,7 +11,7 @@ module.exports = [
 
     // istantanei
 
-    { type: 'inst', name: 'BAG',      weight: 200, messages: 5  },
+    { type: 'inst', name: 'BAG',      weight: 165, messages: 5  },
     { type: 'inst', name: 'CHEST',    weight: 70,  messages: 12 },
     { type: 'inst', name: 'TREASURE', weight: 35,  messages: 20 },
 

@@ -73,13 +73,13 @@ const keys = {
         "en": "Prestige:  `$(value)`"
     },
     "STATS_ITEMS": {
-        "en": "Item bonuses:"
+        "en": "Item bonuses:  "
     },
     "STATS_ITEMS_PERM": {
-        "en": "`+$(value)%`" //" - Permanent: `+$(value)%`"
+        "en": "`+$(value)%`   "
     },
     "STATS_ITEMS_TEMP": {
-        "en": "`x$(value)`" //" - Temporary: `x$(value)`"
+        "en": "(`x$(value)`)"
     },
 
 
@@ -138,6 +138,21 @@ const keys = {
 
     // Items
 
+    "ITEMS_LIST_TITLE": {
+        "en": "💎 *$(username)*'s items list:"
+    },
+    "ITEMS_LIST_ITEM_PERM": {
+        "en": "_$(name)_    `+$(value)%`   (x$(quantity))"
+    },
+    "ITEMS_LIST_ITEM_TEMP": {
+        "en": "_$(name)_    `x$(value)`    ~$(timeout)"
+    },
+    "ITEMS_LIST_TOTAL": {
+        "en": "TOTAL:  "
+    },
+    "ITEMS_LIST_NOITEMS": {
+        "en": "*$(username)* you have no items or active bonuses yet.\nKeep texting, sooner or later you will find something!"
+    },
     "ITEMS_PICKUP_FULL": {
         "en": "*$(username)* found an item:\n\n$(itemicon)  _$(itemname)_   `$(value)`\n$(itemdescription)"
     },
@@ -190,7 +205,7 @@ const keys = {
         "en": "Red Apple"
     },
     "ITEMS_DESCRIPTION_APPLE": {
-        "en": "Ah yes, an apple. They grow on the trees, then they fall on the sh\*t on the ground and then we pick them up and eat."
+        "en": "Ah yes, an apple. They grow on the trees, then they fall on the sh\\*t on the ground and then we pick them up and eat."
     },
     "ITEMS_TITLE_SAUCE": {
         "en": "Tasty Sauce"
@@ -256,7 +271,7 @@ const keys = {
         "en": "Smelly Shit"
     },
     "ITEMS_DESCRIPTION_SHIT": {
-        "en": "Oh sh\*t, it's a sh\*t. Tt's brown like the sh\*t and smells like a.. ok I gues you got the idea. Also, I don't believe when anyone says it brings good luck.."
+        "en": "Oh sh\\*t, it's a sh\\*t. Tt's brown like the sh\\*t and smells like a.. ok I gues you got the idea. Also, I don't believe when anyone says it brings good luck.."
     },
 
     

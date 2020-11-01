@@ -4,18 +4,14 @@ const utils = require('../utils');
 var items = require('./items');
 // mappa per gli items
 var itemsMap = {};
+// peso totale di tutti gli items
+var totalWeight = 0;
 
 /**
  * Get a random 
  */
 function pick(){
-    let total = 0;
-
-    for (let i = 0; i < items.length; i++) {
-        total += items[i].weight;
-    }
-
-    let winner = Math.random() * total;
+    let winner = Math.random() * totalWeight;
     let threshold = 0;
 
     for (let i = 0; i < items.length; i++) {
@@ -74,7 +70,7 @@ function getItem(name){
  *  🟪 15 - 5
  *  🟧 5 - 0
  * 
- * @param {*} name 
+ * @param {string} name 
  */
 function getRarityIcon(name){
     var icon = "";
@@ -97,14 +93,33 @@ function getRarityIcon(name){
     return icon;
 }
 
-// mescola la lista degli oggetti
-items = utils.shuffle(items);
-// crea la mappa per collegare rapidamente la lista degli items con i nomi
-utils.each(items, (index, item) => itemsMap[item.name] = index);
+/**
+ *  metodo di inizializzazione
+ */
+function init() {
+    
+    // mescola la lista degli oggetti
+    items = utils.shuffle(items);
+
+    // crea la mappa per collegare rapidamente la lista degli items con i nomi
+    // e conteggia il totale del peso dei vari oggetti (usato nell'estrazione)
+    utils.each(items, (index, item) => {
+        itemsMap[item.name] = index;
+        totalWeight += item.weight;
+    });
+
+    // calcola e assegna la probabilità di sorteggio ad ogni oggetto
+    utils.each(items, (index, item) => {
+        item.chance = item.weight / totalWeight;
+    });
+}
+
+// inizializza
+init();
 
 module.exports = {
     pick,
     getItem,
     getItemsBuff,
-    getRarityIcon
+    getRarityIcon,
 };

@@ -234,7 +234,7 @@ function syncDatabase(){
     if (usersIdList.length > 0) {
         var operations = [];
 
-        console.log('Saving queue to db..', usersIdList.length + ' users');
+        // console.log('Saving queue to db..', usersIdList.length + ' users');
 
         utils.each(usersIdList, function(index, userId){
             operations.push({
@@ -260,7 +260,7 @@ function syncDatabase(){
     if (chatsIdList.length > 0) {
         var operations = [];
 
-        console.log('Saving queue to db..', chatsIdList.length + ' chats');
+        // console.log('Saving queue to db..', chatsIdList.length + ' chats');
 
         utils.each(chatsIdList, function(index, chatId){
             operations.push({
@@ -298,7 +298,7 @@ function startQueue(){
 
     stopQueue();
 
-    queue.id = setInterval(syncDatabase, 1000 * 60 * 5); // 5 minuti     1000 * 60 * 2
+    queue.id = setInterval(syncDatabase, 1000 * 60 * 30); // 5 minuti     1000 * 60 * 2
 }
 
 /**

@@ -37,7 +37,6 @@ function connectTelegramAPI(){
 
         setBotMiddlewares();
         setBotCommands();
-        setBotActions();
         setBotEvents();
         ok();
     });
@@ -189,7 +188,9 @@ function setBotCommands(){
         var commandArgs = command.splitArgs;
         var action = commandArgs.shift();
 
-        console.log('=====\n/SU Command:\n', command);
+        console.log('=====');
+        console.log('/SU Command:\n', command);
+        console.log('=====');
 
         switch(action){
 
@@ -270,8 +271,69 @@ function setBotCommands(){
     
     bot.command('items', function(ctx){
         var lexicon = ctx.state.lexicon;
+        var mexData = ctx.state.mexData;
 
-        // ctx.reply(lexicon.get('INFO'))
+        if (mexData.isPrivate) {
+            return ctx.replyWithMarkdown(lexicon.get('LABEL_GROUPONLY_COMMAND'));
+        }
+
+        // ottiene il riferimento all'utente
+        var user = ctx.state.user;
+        // ottiene il riferimento alle stats dell'utente per la chat corrente
+        var userStats = ctx.state.userStats;
+        // testo finale contenente la lista di oggetti
+        var text = '';
+
+        // aggiunge il bonus degli oggetti raccattati
+        if (Object.keys(userStats.items).length){
+            var itemsBuff = items.getItemsBuff(userStats.items, mexData.date);
+            var totalPerm = ((itemsBuff.perm - 1) * 100).toFixed(2);
+            var totalTemp = (itemsBuff.temp).toFixed(2);
+            var itemsPerm = [];
+            var itemsTemp = [];
+
+            text += lexicon.get('ITEMS_LIST_TITLE', { username: user.username });
+            text += '\n\n';
+            
+            utils.each(userStats.items, function(key, value){
+                var item = items.getItem(key);
+
+                if (item.type === 'perm') {
+                    itemsPerm.push(lexicon.get('ITEMS_LIST_ITEM_PERM', { 
+                        name: lexicon.get('ITEMS_TITLE_' + key), 
+                        value: (item.power * 100).toFixed(1), 
+                        quantity: value
+                    }));
+                }
+                if (item.type === 'temp') {
+                    itemsTemp.push(lexicon.get('ITEMS_LIST_ITEM_TEMP', { 
+                        name: lexicon.get('ITEMS_TITLE_' + key), 
+                        value: (item.power).toFixed(1),
+                        timeout: utils.secondsToHms(value + ( 60 * 60 * item.timeout) - mexData.date)
+                    }));
+                }
+            });
+
+            text += itemsPerm.join('\n') + '\n' + itemsTemp.join('\n');
+            text += '\n';
+            text += '\n';
+
+            if (itemsBuff.perm != 1 || itemsBuff.temp != 1) {
+
+                text += lexicon.get('ITEMS_LIST_TOTAL');
+
+                if (itemsBuff.perm != 1) {
+                    text += lexicon.get('STATS_ITEMS_PERM', { value: totalPerm });
+                }
+                if (itemsBuff.temp != 1) {
+                    text += lexicon.get('STATS_ITEMS_TEMP', { value: totalTemp });
+                }
+            }
+        } else {
+            text += lexicon.get('ITEMS_LIST_NOITEMS', { username: user.username });
+        }
+
+        ctx.replyWithMarkdown(text);
     });
 
     bot.command('settings', function(ctx){
@@ -407,7 +469,7 @@ function setBotCommands(){
                  if (leaderboardPosition === 0) text += '  🥇';
             else if (leaderboardPosition === 1) text += '  🥈';
             else if (leaderboardPosition === 2) text += '  🥉';
-            else text += '  #' + (leaderboardPosition + 1);
+            else text += '   ' + (leaderboardPosition + 1) + '°';
 
             text += '\n';
         }
@@ -426,24 +488,27 @@ function setBotCommands(){
         // aggiunge il bonus degli oggetti raccattati
         if (Object.keys(userStats.items).length){
             var itemsBuff = items.getItemsBuff(userStats.items, mexData.date);
-            var valuePerm = ((itemsBuff.perm - 1) * 100).toFixed(1);
-            var valueTemp = (itemsBuff.temp * 100).toFixed(1);
+            var valuePerm = ((itemsBuff.perm - 1) * 100).toFixed(2);
+            var valueTemp = (itemsBuff.temp).toFixed(2);
 
             text += '\n';
             text += '\n' + lexicon.get('STATS_ITEMS');
             if (itemsBuff.perm != 1) {
-                text += ' ' + lexicon.get('STATS_ITEMS_PERM', { value: valuePerm });
+                text += lexicon.get('STATS_ITEMS_PERM', { value: valuePerm });
             }
             if (itemsBuff.temp != 1) {
-                text += ' (' + lexicon.get('STATS_ITEMS_TEMP', { value: valueTemp }) + ')';
+                text += lexicon.get('STATS_ITEMS_TEMP', { value: valueTemp });
             }
         }
 
         // aggiunge il livello di penalità attivo
-        text += '\n';
-        text += '\n' + lexicon.get('STATS_PENALITY_LEVEL');
-        text += ['🟢','🟡','🟠','🔴','❌'][user.penality.level];
-        text += '\n';
+        if (user.penality.level >= 2) {
+            text += '\n';
+            text += '\n' + lexicon.get('STATS_PENALITY_LEVEL');
+            text += ['🟢','🟡','🟠','🔴','❌'][user.penality.level];         
+        }
+
+        text += '\n';   
 
         // aggiunge la barre che mostra il progresso per il prossimo livello
         if (BigNumber(userStats.level).isGreaterThan(0)) {
@@ -511,24 +576,6 @@ function setBotCommands(){
     });
 
     console.log("  - loaded bot commands");
-}
-
-/**
- * assegnazione degli handlers per le azioni disponibili
- */
-function setBotActions(){
-
-    // admin: 95d23b82ee9ef1b94f48bbc3870819c0
-    
-    // bot.action('markdown-test-1', function(ctx){
-    //     ctx.reply('markdown-test-1');
-    // });
-    // 
-    // bot.action('markdown-test-2', function(ctx){
-    //     ctx.reply('markdown-test-2');
-    // });
-    
-    console.log("  - loaded bot actions");
 }
 
 /**
@@ -732,9 +779,9 @@ function setBotEvents(){
             expGain = BigNumber(expGain).multipliedBy(0);
         }
 
-        // probabilità di ottenere un oggetto (massimo ogni ora)
-        if (user.lastItemDate + (60 * 60) < mexData.date  // tempo minimo di 1 ora
-        &&  Math.random() < 0.3
+        // probabilità di ottenere un oggetto 
+        if (user.lastItemDate + (60 * 60 * 4) < mexData.date    // tempo minimo di 4 ore tra ogni drop
+        &&  Math.random() < 0.0175                              // probabilità dell' 1.75%
         &&  passive == false) { 
 
             user.lastItemDate = mexData.date;
