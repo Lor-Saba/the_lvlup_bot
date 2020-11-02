@@ -23,6 +23,8 @@ const items = require('./modules/items');
 //const canvas = require('./modules/canvas');
 // istanza del bot 
 var bot = null;
+// timestamp dell'avvio del bot
+var startupDate = 0;
 
 
 /**
@@ -59,7 +61,10 @@ function connectMongoDB(){
  */
 function setBotMiddlewares(){
 
+    // parsa i comandi
     bot.use(commandParts());
+
+    // middleware principoale 
     bot.use(function(ctx, next) {
 
         if (ctx.updateType == 'edited_message') return false;
@@ -86,6 +91,9 @@ function setBotMiddlewares(){
 
         // se è un messaggio che arriva da un bot
         if (mexData.isBot) return false;
+        
+        // blocca l'esecuzione se si stanno ricevendo eventi precedenti all'avvio del bot
+        if (mexData.date < startupDate) return false;
 
         // interrompe il middleware e continua se è la selezione di un markup
         if (mexData.isMarkup) {
@@ -880,6 +888,9 @@ function setBotEvents(){
 function init(){
     // clear console log 
     console.clear();
+
+    // salva la data di avvio del processo
+    startupDate = Date.now() / 1000;
 
     // configurazione del BigNumber
     BigNumber.config({ EXPONENTIAL_AT: 6, ROUNDING_MODE: 3 });
