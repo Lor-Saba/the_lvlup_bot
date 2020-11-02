@@ -101,6 +101,11 @@ function setBotMiddlewares(){
             return next();
         } 
 
+        // bypassa il middleware se si tratta del comando /su
+        if (ctx.state.command.command == 'su'){
+            return next();
+        }
+
         // crea l'oggetto dell'utente se non esiste
         user = storage.getUser(mexData.userId);
 
