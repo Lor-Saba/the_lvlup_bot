@@ -102,7 +102,7 @@ function setBotMiddlewares(){
         } 
 
         // bypassa il middleware se si tratta del comando /su
-        if (ctx.state.command.command == 'su'){
+        if (ctx.state.command && ctx.state.command.command == 'su'){
             return next();
         }
 
