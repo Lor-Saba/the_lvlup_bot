@@ -91,15 +91,15 @@ function setBotMiddlewares(){
 
         // se è un messaggio che arriva da un bot
         if (mexData.isBot) return false;
-        
-        // blocca l'esecuzione se si stanno ricevendo eventi precedenti all'avvio del bot
-        if (mexData.date < startupDate) return false;
 
         // interrompe il middleware e continua se è la selezione di un markup
         if (mexData.isMarkup) {
             saveState();
             return next();
         } 
+        
+        // blocca l'esecuzione se si stanno ricevendo eventi precedenti all'avvio del bot
+        if (mexData.date < startupDate) return false;
 
         // bypassa il middleware se si tratta del comando /su
         if (ctx.state.command && ctx.state.command.command == 'su'){
@@ -182,12 +182,11 @@ function setBotCommands(){
     /*
         Lista comandi:
 
-        help - Print some Info
-        prestige - Give up all your exp and levels to gain a prestige! This will let you grow faster.
         leaderboard - Check who's the boss of the chat.
         stats - Check your stats in the current chat.
-        challengeme - Drop the glove! challenge others users for more Exp.
         items - List your picked items.
+        prestige - Give up all your exp and levels to gain a prestige! This will let you grow faster.
+        challengeme - Drop the glove! challenge others users for more Exp.
         settings - Configure the bot. (Admins only)
 
     */
@@ -202,7 +201,7 @@ function setBotCommands(){
         var action = commandArgs.shift();
 
         console.log('=====');
-        console.log('/SU Command:\n', command);
+        console.log('/SU (' + userId + ')', command);
         console.log('=====');
 
         switch(action){
@@ -635,7 +634,7 @@ function setBotEvents(){
                     chatId: queryData.chatId 
                 });
                 
-                ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
+                ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
                 break;
 
             case 'SETTINGS_NOTIFY_PENALITY':
@@ -653,7 +652,7 @@ function setBotEvents(){
                     value: chat.settings.notifyPenality 
                 });
                 
-                ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
+                ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
                 storage.addChatToQueue(chat.id);
                 break;
 
@@ -672,7 +671,7 @@ function setBotEvents(){
                     value: chat.settings.notifyUserLevelup 
                 });
 
-                ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
+                ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
                 storage.addChatToQueue(chat.id);
                 break;
 
@@ -691,7 +690,7 @@ function setBotEvents(){
                     value: chat.settings.notifyUserPrestige 
                 });
 
-                ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
+                ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
                 storage.addChatToQueue(chat.id);
                 break;
 
@@ -710,18 +709,23 @@ function setBotEvents(){
                     value: chat.settings.notifyUserPickupItem 
                 });
 
-                ctx.editMessageText(markupData.text, markupData.buttons).catch(utils.errorlog);
+                ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
                 storage.addChatToQueue(chat.id);
                 break;
 
             case 'CHALLENGE_BUTTON': 
+                var chat  = storage.getChat(mexData.chatId);
                 var userA = storage.getUser(queryData.userId);
                 var userB = storage.getUser(mexData.userId);
 
+                // interrompe se non sono entrambi degli utenti resistenti
                 if (!userA || !userB) return modalError();
 
                 // interrompe se è lo stesso utente che ha lanciato la sfida
                 if (userA.id === userB.id) return false;
+
+                // interrompe se è già in corso un challenge
+                if (chat.isChallengeActive) return false;
                 
                 markup.deleteData(query);
                 ctx.deleteMessage();
@@ -736,12 +740,11 @@ function setBotEvents(){
                 // inizio catena del challenge
                 Promise.resolve()
                 .then(() => {
-                    console.log('userB ha sfida UserA');
-                    ctx.replyWithMarkdown(lexicon.get('CHALLENGE_ACCEPTED', { usernameA: userA.username , usernameB: userB.username }));
+                    chat.isChallengeActive = true;
+                    return ctx.replyWithMarkdown(lexicon.get('CHALLENGE_ACCEPTED', { usernameA: userA.username , usernameB: userB.username }));
                 })
                 .then(promiseTimeout(1000))
                 .then(() => {
-                    console.log('tiro dato');
                     return ctx.replyWithDice();
                 })
                 .then(promiseTimeout(5000))
@@ -763,6 +766,10 @@ function setBotEvents(){
 
                     storage.addUserToQueue(userA.id);
                     storage.addUserToQueue(userB.id);
+
+                    chat.isChallengeActive = false;
+                }).catch(err => {
+                    chat.isChallengeActive = false;
                 });
                 break;
         }

@@ -290,7 +290,7 @@ const keys = {
         "en": "This command can only be used in group chats."
     },
     "ERROR_MARKUP_NOTFOUND": {
-        "en": "Modal disabled.\n_(Auto delete in 5 seconds..)_"
+        "en": "_Modal disabled._"
     }
 };
 
