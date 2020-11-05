@@ -150,6 +150,14 @@ function resetChatStats(chatId){
         }
     }
 
+    var newChat = structs.get('chat', { 
+        id: cache.chats[chatId].id,
+        title: cache.chats[chatId].title
+    });
+    
+    cache.chats[chatId] = newChat;
+    queue.chats[chatId] = true;
+
     return result;
 }
  

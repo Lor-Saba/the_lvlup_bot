@@ -254,7 +254,7 @@ function setBotCommands(){
                     var result = storage.resetUserStats(userId);
                     
                     // ritorna il risultato
-                    ctx.reply('Reset result for chat "' + chatId + '": ' + result );
+                    ctx.reply('Reset result for user "' + userId + '": ' + result);
                 } else if (type === 'all') {
                     var result = storage.resetAll();
                     
@@ -277,6 +277,8 @@ function setBotCommands(){
                 
             case 'sync':
                 storage.syncDatabase();
+
+                ctx.reply('Sync done.');
                 break;
         }
     })
