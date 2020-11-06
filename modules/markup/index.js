@@ -211,18 +211,19 @@ function deleteData(mapKey) {
 }
 
 
-// Intervallo che controlla e rimuove gli elementi della mappa inseriti piu' di 30 minuti fa
+// Intervallo che controlla e rimuove gli elementi della mappa inseriti piu' di 24 ore fa
 setInterval(function(){
 
     var keys = Object.keys(dataMap);
+    var dateNow = Date.now();
 
     for(var ind = 0, ln = keys.length; ind < ln; ind++){
-        if (Date.now() - dataMap[keys[ind]].date > 1000 * 60 * 30){
+        if (dateNow - dataMap[keys[ind]].date > 1000 * 60 * 60 * 24){
             delete dataMap[keys[ind]];
         }
     }
 
-}, 1000 * 60 * 5);  // 5 minuti
+}, 1000 * 60 * 60);  // 1h
 
 
 module.exports = {
