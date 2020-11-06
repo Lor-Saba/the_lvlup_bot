@@ -574,7 +574,7 @@ function setBotCommands(){
         if (mexData.date - user.lastChallengeDate < 60 * 5) {
             return ctx.replyWithMarkdown(lexicon.get('CHALLENGE_TIMEOUT', { 
                 username: user.username, 
-                timeout: (user.lastChallengeDate + 60 * 5) - mexData.date
+                timeout: utils.secondsToHms((user.lastChallengeDate + 60 * 5) - mexData.date, true)
             }));
         } else {
             user.lastChallengeDate = mexData.date;

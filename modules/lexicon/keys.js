@@ -19,7 +19,7 @@ const keys = {
         "en": "It's a $(result)!\nCongratulations *$(usernameW)*, you won! `+$(expGainW) Exp`\n*$(usernameL)* lost `$(expGainL) Exp`."
     },
     "CHALLENGE_TIMEOUT": {
-        "en": "*$(username)*, you can ask for a new challenge in _$(timeout)_ seconds."
+        "en": "*$(username)*, you can ask for a new challenge in _$(timeout)_."
     },
 
 

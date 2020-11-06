@@ -245,13 +245,29 @@ function shuffle(array) {
  * Formatta un valore in secondi mostrando i rispettivo valore in ore e minuti
  * 
  * @param {number} seconds 
+ * @param {boolean} extended 
  */
-function secondsToHms(seconds) {
+function secondsToHms(seconds, extended) {
     var h = Math.floor(seconds / 3600);
     var m = Math.floor(seconds % 3600 / 60);
     var s = Math.floor(seconds % 3600 % 60);
 
-    return ('0' + h).slice(-2) + ':' + ('0' + m).slice(-2) + ':' + ('0' + s).slice(-2) + ''; 
+    var result = '';
+
+    if (extended) {
+        if (h) result += h + 'h ';
+        if (m) result += m + 'm ';
+
+        result += s + 's';
+    } else {
+        result  = ('0' + h).slice(-2) 
+                + ':'
+                + ('0' + m).slice(-2)
+                + ':'
+                + ('0' + s).slice(-2)
+    }
+
+    return result; 
 }
 
 module.exports = {
