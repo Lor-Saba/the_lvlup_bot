@@ -138,7 +138,7 @@ function setBotMiddlewares(){
 
             // gestione della penalità in caso di spam
             oldPenalityLevel = user.penality.level;
-            isSpam = utils.calcPenality(user, mexData.date, 1);
+            isSpam = utils.calcPenality(user, mexData.date, 1.1);
 
             if (isSpam && chat.settings.notifyPenality) {
 
@@ -720,8 +720,8 @@ function setBotEvents(){
                 var userA = storage.getUser(queryData.userId);
                 var userB = storage.getUser(mexData.userId);
 
-                // interrompe se non sono entrambi degli utenti resistenti
-                if (!userA || !userB) return modalError();
+                // interrompe se non sono entrambi degli utenti registrati
+                if (!userA || !userB) return false;
 
                 // interrompe se è lo stesso utente che ha lanciato la sfida
                 if (userA.id === userB.id) return false;
@@ -803,7 +803,7 @@ function setBotEvents(){
 
         // probabilità di ottenere un oggetto 
         if (user.lastItemDate + (60 * 60 * 4) < mexData.date    // tempo minimo di 4 ore tra ogni drop
-        &&  Math.random() < 0.0175                              // probabilità dell' 1.75%
+        &&  Math.random() < 0.01                              // probabilità dell' 1.75%
         &&  passive == false) { 
 
             user.lastItemDate = mexData.date;

@@ -21,6 +21,9 @@ const keys = {
     "CHALLENGE_TIMEOUT": {
         "en": "*$(username)*, you can ask for a new challenge in _$(timeout)_."
     },
+    "CHALLENGE_ERROR_LEVEL": {
+        "en": "*$(username)*, you must be at least level `3` to be able to create and accept challenges."
+    },
 
 
     // User
