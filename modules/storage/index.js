@@ -27,8 +27,16 @@ function connectMongoDB(uri) {
     .then(function(){
         return getCollectionContent('lvlup_users')
         .then(users => {
-            utils.each(users, function(index, user){
+            utils.each(users, function(indexUser, user){
                 delete user._id;
+
+                // !!! TEMP, DA RIMUOVERE CON UN VERSIONAMENTO DEI DATI !!! -->
+                utils.each(user.chats, function(indexUserStats, userStats) {
+                    if (!userStats.challengeWon) userStats.challengeWon = 0;
+                    if (!userStats.challengeLost) userStats.challengeLost = 0;
+                });
+                // <-- 
+
                 cache.users[user.id] = user;
             });
         });

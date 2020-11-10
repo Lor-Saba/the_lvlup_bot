@@ -84,6 +84,9 @@ const keys = {
     "STATS_ITEMS_TEMP": {
         "en": "(`x$(value)`)"
     },
+    "STATS_CHALLENGE_LUCK": {
+        "en": "Challenges:  _W_`valueW` _L_`valueL`"
+    },
 
 
     // Penality

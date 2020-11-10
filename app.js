@@ -328,8 +328,15 @@ function setBotCommands(){
                 }
             });
 
-            text += itemsPerm.join('\n') + '\n' + itemsTemp.join('\n');
-            text += '\n';
+            if (itemsPerm.length) {
+                text += itemsPerm.join('\n');
+                text += '\n';
+            }
+            if (itemsTemp.length) {
+                text += itemsTemp.join('\n');
+                text += '\n';
+            }
+
             text += '\n';
 
             if (itemsBuff.perm != 1 || itemsBuff.temp != 1) {
@@ -513,11 +520,17 @@ function setBotCommands(){
             if (itemsBuff.temp != 1) {
                 text += lexicon.get('STATS_ITEMS_TEMP', { value: valueTemp });
             }
+        } else {
+            text += '\n';
+        }
+
+        // aggiunge il conteggio del numero di challenges vinte e perse
+        if (userStats.challengeWon || userStats.challengeLost) {
+            text += lexicon.get('STATS_CHALLENGE_LUCK', { valueW: userStats.challengeWon, valueL: userStats.challengeLost });
         }
 
         // aggiunge il livello di penalità attivo
         if (user.penality.level >= 2) {
-            text += '\n';
             text += '\n' + lexicon.get('STATS_PENALITY_LEVEL');
             text += ['🟢','🟡','🟠','🔴','❌'][user.penality.level];         
         }
@@ -571,10 +584,10 @@ function setBotCommands(){
         var user = ctx.state.user;
 
         // protezione spam dei comandi
-        if (mexData.date - user.lastChallengeDate < 60 * 5) {
+        if (mexData.date - user.lastChallengeDate < 60 * 60 * 3) {
             return ctx.replyWithMarkdown(lexicon.get('CHALLENGE_TIMEOUT', { 
                 username: user.username, 
-                timeout: utils.secondsToHms((user.lastChallengeDate + 60 * 5) - mexData.date, true)
+                timeout: utils.secondsToHms((user.lastChallengeDate + 60 * 60 * 3) - mexData.date, true)
             }));
         } else {
             user.lastChallengeDate = mexData.date;
@@ -755,8 +768,10 @@ function setBotEvents(){
 
                     var userW = diceValue % 2 ? userB : userA;
                     var userL = diceValue % 2 ? userA : userB;
-                    var expGainW = calcUserExpGain(ctx, userW, 15, true);
-                    var expGainL = calcUserExpGain(ctx, userL, -15, true);
+                    var userStatsW = userW.chats[mexData.chatId];
+                    var userStatsL = userL.chats[mexData.chatId];
+                    var expGainW = calcUserExpGain(ctx, userW, 10, true);
+                    var expGainL = calcUserExpGain(ctx, userL, -10, true);
 
                     ctx.replyWithMarkdown(lexicon.get('CHALLENGE_RESULT', { 
                         result: diceValue,
@@ -765,6 +780,9 @@ function setBotEvents(){
                         expGainW: utils.formatNumber(expGainW),
                         expGainL: utils.formatNumber(expGainL)
                     }));
+
+                    userStatsW.challengeWon  += 1;
+                    userStatsL.challengeLost += 1;
 
                     storage.addUserToQueue(userA.id);
                     storage.addUserToQueue(userB.id);
@@ -802,8 +820,8 @@ function setBotEvents(){
         }
 
         // probabilità di ottenere un oggetto 
-        if (user.lastItemDate + (60 * 60 * 4) < mexData.date    // tempo minimo di 4 ore tra ogni drop
-        &&  Math.random() < 0.01                              // probabilità dell' 1.75%
+        if (user.lastItemDate + (60 * 60 * 8) < mexData.date    // tempo minimo di 8 ore tra ogni drop
+        &&  Math.random() < 0.01                                // probabilità dell' 1%
         &&  passive == false) { 
 
             user.lastItemDate = mexData.date;
