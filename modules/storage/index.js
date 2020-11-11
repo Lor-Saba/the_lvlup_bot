@@ -27,15 +27,10 @@ function connectMongoDB(uri) {
     .then(function(){
         return getCollectionContent('lvlup_users')
         .then(users => {
-            utils.each(users, function(indexUser, user){
+            utils.each(users, function(index, user){
                 delete user._id;
 
-                // !!! TEMP, DA RIMUOVERE CON UN VERSIONAMENTO DEI DATI !!! -->
-                utils.each(user.chats, function(indexUserStats, userStats) {
-                    if (!userStats.challengeWon) userStats.challengeWon = 0;
-                    if (!userStats.challengeLost) userStats.challengeLost = 0;
-                });
-                // <-- 
+                // @TODO: versionamento della struttura utenti
 
                 cache.users[user.id] = user;
             });
@@ -46,6 +41,9 @@ function connectMongoDB(uri) {
         .then(chats => {
             utils.each(chats, function(index, chat){
                 delete chat._id;
+
+                // @TODO: versionamento della struttura chats
+
                 cache.chats[chat.id] = chat;
             });
         });

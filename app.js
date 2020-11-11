@@ -506,13 +506,14 @@ function setBotCommands(){
             text += '\n' + lexicon.get('STATS_LABEL_PRESTIGE', { value: utils.formatNumber(userStats.prestige, 0)});
         }
 
+        text += '\n';
+
         // aggiunge il bonus degli oggetti raccattati
         if (Object.keys(userStats.items).length){
             var itemsBuff = items.getItemsBuff(userStats.items, mexData.date);
             var valuePerm = ((itemsBuff.perm - 1) * 100).toFixed(2);
             var valueTemp = (itemsBuff.temp).toFixed(2);
 
-            text += '\n';
             text += '\n' + lexicon.get('STATS_ITEMS');
             if (itemsBuff.perm != 1) {
                 text += lexicon.get('STATS_ITEMS_PERM', { value: valuePerm });
@@ -520,13 +521,11 @@ function setBotCommands(){
             if (itemsBuff.temp != 1) {
                 text += lexicon.get('STATS_ITEMS_TEMP', { value: valueTemp });
             }
-        } else {
-            text += '\n';
         }
 
         // aggiunge il conteggio del numero di challenges vinte e perse
         if (userStats.challengeWon || userStats.challengeLost) {
-            text += lexicon.get('STATS_CHALLENGE_LUCK', { valueW: userStats.challengeWon, valueL: userStats.challengeLost });
+            text += '\n' + lexicon.get('STATS_CHALLENGE_LUCK', { valueW: userStats.challengeWon, valueL: userStats.challengeLost });
         }
 
         // aggiunge il livello di penalità attivo
@@ -770,8 +769,8 @@ function setBotEvents(){
                     var userL = diceValue % 2 ? userA : userB;
                     var userStatsW = userW.chats[mexData.chatId];
                     var userStatsL = userL.chats[mexData.chatId];
-                    var expGainW = calcUserExpGain(ctx, userW, 10, true);
-                    var expGainL = calcUserExpGain(ctx, userL, -10, true);
+                    var expGainW = calcUserExpGain(ctx, userW, 7, true);
+                    var expGainL = calcUserExpGain(ctx, userL, -5, true);
 
                     ctx.replyWithMarkdown(lexicon.get('CHALLENGE_RESULT', { 
                         result: diceValue,
@@ -789,6 +788,8 @@ function setBotEvents(){
 
                     chat.isChallengeActive = false;
                 }).catch(err => {
+                    utils.errorlog('CHALLENGE_BUTTON', err);
+
                     chat.isChallengeActive = false;
                 });
                 break;
@@ -936,10 +937,9 @@ function init(){
         bot.launch();
         console.log('-----\nBot running!')
     })
-    .catch(() => {
+    .catch(err => {
         // Errore
-        utils.errorlog('Errors in initialization, Bot not launched.')
-        console.error(arguments);
+        utils.errorlog('Errors in initialization, Bot not launched.', err);
     });
 }
 

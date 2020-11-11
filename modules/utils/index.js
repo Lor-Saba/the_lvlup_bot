@@ -53,10 +53,9 @@ function each(obj, fn){
 
 /**
  * 
- * @param {string} msg messaggio di errore da loggare
  */
-function errorlog(msg) {
-    console.log('<!> ERROR:', msg);
+function errorlog() {
+    console.log.apply(console, [(new Date()).toLocaleString(),'<!> ERROR:'].concat([].slice.call(arguments)));
 }
 
 /**
@@ -98,7 +97,7 @@ function calcPenality(user, dateNow, dateDiff = 1){
  * @param {number} prestige 
  */
 function calcNextPrestigeLevel(prestige){
-    return calcExpGain(prestige).multipliedBy(2500);
+    return calcExpGain(prestige).multipliedBy(3000);
 }
 
 /**
@@ -182,7 +181,7 @@ function getMessageData(ctx){
         isMarkup:   message.reply_markup !== undefined,
         isPrivate:  ctx.chat.type === 'private',
         isBot:      ctx.from.is_bot,
-        username:   ctx.from.first_name || message.from.username,
+        username:   ctx.from.username || ctx.from.first_name,
         userId:     ctx.from.id,
         chatId:     ctx.chat.id,
         chatTitle:  ctx.chat.title,
