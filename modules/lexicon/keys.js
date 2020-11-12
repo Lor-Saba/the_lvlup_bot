@@ -211,7 +211,7 @@ const keys = {
         "en": "Red Apple"
     },
     "ITEMS_DESCRIPTION_APPLE": {
-        "en": "Ah yes, an apple. They grow on the trees, then they fall on the sh\\*t on the ground and then we pick them up and eat."
+        "en": "Ah yes, an apple. They grow on the trees, like money. Remember to clean it before eating it."
     },
     "ITEMS_TITLE_SAUCE": {
         "en": "Tasty Sauce"
