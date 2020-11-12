@@ -192,7 +192,7 @@ function setBotCommands(){
     */
 
     bot.command('su', function(ctx){
-        var userId = ctx.update.message.from.id;
+        var userId = ctx.from.id;
 
         if (md5(userId) !== 'be6d916dafd19cddfd2573f8bb0cee4f') return;
 
@@ -279,6 +279,15 @@ function setBotCommands(){
                 storage.syncDatabase();
 
                 ctx.reply('Sync done.');
+                break;
+
+            case 'jsondump': 
+                var fs = require('fs');
+                var cacheString = storage.getCache();
+
+                fs.writeFileSync('db.txt', cacheString, 'utf8');
+                ctx.telegram.sendDocument(userId, { source: fs.readFileSync('db.txt'), filename: 'db.txt' });
+                fs.unlinkSync('db.txt');
                 break;
         }
     })

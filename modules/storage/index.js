@@ -379,6 +379,13 @@ function debugQueue(){
     }
 }
 
+/**
+ * 
+ */
+function getCache() {
+    return JSON.stringify(cache);
+}
+
 module.exports = {
     connectMongoDB,
     getUser,
@@ -395,5 +402,6 @@ module.exports = {
     debugQueue,
     syncDatabase,
     addUserToQueue,
-    addChatToQueue
+    addChatToQueue,
+    getCache
 };
