@@ -811,6 +811,16 @@ function setBotEvents(){
         // se messagesPower è -7 => perde l'esperienza di -7 messaggi
         // e così via...
 
+        if (!user) {
+            console.log('---');
+            utils.errorlog('calcUserExpGain', {
+                user: user,
+                mexData: mexData
+            });
+            
+            return BigNumber(0);
+        }
+
         var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
 
