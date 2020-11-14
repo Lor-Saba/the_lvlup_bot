@@ -600,10 +600,10 @@ function setBotCommands(){
         var user = ctx.state.user;
 
         // protezione spam dei comandi
-        if (mexData.date - user.lastChallengeDate < 60 * 60 * 3) {
+        if (mexData.date - user.lastChallengeDate < 60 * 60 * 2) {
             return ctx.replyWithMarkdown(lexicon.get('CHALLENGE_TIMEOUT', { 
                 username: user.username, 
-                timeout: utils.secondsToHms((user.lastChallengeDate + 60 * 60 * 3) - mexData.date, true)
+                timeout: utils.secondsToHms((user.lastChallengeDate + 60 * 60 * 2) - mexData.date, true)
             }));
         } else {
             user.lastChallengeDate = mexData.date;
