@@ -1,0 +1,15 @@
+- sistema di versionamento dello storage
+- spawn di un boss
+    - appare nel fine settimana a tempo limitato
+    - richiede piu attacchi per eliminarlo ()
+    - i boss spawnano con piu vita in base a quanti boss sono stati sconfitti nella chat
+    - è possibile attaccarlo una volta ogni ora
+    - il danno inflitto è uguale per tutti gli utenti (aumenta in base all'equipaggiamento)
+    - sconfiggendo il boss si possono droppare equipaggiamenti che aumentano le statistiche dell'utente (attacco / velocità di attacco)
+- eventi casuali giornalieri
+    - possibilità di attivare un evento casuale che si applica a tutta la chat 
+    - tipi di eventi possibili: boost exp / boost drop / downgeon 
+- aggiunta di uno shop:
+    - permette di forzare il drop di un oggetto
+    - il costo aumenta ad ogni uso
+    - utilizzabile una sola volta al giorno
