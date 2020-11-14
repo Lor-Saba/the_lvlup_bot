@@ -60,6 +60,13 @@ function errorlog() {
 
 /**
  * 
+ */
+function log() {
+    console.log.apply(console, [(new Date()).toLocaleString()].concat([].slice.call(arguments)));
+}
+
+/**
+ * 
  * @param {object} user oggetto db dell'utente
  * @param {number} dateNow timestamp della data attuale (del messaggio)
  * @param {number} dateDiff tempo in secondi usato per validare lo stato di spam
@@ -173,7 +180,9 @@ function formatBytes(bytes, decimals = 2) {
  */
 function getMessageData(ctx){
 
-    var message = (ctx.message || ctx.editedMessage || ctx.callbackQuery && ctx.callbackQuery.message || {});
+    var message = (ctx.message || ctx.editedMessage || ctx.callbackQuery && ctx.callbackQuery.message);
+
+    if (!message) return null;
     
     const messageData = {
         message:    message,
@@ -270,6 +279,7 @@ function secondsToHms(seconds, extended) {
 }
 
 module.exports = {
+    log,
     errorlog,
     each,
     calcExpFromLevel,

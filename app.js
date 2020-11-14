@@ -90,6 +90,12 @@ function setBotMiddlewares(){
         };
 
         // se è un messaggio che arriva da un bot
+        if (!mexData) {
+            utils.errorlog('middleware', JSON.stringify({ type: ctx.updateType, user: ctx.from, chat: ctx.chat }));
+            return false;
+        }
+
+        // se è un messaggio che arriva da un bot
         if (mexData.isBot) return false;
 
         // interrompe il middleware e continua se è la selezione di un markup
@@ -111,6 +117,7 @@ function setBotMiddlewares(){
 
         if (!user) {
             user = storage.setUser(mexData.userId, { id: mexData.userId });
+            utils.log('New USER:', '"' + mexData.username + '"', mexData.userId);
         }
         
         // aggiorna il nome dell'utente
@@ -131,6 +138,7 @@ function setBotMiddlewares(){
 
             if (!chat) {
                 chat = storage.setChat(mexData.chatId, { id: mexData.chatId });
+                utils.log('New CHAT:', '"' + mexData.chatTitle + '"', mexData.chatId);
             }
 
             // aggiorna il nome della chat
@@ -627,6 +635,17 @@ function setBotEvents(){
         // ottiene il riferimento all'utente
         var user = ctx.state.user;
 
+        if (!user) {
+            console.log('---');
+            utils.errorlog('calcUserExpGain', JSON.stringify({
+                state: ctx.state,
+                from: ctx.from,
+                chat: ctx.chat
+            }));
+            
+            return false;
+        }
+
         calcUserExpGain(ctx, user, 1);
 
         user.lastMessageDate = mexData.date;
@@ -813,12 +832,7 @@ function setBotEvents(){
 
         if (!user) {
             console.log('---');
-            utils.errorlog('calcUserExpGain', {
-                user: user,
-                mexData: mexData
-            });
-            
-            return BigNumber(0);
+            utils.errorlog('calcUserExpGain', JSON.stringify({ state: ctx.state }));
         }
 
         var lexicon = ctx.state.lexicon;

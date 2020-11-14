@@ -85,7 +85,7 @@ const keys = {
         "en": "(`x$(value)`)"
     },
     "STATS_CHALLENGE_LUCK": {
-        "en": "Challenges:  _W_`$(valueW)` _L_`$(valueL)`"
+        "en": "Challenges:  _W_ `$(valueW)` - _L_ `$(valueL)`"
     },
 
 
@@ -277,7 +277,7 @@ const keys = {
         "en": "Smelly Shit"
     },
     "ITEMS_DESCRIPTION_SHIT": {
-        "en": "Oh sh\\*t, it's a sh\\*t. Tt's brown like the sh\\*t and smells like a.. ok I gues you got the idea. Also, I don't believe when anyone says it brings good luck.."
+        "en": "Oh sh\\*t.. literally, You stepped on a big poop. Brown and smelly it will slow you down for a while.."
     },
 
     
