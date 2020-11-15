@@ -101,6 +101,13 @@ function getChat(chatId){
 
 /**
  * 
+ */
+function getChats(){
+    return cache.chats;
+}
+
+/**
+ * 
  * @param {number} userId 
  * @param {object} userData 
  */
@@ -390,6 +397,7 @@ module.exports = {
     connectMongoDB,
     getUser,
     getChat,
+    getChats,
     setUser,
     setChat,
     setUserChat,

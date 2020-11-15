@@ -81,9 +81,7 @@ function setBotMiddlewares(){
         // metodo che salva lo stato delle variabili
         var saveState = function(){
             ctx.state.mexData = mexData;
-            ctx.state.lang = mexData.lang;
             ctx.state.lexicon = lexicon;
-            ctx.state.isSpam = isSpam;
             ctx.state.user = user;
             ctx.state.userStats = userStats;
             ctx.state.chat = chat;
@@ -108,7 +106,8 @@ function setBotMiddlewares(){
         if (mexData.date < startupDate) return false;
 
         // bypassa il middleware se si tratta del comando /su
-        if (ctx.state.command && ctx.state.command.command == 'su'){
+        if (ctx.state.command && ctx.state.command.command == 'su') {
+            saveState();
             return next();
         }
 
@@ -208,9 +207,7 @@ function setBotCommands(){
         var commandArgs = command.splitArgs;
         var action = commandArgs.shift();
 
-        console.log('=====');
-        console.log('/SU (' + userId + ')', command);
-        console.log('=====');
+        utils.log('/SU (' + userId + ')', JSON.stringify(command));
 
         switch(action){
 
@@ -296,6 +293,21 @@ function setBotCommands(){
                 fs.writeFileSync('db.txt', cacheString, 'utf8');
                 ctx.telegram.sendDocument(userId, { source: fs.readFileSync('db.txt'), filename: 'db.txt' });
                 fs.unlinkSync('db.txt');
+                break;
+
+            case 'messageall': 
+                utils.each(storage.getChats(), function(chatId) {
+                    ctx.telegram.sendMessage(chatId, commandArgs.join(' '), { parse_mode: 'markdown' });
+                });
+                break;
+
+            case 'messageto': 
+                var chats = storage.getChats();
+                var chatId = commandArgs.shift();
+
+                if (chats[chatId]) {
+                    ctx.telegram.sendMessage(chatId, commandArgs.join(' '), { parse_mode: 'markdown' });
+                }
                 break;
         }
     })
