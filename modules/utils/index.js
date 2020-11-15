@@ -3,7 +3,7 @@
 const BigNumber = require('bignumber.js');
 
 // configurazione del BigNumber
-BigNumber.config({ EXPONENTIAL_AT: 6, ROUNDING_MODE: 3 });
+BigNumber.config({ EXPONENTIAL_AT: 6, ROUNDING_MODE: 1 });
 
 /**
  * 

@@ -160,7 +160,7 @@ const keys = {
         "en": "*$(username)* you have no items or active bonuses yet.\nKeep texting, sooner or later you will find something!"
     },
     "ITEMS_PICKUP_FULL": {
-        "en": "*$(username)* found an item:\n\n$(itemicon)  _$(itemname)_   `$(value)`\n$(itemdescription)"
+        "en": "*$(username)* found an item:\n\n$(itemicon)  _$(itemname)_   `$(value)`\n$(itemdescription)\n\nType: `$(itemtype)`\nChance: `$(itemchance)%`"
     },
     "ITEMS_PICKUP_COMPACT": {
         "en": "*$(username)* found an item: _$(itemname)_   `$(value)`"
@@ -291,6 +291,15 @@ const keys = {
     },
     "LABEL_PRESTIGE": {
         "en": "Prestige"
+    },
+    "LABEL_ITEMTYPE_PERM": {
+        "en": "Permanent"
+    },
+    "LABEL_ITEMTYPE_TEMP": {
+        "en": "Temporary"
+    },
+    "LABEL_ITEMTYPE_INST": {
+        "en": "Instant"
     },
     "LABEL_GROUPONLY_COMMAND": {
         "en": "This command can only be used in group chats."

@@ -836,6 +836,10 @@ function setBotEvents(){
         }
     });
     
+    bot.catch(function(err, ctx) {
+        utils.errorlog('GLOBAL CATCH:', ctx.updateType, JSON.stringify(err));
+    });
+
     var calcUserExpGain = function(ctx, user, messagesPower = 1, passive = false) {
         // se messagesPower è 1 => guadagna l'esperienza di 1 messaggio
         // se messagesPower è 3 => guadagna l'esperienza di 3 messaggi
@@ -902,6 +906,8 @@ function setBotEvents(){
                     itemicon: items.getRarityIcon(item.name),
                     itemname: lexicon.get('ITEMS_TITLE_' + item.name),
                     itemdescription: lexicon.get('ITEMS_DESCRIPTION_' + item.name),
+                    itemtype: lexicon.get('LABEL_ITEMTYPE_' + item.type.toUpperCase()),
+                    itemchance: utils.formatNumber(item.chance * 100),
                     value: valueLabel
                 }));                
             }
@@ -971,7 +977,7 @@ function init(){
     startupDate = Date.now() / 1000;
 
     // configurazione del BigNumber
-    BigNumber.config({ EXPONENTIAL_AT: 6, ROUNDING_MODE: 3 });
+    BigNumber.config({ EXPONENTIAL_AT: 6, ROUNDING_MODE: 1 });
 
     // catena di metodi per l'inizializzazione
     Promise.resolve()
