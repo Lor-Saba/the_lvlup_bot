@@ -36,6 +36,6 @@ module.exports = [
 
     { type: 'temp', name: 'ELIXIR',     weight: 25, power: 1.3, timeout: 8  },
     { type: 'temp', name: 'MEGAELIXIR', weight: 15, power: 1.5, timeout: 12 },
-    { type: 'temp', name: 'POISON',     weight: 20, power: 0.5, timeout: 6  },
+    { type: 'temp', name: 'POISON',     weight: 20, power: 0.9, timeout: 6  },
     { type: 'temp', name: 'SHIT',       weight: 15, power: 0.7, timeout: 1  }
 ];

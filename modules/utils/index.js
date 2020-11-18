@@ -104,7 +104,7 @@ function calcPenality(user, dateNow, dateDiff = 1){
  * @param {number} prestige 
  */
 function calcNextPrestigeLevel(prestige){
-    return calcExpGain(prestige).multipliedBy(3000);
+    return calcExpGain(prestige).multipliedBy(2000);
 }
 
 /**
