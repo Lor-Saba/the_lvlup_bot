@@ -1,14 +1,21 @@
 - sistema di versionamento dello storage
+- eventi casuali giornalieri
+    - possibilità di attivare un evento casuale che si applica a tutta la chat 
+    - tipi di eventi possibili: boost exp / boost o debuff / dungeon 
 - spawn di un boss
     - appare nel fine settimana a tempo limitato
     - richiede piu attacchi per eliminarlo ()
     - i boss spawnano con piu vita in base a quanti boss sono stati sconfitti nella chat
     - è possibile attaccarlo una volta ogni ora
-    - il danno inflitto è uguale per tutti gli utenti (aumenta in base all'equipaggiamento)
-    - sconfiggendo il boss si possono droppare equipaggiamenti che aumentano le statistiche dell'utente (attacco / velocità di attacco)
-- eventi casuali giornalieri
-    - possibilità di attivare un evento casuale che si applica a tutta la chat 
-    - tipi di eventi possibili: boost exp / boost drop / downgeon 
+    - il danno inflitto corrisponde al livello dell'utente + bonus di eventuali equipaggiamenti
+- Dungeon 
+    - Slot giocatori massimi 4 
+    - ricompense: exp ed equipaggiamenti
+    - appaiono di martedì e giovedì
+- nuovi oggetti "Equipaggiamento" (attacco / velocità di attacco / critico)
+    - tipo: attacco (aumenta il danno base, user.level + equipment.damage)
+    - tipo: velocità di attacco (diminuisce il tempo di timeout necessario per poter riaattaccare)
+    - tipo: critico (bonus aggiuntivo al danno base in %)
 - aggiunta di uno shop:
     - permette di forzare il drop di un oggetto
     - il costo aumenta ad ogni uso
