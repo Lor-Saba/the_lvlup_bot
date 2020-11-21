@@ -9,14 +9,11 @@
     - è possibile attaccarlo una volta ogni ora
     - il danno inflitto corrisponde al livello dell'utente + bonus di eventuali equipaggiamenti
 - Dungeon 
-    - Slot giocatori massimi 4 
-    - ricompense: exp ed equipaggiamenti
+    - E' possibile partecipare una sola volta 
+    - durata limitata di un'oretta
+    - ricompense: exp o equipaggiamenti
     - appaiono di martedì e giovedì
-- nuovi oggetti "Equipaggiamento" (attacco / velocità di attacco / critico)
-    - tipo: attacco (aumenta il danno base, user.level + equipment.damage)
+- nuovi oggetti di tipo "Equipaggiamento" (attacco / velocità di attacco / critico)
+    - tipo: attacco (aumenta il danno base, user.level + equipment)
     - tipo: velocità di attacco (diminuisce il tempo di timeout necessario per poter riaattaccare)
-    - tipo: critico (bonus aggiuntivo al danno base in %)
-- aggiunta di uno shop:
-    - permette di forzare il drop di un oggetto
-    - il costo aumenta ad ogni uso
-    - utilizzabile una sola volta al giorno
+    - tipo: critico (bonus casuale al danno in %)
