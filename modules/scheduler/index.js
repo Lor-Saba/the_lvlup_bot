@@ -39,10 +39,10 @@ function on(type, callback){
 // genera la lista di eventi da controllare
 utils.each(scheduleMap, function(indexItem, item){
     schedule.scheduleJob(item.rule, () => {
-        if (!eventsList[type]) return;
+        if (!eventsList[item.type]) return;
         if (!global.botRunning) return; 
         
-        utils.each(eventsList[type].fn, (indexEvent, event) => event());
+        utils.each(eventsList[item.type].fn, (indexEvent, event) => event());
     });
 });
 
