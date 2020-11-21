@@ -62,7 +62,7 @@ function errorlog() {
  * 
  */
 function log() {
-    console.log.apply(console, [(new Date()).toLocaleString()].concat([].slice.call(arguments)));
+    console.log.apply(console, [(new Date()).toLocaleString(), '|'].concat([].slice.call(arguments)));
 }
 
 /**

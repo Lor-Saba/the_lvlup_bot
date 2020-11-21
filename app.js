@@ -1,4 +1,7 @@
 
+// aggiunge un metodo globale per poter richiedere i moduli dalla root
+addRequireFromRoot();
+
 // configurazione di sviluppo
 const dotenv = require('dotenv').config();
 // corelib per le api di telegram
@@ -19,8 +22,8 @@ const utils = require('./modules/utils');
 const markup = require('./modules/markup');
 // modulo per gestire il drop degli oggetti 
 const items = require('./modules/items');
-// modulo per creare immagini con canvas
-//const canvas = require('./modules/canvas');
+// modulo per schedulare eventi nel tempo
+const scheduler = require('./modules/scheduler');
 // istanza del bot 
 var bot = null;
 // timestamp dell'avvio del bot
@@ -281,7 +284,7 @@ function setBotCommands(){
                 break;
                 
             case 'sync':
-                storage.syncDatabase();
+                storage.syncDatabase(true);
 
                 ctx.reply('Sync done.');
                 break;
@@ -439,7 +442,10 @@ function setBotCommands(){
             userStats.prestige = BigNumber(userStats.prestige).plus(1).valueOf();
             userStats.prestigeAvailable = false;
 
-            ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_SUCCESS', { username: mexData.username, prestige: userStats.prestige }));
+            ctx.replyWithMarkdown(
+                lexicon.get('USER_PRESTIGE_SUCCESS', { username: mexData.username, prestige: userStats.prestige }) +
+                BigNumber(userStats.prestige).isEqualTo(2) ? lexicon.get('USER_SILENCED_LEVELUP') : ''
+            );
         } else {
                 
             ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_FAIL', { username: mexData.username }));
@@ -840,130 +846,161 @@ function setBotEvents(){
         utils.errorlog('GLOBAL CATCH:', ctx.updateType, JSON.stringify(err));
     });
 
-    var calcUserExpGain = function(ctx, user, messagesPower = 1, passive = false) {
-        // se messagesPower è 1 => guadagna l'esperienza di 1 messaggio
-        // se messagesPower è 3 => guadagna l'esperienza di 3 messaggi
-        // se messagesPower è -7 => perde l'esperienza di -7 messaggi
-        // e così via...
-
-        if (!user) {
-            console.log('---');
-            utils.errorlog('calcUserExpGain', JSON.stringify({ state: ctx.state }));
-        }
-
-        var lexicon = ctx.state.lexicon;
-        var mexData = ctx.state.mexData;
-
-        // ottiene il riferimento alla chat
-        var chat = storage.getChat(mexData.chatId);
-        // ottiene il riferimento alle stats dell'utente per la chat corrente
-        var userStats = user.chats[mexData.chatId];
-        // calcola quanta esperienza va applicata
-        var expGain = utils.calcExpGain(userStats.prestige);
-
-        // applica eventuale debuff in base al livello di penalità dell'utente
-        if (user.penality.level === 2){
-            expGain = BigNumber(expGain).multipliedBy(.25);
-        }
-        if (user.penality.level === 4){
-            expGain = BigNumber(expGain).multipliedBy(0);
-        }
-
-        // probabilità di ottenere un oggetto 
-        if (user.lastItemDate + (60 * 60 * 8) < mexData.date    // tempo minimo di 8 ore tra ogni drop
-        &&  Math.random() < 0.01                                // probabilità dell' 1%
-        &&  passive == false) { 
-
-            user.lastItemDate = mexData.date;
-
-            var item = items.pick();
-            var hasItem = userStats.items[item.name];
-            var valueLabel = '';
-
-            if (item.type === 'inst') {
-                var bonusExpGain = calcUserExpGain(ctx, user, item.messages, true);
-
-                valueLabel = '+' + utils.formatNumber(bonusExpGain) + ' ' + lexicon.get('LABEL_EXP');
-            }
-            if (item.type === 'temp') {
-                userStats.items[item.name] = mexData.date;
-
-                valueLabel = (item.power > 1 ? '+': '') + utils.formatNumber((item.power - 1) * 100, 0) + '% ' + lexicon.get('LABEL_EXP') + ' (' + item.timeout + 'h) ';
-            }
-            if (item.type === 'perm') {
-                if (hasItem) {
-                    userStats.items[item.name]++;
-                } else {
-                    userStats.items[item.name] = 1;
-                }
-
-                valueLabel = '+' + (item.power * 100).toFixed(1) + '% ' + lexicon.get('LABEL_EXP');
-            }
-
-            if (chat.settings.notifyUserPickupItem === 'full') {
-                ctx.replyWithMarkdown(lexicon.get('ITEMS_PICKUP_FULL', {
-                    username: user.username,
-                    itemicon: items.getRarityIcon(item.name),
-                    itemname: lexicon.get('ITEMS_TITLE_' + item.name),
-                    itemdescription: lexicon.get('ITEMS_DESCRIPTION_' + item.name),
-                    itemtype: lexicon.get('LABEL_ITEMTYPE_' + item.type.toUpperCase()),
-                    itemchance: utils.formatNumber(item.chance * 100),
-                    value: valueLabel
-                }));                
-            }
-            if (chat.settings.notifyUserPickupItem === 'compact') {
-                ctx.replyWithMarkdown(lexicon.get('ITEMS_PICKUP_COMPACT', {
-                    username: user.username,
-                    itemname: lexicon.get('ITEMS_TITLE_' + item.name),
-                    value: valueLabel
-                }));
-            }
-        }
-
-        // applica i bonus degli eventuali oggetti raccolti
-        var itemsBuff = items.getItemsBuff(userStats.items, mexData.date);
-        expGain = BigNumber(expGain).multipliedBy(itemsBuff.perm).multipliedBy(itemsBuff.temp);
-
-        // applica il numero di messaggi da considerare
-        expGain = BigNumber(expGain).multipliedBy(messagesPower);
-
-        // calcola le nuove statistiche
-        var newExp = BigNumber.maximum(BigNumber(userStats.exp).plus(expGain), 0);
-        var newLevel = utils.calcLevelFromExp(newExp);
-        var nextPrestige = utils.calcNextPrestigeLevel(userStats.prestige);
-
-        // notifica l'utente se è salito di livello
-        if (BigNumber(utils.toFloor(userStats.level)).isLessThan(utils.toFloor(newLevel))) {
-            if (chat.settings.notifyUserLevelup && passive == false) {
-                ctx.replyWithMarkdown(lexicon.get('USER_LEVELUP', { username: user.username, level: utils.toFloor(newLevel) }));
-            }
-        }
-
-        // notifica l'utente se è sceso di livello
-        if (BigNumber(utils.toFloor(userStats.level)).isGreaterThan(utils.toFloor(newLevel))) {
-            if (chat.settings.notifyUserLevelup && passive == false) {
-                ctx.replyWithMarkdown(lexicon.get('USER_LEVELDOWN', { username: user.username, level: utils.toFloor(newLevel) }));
-            }
-        }
+    scheduler.on('boss', function(){
         
-        // notifica l'utente che puo' prestigiare
-        if (BigNumber(newExp).isGreaterThanOrEqualTo(nextPrestige) && userStats.prestigeAvailable == false) {
-            userStats.prestigeAvailable = true;
-
-            if (chat.settings.notifyUserPrestige && passive == false) {
-                ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: user.username, level: utils.toFloor(newLevel) }));
-            }
-        }
-
-        // assegna i nuovi dati
-        userStats.exp = BigNumber(newExp).valueOf();
-        userStats.level = BigNumber(newLevel).valueOf();
-
-        // ritorna il guadagno in exp calcolato
-        return expGain;
-    }
+    });
 
     console.log("  - loaded bot general events");
+}
+
+/**
+ * Calcola il guadagno di esperienza da assegnare ad un utente
+ * 
+ * @param {contextMessage} ctx Oggetto ritornato dagli ascoltatori di telegram
+ * @param {object} user Oggetto con i dati di un utente
+ * @param {number} messagesPower valore dei messaggi da calcolare
+ * @param {boolean} passive silenza la generazione di messaggi verso telegram
+ */
+function calcUserExpGain(ctx, user, messagesPower = 1, passive = false) {
+    // se messagesPower è 1 => guadagna l'esperienza di 1 messaggio
+    // se messagesPower è 3 => guadagna l'esperienza di 3 messaggi
+    // se messagesPower è -7 => perde l'esperienza di -7 messaggi
+    // e così via...
+
+    if (!user) {
+        console.log('---');
+        utils.errorlog('calcUserExpGain', JSON.stringify({ state: ctx.state }));
+    }
+
+    var lexicon = ctx.state.lexicon;
+    var mexData = ctx.state.mexData;
+
+    // ottiene il riferimento alla chat
+    var chat = storage.getChat(mexData.chatId);
+    // ottiene il riferimento alle stats dell'utente per la chat corrente
+    var userStats = user.chats[mexData.chatId];
+    // calcola quanta esperienza va applicata
+    var expGain = utils.calcExpGain(userStats.prestige);
+
+    // applica eventuale debuff in base al livello di penalità dell'utente
+    if (user.penality.level === 2){
+        expGain = BigNumber(expGain).multipliedBy(.25);
+    }
+    if (user.penality.level === 4){
+        expGain = BigNumber(expGain).multipliedBy(0);
+    }
+
+    // probabilità di ottenere un oggetto 
+    if (user.lastItemDate + (60 * 60 * 8) < mexData.date    // tempo minimo di 8 ore tra ogni drop
+    &&  Math.random() < 0.01                                // probabilità dell' 1%
+    &&  passive == false) { 
+
+        user.lastItemDate = mexData.date;
+
+        var item = items.pick();
+        var hasItem = userStats.items[item.name];
+        var valueLabel = '';
+
+        if (item.type === 'inst') {
+            var bonusExpGain = calcUserExpGain(ctx, user, item.messages, true);
+
+            valueLabel = '+' + utils.formatNumber(bonusExpGain) + ' ' + lexicon.get('LABEL_EXP');
+        }
+        if (item.type === 'temp') {
+            userStats.items[item.name] = mexData.date;
+
+            valueLabel = (item.power > 1 ? '+': '') + utils.formatNumber((item.power - 1) * 100, 0) + '% ' + lexicon.get('LABEL_EXP') + ' (' + item.timeout + 'h) ';
+        }
+        if (item.type === 'perm') {
+            if (hasItem) {
+                userStats.items[item.name]++;
+            } else {
+                userStats.items[item.name] = 1;
+            }
+
+            valueLabel = '+' + (item.power * 100).toFixed(1) + '% ' + lexicon.get('LABEL_EXP');
+        }
+
+        if (chat.settings.notifyUserPickupItem === 'full') {
+            ctx.replyWithMarkdown(lexicon.get('ITEMS_PICKUP_FULL', {
+                username: user.username,
+                itemicon: items.getRarityIcon(item.name),
+                itemname: lexicon.get('ITEMS_TITLE_' + item.name),
+                itemdescription: lexicon.get('ITEMS_DESCRIPTION_' + item.name),
+                itemtype: lexicon.get('LABEL_ITEMTYPE_' + item.type.toUpperCase()),
+                itemchance: utils.formatNumber(item.chance * 100),
+                value: valueLabel
+            }));                
+        }
+        if (chat.settings.notifyUserPickupItem === 'compact') {
+            ctx.replyWithMarkdown(lexicon.get('ITEMS_PICKUP_COMPACT', {
+                username: user.username,
+                itemname: lexicon.get('ITEMS_TITLE_' + item.name),
+                value: valueLabel
+            }));
+        }
+    }
+
+    // applica i bonus degli eventuali oggetti raccolti
+    var itemsBuff = items.getItemsBuff(userStats.items, mexData.date);
+    expGain = BigNumber(expGain).multipliedBy(itemsBuff.perm).multipliedBy(itemsBuff.temp);
+
+    // applica il numero di messaggi da considerare
+    expGain = BigNumber(expGain).multipliedBy(messagesPower);
+
+    // calcola le nuove statistiche
+    var newExp = BigNumber.maximum(BigNumber(userStats.exp).plus(expGain), 0);
+    var newLevel = utils.calcLevelFromExp(newExp);
+    var nextPrestige = utils.calcNextPrestigeLevel(userStats.prestige);
+
+    // notifica l'utente se è salito di livello
+    if (BigNumber(utils.toFloor(userStats.level)).isLessThan(utils.toFloor(newLevel))) {
+        if (chat.settings.notifyUserLevelup && BigNumber(userStats.prestige).isLessThan(2)) {
+            setTimeout(function(){
+                ctx.replyWithMarkdown(lexicon.get('USER_LEVELUP', { username: user.username, level: utils.toFloor(newLevel) }));
+            }, passive ? 500: 0);
+        }
+    }
+
+    // notifica l'utente se è sceso di livello
+    if (BigNumber(utils.toFloor(userStats.level)).isGreaterThan(utils.toFloor(newLevel))) {
+        if (chat.settings.notifyUserLevelup && BigNumber(userStats.prestige).isLessThan(2)) {
+            setTimeout(function(){
+                ctx.replyWithMarkdown(lexicon.get('USER_LEVELDOWN', { username: user.username, level: utils.toFloor(newLevel) }));
+            }, passive ? 500: 0);
+        }
+    }
+    
+    // notifica l'utente che puo' prestigiare
+    if (BigNumber(newExp).isGreaterThanOrEqualTo(nextPrestige) && userStats.prestigeAvailable == false) {
+        userStats.prestigeAvailable = true;
+
+        if (chat.settings.notifyUserPrestige) {
+            setTimeout(function(){
+                ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: user.username, level: utils.toFloor(newLevel) }));
+            }, passive ? 500: 0);
+        }
+    }
+
+    // assegna i nuovi dati
+    userStats.exp = BigNumber(newExp).valueOf();
+    userStats.level = BigNumber(newLevel).valueOf();
+
+    // ritorna il guadagno in exp calcolato
+    return expGain;
+}
+
+/**
+ * Aggiunge un metodo globale per poter richiedere i moduli dalla root
+ */
+function addRequireFromRoot(){
+    var resolve = require('path').resolve;
+    var rootPath = __dirname;
+
+    global.rootPath = rootPath;
+    global.requireFromRoot = function(path) {
+        return require(resolve(rootPath, path));
+    };
 }
 
 /**
@@ -984,11 +1021,19 @@ function init(){
     .then(connectMongoDB)
     .then(connectTelegramAPI)
     .then(() => {
+        
         // Avvia il bot
-        bot.launch();
-        console.log('-----\nBot running!')
+        bot.launch().then(() => {
+
+            // imposta una variabile clobale per indicare che il bot è stato lanciato
+            global.botRunning = true;
+
+            console.log('-----\nBot running!');
+        });
+
     })
     .catch(err => {
+
         // Errore
         utils.errorlog('Errors in initialization, Bot not launched.', err);
     });

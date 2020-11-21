@@ -30,13 +30,15 @@ const keys = {
 
     "USER_LEVELUP": {
         "en": "*$(username)* is now at level  `$(level)`",
-        //"it": "$(username) è salito al livello $(level)!"
     },
     "USER_LEVELDOWN": {
-        "en": "*$(username)* leveled down  `$(level)`",
+        "en": "*$(username)* has dropped to level  `$(level)`",
     },
     "USER_PRESTIGE_AVAILABLE": {
         "en": "*$(username)*, with a level of  `$(level)`  you can now prestige! type /prestige to preceed."
+    },
+    "USER_SILENCED_LEVELUP": {
+        "en": "\n_From now on you will no longer be notified in case of a level up._",
     },
     "USER_PRESTIGE_SUCCESS": {
         "en": "*$(username)* prestiged! \nCurrent prestige level:  `$(prestige)`"

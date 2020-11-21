@@ -3,16 +3,20 @@
 const MongoClient = require('mongodb').MongoClient;
 // modulo per gestire i numeri
 const BigNumber = require('bignumber.js');
-// modulo con le strutture
-const structs = require('../structs');
 // modulo con vari metodi di utilità
 const utils = require('../utils');
+// modulo con le strutture
+const structs = require('./structs');
+// sistema di controllo versionamento dei dati in cache
+const cacheVersion = require('./cacheManager');
+// modulo per la gestione di backup
+// const backup = require('./backup');
 // Istanza del DB
 var db = null;
 // cache della lista di utenti e chat
-var cache = { users: {}, chats: {} };
+var cache = { users: {}, chats: {}, config: {} };
 // liste coda da sincronizzare sul db
-var queue = { users: {}, chats: {}, id: null };
+var queue = { users: {}, chats: {}, config: false, id: null };
 
 /**
  * 
@@ -29,9 +33,6 @@ function connectMongoDB(uri) {
         .then(users => {
             utils.each(users, function(index, user){
                 delete user._id;
-
-                // @TODO: versionamento della struttura utenti
-
                 cache.users[user.id] = user;
             });
         });
@@ -41,12 +42,27 @@ function connectMongoDB(uri) {
         .then(chats => {
             utils.each(chats, function(index, chat){
                 delete chat._id;
-
-                // @TODO: versionamento della struttura chats
-
                 cache.chats[chat.id] = chat;
             });
         });
+    })
+    .then(function(){
+        return getCollectionContent('lvlup_config')
+        .then(results => {
+            var config = results[0] || structs.get('config');
+            delete config._id;
+
+            cache.config = config;
+        });
+    })
+    .then(function(){
+        var oldCacheVersion = cache.config.cacheVersion;
+        // controlla ed applica eventuali aggiornamenti dei dati in cache
+        cache = cacheVersion.check(cache);
+
+        if (oldCacheVersion != cache.config.cacheVersion) {
+            queue.config = true;
+        }
     })
     .then(function(){
 
@@ -60,8 +76,14 @@ function connectMongoDB(uri) {
     });
 }
 
+/**
+ * Controlla se esiste le collezioni sul db, crea quelle che non trova
+ */
 function checkCollections(){
     return Promise.resolve()
+    .then(function(){
+        return db.createCollection('lvlup_config').catch(err => {});
+    })
     .then(function(){
         return db.createCollection('lvlup_users').catch(err => {});
     })
@@ -242,14 +264,24 @@ function addChatToQueue(chatId){
 
 /**
  * aggiorna il DB con i dati in cache
+ * 
+ * @param {boolean} force force to save all
  */
-function syncDatabase(){
+function syncDatabase(force){
 
     var usersIdList = Object.keys(queue.users);
     var chatsIdList = Object.keys(queue.chats);
+    var saveConfig  = queue.config;
+
+    if (force === true){
+        usersIdList = Object.keys(cache.users);
+        chatsIdList = Object.keys(cache.chats);
+        saveConfig  = true;
+    }
 
     queue.users = {};
     queue.chats = {};
+    queue.config = false;
 
     // se in coda ci sono modifiche da applicare per gli utenti..
     if (usersIdList.length > 0) {
@@ -270,7 +302,7 @@ function syncDatabase(){
         try {
             db.collection("lvlup_users").bulkWrite(operations);
         } catch(err) {
-            console.log(err);
+            utils.errorlog('syncDatabase', err);
         }
 
         usersIdList.length = 0;
@@ -296,11 +328,29 @@ function syncDatabase(){
         try {
             db.collection("lvlup_chats").bulkWrite(operations);
         } catch(err) {
-            console.log(err);
+            utils.errorlog('syncDatabase', err);
         }
 
         chatsIdList.length = 0;
         operations.length = 0;
+    }
+
+    // se in coda ci sono modifiche da applicare per la config..
+    if (saveConfig) {
+        var operations = [{
+            replaceOne: { 
+                filter: { id: -1 }, 
+                replacement: cache.config, 
+                upsert: true 
+            } 
+        }];
+
+        try {
+            db.collection("lvlup_config").bulkWrite(operations);
+        } catch(err) {
+            utils.errorlog('syncDatabase', err);
+        }
+
     }
 }
 
@@ -319,7 +369,7 @@ function startQueue(){
 
     stopQueue();
 
-    queue.id = setInterval(syncDatabase, 1000 * 60 * 30); // 5 minuti     1000 * 60 * 2
+    queue.id = setInterval(syncDatabase, 1000 * 60 * 60);  // 1h
 }
 
 /**
@@ -364,8 +414,6 @@ function getChatLeaderboard(chatId){
  * Debug per l'oggetto cache
  */
 function debugCache(){
-    console.log(cache);
-
     return {
         users: Object.keys(cache.users).length,
         chats: Object.keys(cache.chats).length,
