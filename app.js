@@ -10,6 +10,8 @@ const { Telegraf, Markup } = require('telegraf');
 const commandParts = require('telegraf-command-parts');
 // modulo per poter generare hash md5
 const md5 = require('md5');
+// modulo per gestire i file
+const fs = require('fs');
 // modulo per gestire i numeri
 const BigNumber = require('bignumber.js');
 // modulo per gestire le traduzioni delle label
@@ -290,7 +292,6 @@ function setBotCommands(){
                 break;
 
             case 'jsondump': 
-                var fs = require('fs');
                 var cacheString = storage.getCache();
 
                 fs.writeFileSync('db.txt', cacheString, 'utf8');
@@ -311,6 +312,35 @@ function setBotCommands(){
                 if (chats[chatId]) {
                     ctx.telegram.sendMessage(chatId, commandArgs.join(' '), { parse_mode: 'markdown' });
                 }
+                break;
+
+            case 'loadbackup': 
+                var fileName = commandArgs.shift();
+
+                // carica il backup indicato
+                storage.loadBackup(fileName + '.dbtxt')
+                .then(() => {
+                    ctx.telegram.sendMessage(userId, 'Backup "' + fileName + '" loaded.');
+                })
+                .catch(err => {
+                    ctx.telegram.sendMessage(userId, 'Unable to load backup: ' + fileName);
+                });
+                break;
+
+            case 'listbackup':
+                var fileName = commandArgs.shift();
+
+                storage.listBackup(fileName + '.dbtxt');
+                break;
+            
+            case 'downloadbackup': 
+                var fileName = commandArgs.shift();
+                var filePath = require('path').resolve('./modules/storage/backup', fileName + '.dbtxt')
+                // ottiene il backup
+                ctx.telegram.sendDocument(userId, { 
+                    source: fs.readFileSync(filePath), 
+                    filename: fileName + '.dbtxt'
+                });
                 break;
         }
     })
@@ -644,7 +674,7 @@ function setBotCommands(){
  */
 function setBotEvents(){
 
-    bot.on('message', function(ctx){
+    bot.on('text', function(ctx){
         var mexData = ctx.state.mexData;
 
         // esce se non è un messaggio scritto 
@@ -846,8 +876,8 @@ function setBotEvents(){
         utils.errorlog('GLOBAL CATCH:', ctx.updateType, JSON.stringify(err));
     });
 
-    scheduler.on('boss', function(){
-        
+    scheduler.on('backup', function(){
+        storage.saveBackup();
     });
 
     console.log("  - loaded bot general events");

@@ -10,7 +10,7 @@ const structs = require('./structs');
 // sistema di controllo versionamento dei dati in cache
 const cacheVersion = require('./cacheManager');
 // modulo per la gestione di backup
-// const backup = require('./backup');
+const backup = require('./backup');
 // Istanza del DB
 var db = null;
 // cache della lista di utenti e chat
@@ -441,6 +441,42 @@ function getCache() {
     return JSON.stringify(cache);
 }
 
+/**
+ * 
+ */
+function saveBackup(){
+    return backup.save(JSON.stringify(cache));
+}
+
+/**
+ * 
+ * @param {string} fileName nome del backup da caricare
+ */
+function loadBackup(fileName){
+    return backup.load(fileName).then(res => {
+        queue.users = {};
+        queue.chats = {};
+        queue.config = false;
+
+        cache = JSON.parse(res);
+    });
+}
+
+/**
+ * 
+ * @param {string} fileName nome del backup da caricare
+ */
+function getBackup(fileName){
+    return backup.load(fileName);
+}
+
+/**
+ * 
+ */
+function listBackup(){
+    return backup.list();
+}
+
 module.exports = {
     connectMongoDB,
     getUser,
@@ -459,5 +495,9 @@ module.exports = {
     syncDatabase,
     addUserToQueue,
     addChatToQueue,
-    getCache
+    getCache,
+    saveBackup,
+    loadBackup,
+    listBackup,
+    getBackup,
 };

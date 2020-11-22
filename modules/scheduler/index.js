@@ -13,8 +13,8 @@ var scheduleMap = [
     { rule: '0 10 * * 2,4', type: 'dungeon' },
     // “At 00:00 on day-of-month 25 in December.” 
     { rule: '0 0 25 12 *', type: 'xmas' },
-    // “At 02:00.” 
-    { rule: '* * * * *', type: 'backup' }, // '0 2 * * *'
+    // “At 00:00.” 
+    { rule: '0 0 * * *', type: 'backup' },
     // “At 08:00 on every day-of-week from Monday through Friday.” 
     { rule: '0 8 * * 1-5', type: 'daily' }
 ];
