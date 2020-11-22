@@ -17,3 +17,5 @@
     - tipo: attacco (aumenta il danno base, user.level + equipment)
     - tipo: velocità di attacco (diminuisce il tempo di timeout necessario per poter riaattaccare)
     - tipo: critico (bonus casuale al danno in %)
+- oggetti assemblabili
+    - al drop verificare gli oggetti in possesso e nel caso "fondere" un set di oggetti per averne uno piu forte
