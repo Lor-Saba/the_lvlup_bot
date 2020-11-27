@@ -1,44 +1,66 @@
 // modulo con vari metodi di utilità
 const utils = require('../utils');
-// lista degli oggetti 
-var items = require('./items');
-// mappa per gli items
-var itemsMap = {};
-// peso totale di tutti gli items
-var totalWeight = 0;
+// lista degli "items" con relativa mappa e weight totale
+var entries = {};
+
 
 /**
- * Get a random 
+ * Get a random Entry
  */
-function pick(){
-    let winner = Math.random() * totalWeight;
+function pick(type){
+    let list = entries[type].list;
+    let winner = Math.random() * entries[type].totalWeight;
     let threshold = 0;
 
-    for (let i = 0; i < items.length; i++) {
-        threshold += items[i].weight;
+    for (let i = 0; i < list.length; i++) {
+        threshold += list[i].weight;
 
         if (threshold > winner) {
-            return JSON.parse(JSON.stringify(items[i]));
+            return JSON.parse(JSON.stringify(list[i]));
         }
     }
+}
+
+
+/**
+ * Get a random Item
+ */
+function pickItem(){
+    return pick('items');
+}
+
+
+/**
+ * Get a random Item
+ */
+function pickEffect(){
+    return pick('effects');
+}
+
+
+/**
+ * Get a random Item
+ */
+function pickEquipment(){
+    return pick('equipments');
 }
 
 /**
  * 
  * @param {object} userItems lista di oggetti dell'utente con relativa quantità o data 
- * @param {number} currentDate data corrente per poter verificare la validità degli oggetti temporanei
  */
-function getItemsBuff(userItems, currentDate){
-    var tempBuff = 1;
-    var permBuff = 1;
+function getItemsBuff(userItems){
+    let dateNow = Date.now();
+    let tempBuff = 1;
+    let permBuff = 1;
 
     utils.each(userItems, function(key, value){
-        var item = getItem(key);
+        let item = getItem(key);
 
         if (!item) return;
 
         if (item.type === 'temp') {
-            if (currentDate < value + (item.timeout * 60 * 60)) {
+            if (dateNow < value + (item.timeout * 60 * 60)) {
                 tempBuff *= item.power;
             } else {
                 delete userItems[key];
@@ -55,24 +77,39 @@ function getItemsBuff(userItems, currentDate){
     };
 }
 
-/**
- * 
- * @param {string} name nome dell'oggetto da ottenere
- */
-function getItem(name){
-    return items[itemsMap[name]];
+function getEntry(type, name){
+    return entries[type].list[entries[type].map[name]];
 }
 
 /**
- *  ⬜️ 100 - 70
- *  🟩 70 - 40
- *  🟦 40 - 15
- *  🟪 15 - 5
- *  🟧 5 - 0
+ * 
+ * @param {string} name nome dell'entità di tipo "items" da ottenere
+ */
+function getItem(name){
+    return getEntry('items', name);
+}
+
+/**
+ * 
+ * @param {string} name nome dell'entità di tipo "effects" da ottenere
+ */
+function getEffect(name){
+    return getEntry('effects', name);
+}
+
+/**
+ * 
+ * @param {string} name nome dell'entità di tipo "equipments" da ottenere
+ */
+function getEquipment(name){
+    return getEntry('equipments', name);
+}
+
+/**
  * 
  * @param {string} name 
  */
-function getRarityIcon(name){
+function getItemRarityIcon(name){
     var icon = "";
     var item = getItem(name);
 
@@ -80,7 +117,7 @@ function getRarityIcon(name){
 
     if (item.weight <= 5) {
         icon = "🟧";
-    } else if (item.weight <= 15) {
+    } else if (item.weight <= 10) {
         icon = "🟪";
     } else if (item.weight <= 40) {
         icon = "🟦";
@@ -97,29 +134,45 @@ function getRarityIcon(name){
  *  metodo di inizializzazione
  */
 function init() {
-    
-    // mescola la lista degli oggetti
-    items = utils.shuffle(items);
 
-    // crea la mappa per collegare rapidamente la lista degli items con i nomi
-    // e conteggia il totale del peso dei vari oggetti (usato nell'estrazione)
-    utils.each(items, (index, item) => {
-        itemsMap[item.name] = index;
-        totalWeight += item.weight;
-    });
+    var addEntry = function(type){
+        entries[type] = { 
+            totalWeight: 0, 
+            list: utils.shuffle(require('./' + type)), 
+            map: {} 
+        };
 
-    // calcola e assegna la probabilità di sorteggio ad ogni oggetto
-    utils.each(items, (index, item) => {
-        item.chance = item.weight / totalWeight;
-    });
+        // crea la mappa per collegare rapidamente la lista degli items con i nomi
+        // e conteggia il totale del peso dei vari oggetti (usato nell'estrazione)
+        utils.each(entries[type].list, (index, entry) => {
+            entries[type].map[entry.name] = index;
+            entries[type].totalWeight += entry.droppable ? entry.weight : 0;
+        });
+
+        // calcola e assegna la probabilità di sorteggio ad ogni oggetto
+        utils.each(entries[type].list, (index, entry) => {
+            entry.chance = entry.droppable ? entry.weight / entries[type].totalWeight : 0;
+        });
+
+    };
+
+    addEntry('items');
+    addEntry('effects');
+    addEntry('equipments');
 }
 
 // inizializza
 init();
 
 module.exports = {
-    pick,
+    pickItem,
+    pickEffect,
+    pickEquipment,
+
     getItem,
+    getEffect,
+    getEquipment,
+
     getItemsBuff,
-    getRarityIcon,
+    getItemRarityIcon,
 };

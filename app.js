@@ -362,7 +362,7 @@ function setBotCommands(){
 
         // aggiunge il bonus degli oggetti raccattati
         if (Object.keys(userStats.items).length){
-            var itemsBuff = items.getItemsBuff(userStats.items, mexData.date);
+            var itemsBuff = items.getItemsBuff(userStats.items);
             var totalPerm = ((itemsBuff.perm - 1) * 100).toFixed(2);
             var totalTemp = (itemsBuff.temp).toFixed(2);
             var itemsPerm = [];
@@ -376,6 +376,7 @@ function setBotCommands(){
 
                 if (item.type === 'perm') {
                     itemsPerm.push(lexicon.get('ITEMS_LIST_ITEM_PERM', { 
+                        icon: items.getItemRarityIcon(key),
                         name: lexicon.get('ITEMS_TITLE_' + key), 
                         value: (item.power * 100).toFixed(1), 
                         quantity: value
@@ -383,6 +384,7 @@ function setBotCommands(){
                 }
                 if (item.type === 'temp') {
                     itemsTemp.push(lexicon.get('ITEMS_LIST_ITEM_TEMP', { 
+                        icon: items.getItemRarityIcon(key),
                         name: lexicon.get('ITEMS_TITLE_' + key), 
                         value: (item.power).toFixed(1),
                         timeout: utils.secondsToHms(value + ( 60 * 60 * item.timeout) - mexData.date)
@@ -694,6 +696,7 @@ function setBotEvents(){
             return false;
         }
 
+        dropItemCanche(ctx, user);
         calcUserExpGain(ctx, user, 1);
 
         user.lastMessageDate = mexData.date;
@@ -707,9 +710,9 @@ function setBotEvents(){
 
         var modalError = function(){
 
-            setTimeout(function(){
-                ctx.deleteMessage();
-            }, 1000 * 5); 
+            // setTimeout(function(){
+            //     ctx.deleteMessage();
+            // }, 1000 * 5); 
 
             return ctx.editMessageText(lexicon.get('ERROR_MARKUP_NOTFOUND'), { parse_mode: 'markdown' });
         }
@@ -818,7 +821,9 @@ function setBotEvents(){
                 if (chat.isChallengeActive) return false;
                 
                 markup.deleteData(query);
-                ctx.deleteMessage();
+                ctx.deleteMessage().catch(err => {
+                    utils.errorlog('CHALLENGE_BUTTON: unable to delete message', JSON.stringify(ctx.state));
+                });
 
                 // timeout concatenabile alla catena di promesse
                 var promiseTimeout = function(timeout){
@@ -826,11 +831,14 @@ function setBotEvents(){
                         setTimeout(() => ok(arg), timeout);
                     }) };
                 };
+                
+                // assegna lo stato di challenge in corso
+                chat.isChallengeActive = true;
 
                 // inizio catena del challenge
                 Promise.resolve()
+                .then(promiseTimeout(500))
                 .then(() => {
-                    chat.isChallengeActive = true;
                     return ctx.replyWithMarkdown(lexicon.get('CHALLENGE_ACCEPTED', { usernameA: userA.username , usernameB: userB.username }));
                 })
                 .then(promiseTimeout(1000))
@@ -845,8 +853,8 @@ function setBotEvents(){
                     var userL = diceValue % 2 ? userA : userB;
                     var userStatsW = userW.chats[mexData.chatId];
                     var userStatsL = userL.chats[mexData.chatId];
-                    var expGainW = calcUserExpGain(ctx, userW, 7, true);
-                    var expGainL = calcUserExpGain(ctx, userL, -5, true);
+                    var expGainW = calcUserExpGain(ctx, userW, 7);
+                    var expGainL = calcUserExpGain(ctx, userL, -5);
 
                     ctx.replyWithMarkdown(lexicon.get('CHALLENGE_RESULT', { 
                         result: diceValue,
@@ -920,14 +928,88 @@ function calcUserExpGain(ctx, user, messagesPower = 1, passive = false) {
         expGain = BigNumber(expGain).multipliedBy(0);
     }
 
+    // applica i bonus degli eventuali oggetti raccolti
+    var itemsBuff = items.getItemsBuff(userStats.items, mexData.date);
+    expGain = BigNumber(expGain).multipliedBy(itemsBuff.perm).multipliedBy(itemsBuff.temp);
+
+    // applica il numero di messaggi da considerare
+    expGain = BigNumber(expGain).multipliedBy(messagesPower);
+
+    // se non è una chiamata passiva calcola e assegna le nuove statistiche all'utente
+    if (passive == false) {
+            
+        // calcola le nuove statistiche
+        var newExp = BigNumber.maximum(BigNumber(userStats.exp).plus(expGain), 0);
+        var newLevel = utils.calcLevelFromExp(newExp);
+        var nextPrestige = utils.calcNextPrestigeLevel(userStats.prestige);
+
+        // notifica l'utente se è salito di livello
+        if (BigNumber(utils.toFloor(userStats.level)).isLessThan(utils.toFloor(newLevel))) {
+            if (chat.settings.notifyUserLevelup && BigNumber(userStats.prestige).isLessThan(2)) {
+                setTimeout(function(){
+                    ctx.replyWithMarkdown(lexicon.get('USER_LEVELUP', { username: user.username, level: utils.toFloor(newLevel) }));
+                }, 500);
+            }
+        }
+
+        // notifica l'utente se è sceso di livello
+        if (BigNumber(utils.toFloor(userStats.level)).isGreaterThan(utils.toFloor(newLevel))) {
+            if (chat.settings.notifyUserLevelup && BigNumber(userStats.prestige).isLessThan(2)) {
+                setTimeout(function(){
+                    ctx.replyWithMarkdown(lexicon.get('USER_LEVELDOWN', { username: user.username, level: utils.toFloor(newLevel) }));
+                }, 500);
+            }
+        }
+        
+        // notifica l'utente che puo' prestigiare
+        if (BigNumber(newExp).isGreaterThanOrEqualTo(nextPrestige) && userStats.prestigeAvailable == false) {
+            userStats.prestigeAvailable = true;
+
+            if (chat.settings.notifyUserPrestige) {
+                setTimeout(function(){
+                    ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: user.username, level: utils.toFloor(newLevel) }));
+                }, 500);
+            }
+        }
+
+        // assegna i nuovi dati
+        userStats.exp = BigNumber(newExp).valueOf();
+        userStats.level = BigNumber(newLevel).valueOf();
+
+    }
+
+    // ritorna il guadagno in exp calcolato
+    return expGain;
+}
+
+/**
+ * verifica il drop di un oggetto
+ * 
+ * @param {contextMessage} ctx Oggetto ritornato dagli ascoltatori di telegram
+ * @param {object} user Oggetto con i dati di un utente
+ */
+function dropItemCanche(ctx, user){
+
+    if (!user) {
+        console.log('---');
+        utils.errorlog('DropItemCanche', JSON.stringify({ state: ctx.state }));
+    }
+
+    var lexicon = ctx.state.lexicon;
+    var mexData = ctx.state.mexData;
+    
+    // ottiene il riferimento alla chat
+    var chat = storage.getChat(mexData.chatId);
+    // ottiene il riferimento alle stats dell'utente per la chat corrente
+    var userStats = user.chats[mexData.chatId];
+
     // probabilità di ottenere un oggetto 
     if (user.lastItemDate + (60 * 60 * 8) < mexData.date    // tempo minimo di 8 ore tra ogni drop
-    &&  Math.random() < 0.01                                // probabilità dell' 1%
-    &&  passive == false) { 
+    &&  Math.random() < 0.011) { 
 
         user.lastItemDate = mexData.date;
 
-        var item = items.pick();
+        var item = items.pickItem();
         var hasItem = userStats.items[item.name];
         var valueLabel = '';
 
@@ -954,7 +1036,7 @@ function calcUserExpGain(ctx, user, messagesPower = 1, passive = false) {
         if (chat.settings.notifyUserPickupItem === 'full') {
             ctx.replyWithMarkdown(lexicon.get('ITEMS_PICKUP_FULL', {
                 username: user.username,
-                itemicon: items.getRarityIcon(item.name),
+                itemicon: items.getItemRarityIcon(item.name),
                 itemname: lexicon.get('ITEMS_TITLE_' + item.name),
                 itemdescription: lexicon.get('ITEMS_DESCRIPTION_' + item.name),
                 itemtype: lexicon.get('LABEL_ITEMTYPE_' + item.type.toUpperCase()),
@@ -970,54 +1052,6 @@ function calcUserExpGain(ctx, user, messagesPower = 1, passive = false) {
             }));
         }
     }
-
-    // applica i bonus degli eventuali oggetti raccolti
-    var itemsBuff = items.getItemsBuff(userStats.items, mexData.date);
-    expGain = BigNumber(expGain).multipliedBy(itemsBuff.perm).multipliedBy(itemsBuff.temp);
-
-    // applica il numero di messaggi da considerare
-    expGain = BigNumber(expGain).multipliedBy(messagesPower);
-
-    // calcola le nuove statistiche
-    var newExp = BigNumber.maximum(BigNumber(userStats.exp).plus(expGain), 0);
-    var newLevel = utils.calcLevelFromExp(newExp);
-    var nextPrestige = utils.calcNextPrestigeLevel(userStats.prestige);
-
-    // notifica l'utente se è salito di livello
-    if (BigNumber(utils.toFloor(userStats.level)).isLessThan(utils.toFloor(newLevel))) {
-        if (chat.settings.notifyUserLevelup && BigNumber(userStats.prestige).isLessThan(2)) {
-            setTimeout(function(){
-                ctx.replyWithMarkdown(lexicon.get('USER_LEVELUP', { username: user.username, level: utils.toFloor(newLevel) }));
-            }, passive ? 500: 0);
-        }
-    }
-
-    // notifica l'utente se è sceso di livello
-    if (BigNumber(utils.toFloor(userStats.level)).isGreaterThan(utils.toFloor(newLevel))) {
-        if (chat.settings.notifyUserLevelup && BigNumber(userStats.prestige).isLessThan(2)) {
-            setTimeout(function(){
-                ctx.replyWithMarkdown(lexicon.get('USER_LEVELDOWN', { username: user.username, level: utils.toFloor(newLevel) }));
-            }, passive ? 500: 0);
-        }
-    }
-    
-    // notifica l'utente che puo' prestigiare
-    if (BigNumber(newExp).isGreaterThanOrEqualTo(nextPrestige) && userStats.prestigeAvailable == false) {
-        userStats.prestigeAvailable = true;
-
-        if (chat.settings.notifyUserPrestige) {
-            setTimeout(function(){
-                ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: user.username, level: utils.toFloor(newLevel) }));
-            }, passive ? 500: 0);
-        }
-    }
-
-    // assegna i nuovi dati
-    userStats.exp = BigNumber(newExp).valueOf();
-    userStats.level = BigNumber(newLevel).valueOf();
-
-    // ritorna il guadagno in exp calcolato
-    return expGain;
 }
 
 /**
