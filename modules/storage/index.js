@@ -71,6 +71,7 @@ function connectMongoDB(uri) {
 
         // loagga il contenuto della cache
         utils.each(cache, function(key, data){
+            if (key == 'config') return;
             console.log('  - loaded', Object.keys(data).length, key, 'from DB.  [' + utils.roughSizeOfObject(data, true) + ']');
         });
     });
