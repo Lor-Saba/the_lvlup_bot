@@ -3,13 +3,15 @@ const fs = require('fs');
 // modulo per gestire la creazione di path
 const path = require('path');
 const utils = require('../../utils');
+// percorso alla cartella con i backup
+var backupPath = path.resolve(__dirname, 'dump');
 
 /**
  * legge da file la versione della cache
  */
 function readFile(fileName){
     return new Promise((ok, ko) => {
-        var filePath = path.resolve(__dirname, fileName);
+        var filePath = path.resolve(backupPath, fileName);
         
         fs.readFile(filePath, { encoding:'utf8', flag:'r' }, (err, data) => {
             if (err) {
@@ -29,8 +31,27 @@ function readFile(fileName){
  */
 function writeFile(fileName, fileData){
     return new Promise(ok => {
-        fs.writeFile(path.resolve(__dirname, fileName), fileData, 'utf8', ok);
+        fs.writeFile(path.resolve(backupPath, fileName), fileData, 'utf8', ok);
     });
+}
+
+function removeOldBackups(){
+
+    // Ottiene la lista dei backup archiviati nella cartella ./dump 
+    // e li riordina cronologicamente dal piu vecchio al piu recente
+    var files = fs.readdirSync(backupPath)
+                .map(fileName => ({ 
+                    name: path.resolve(backupPath, fileName), 
+                    time: fs.statSync(path.resolve(backupPath, fileName)).mtime.getTime() 
+                }))
+                .sort((a, b) => a.time - b.time)
+                .map(file => file.name);
+
+    // rimuove i backup piu vecchi di 60 giorni
+    var cleanCount = files.length - 60; 
+    while(cleanCount-- > 0){
+        fs.unlinkSync(files[cleanCount]);
+    }
 }
 
 /**
@@ -43,6 +64,8 @@ function save(jsonData){
     var m = ('0' + (now.getMonth() + 1)).slice(-2);
     var d = ('0' + (now.getDate())).slice(-2);
     var fileName = `${y}_${m}_${d}.dbtxt`;
+
+    removeOldBackups();
 
     return writeFile(fileName, jsonData);
 }
@@ -57,7 +80,7 @@ function load(fileName){
 
 function list() {
     return new Promise((ok, ko) => {
-        fs.readdir(__dirname, function (err, files) {
+        fs.readdir(backupPath, function (err, files) {
             
             // interrompe se si è verificato un errore
             if (err) return ko(err);
