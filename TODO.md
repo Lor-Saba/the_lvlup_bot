@@ -1,4 +1,3 @@
-- sistema di versionamento dello storage
 - eventi casuali giornalieri
     - possibilità di attivare un evento casuale che si applica a tutta la chat 
     - tipi di eventi possibili: boost exp / boost o debuff / dungeon 
