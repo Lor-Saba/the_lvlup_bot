@@ -58,6 +58,12 @@ const keys = {
     "STATS_NOUSER": {
         "en": "*$(username)*, seems like you don't have stats yet.\nStart chatting to gain exp! :)"
     },
+    "STATS_EPM": {
+        "en": "Exp per message:  `$(value)`"
+    },
+    "STATS_PRESTIGE_BONUS": {
+        "en": "Prestige bonus:  `+$(value)%`"
+    },
     "STATS_LEVEL_PROGRESS": {
         "en": "To next Level:  `$(percentage)%`"
     },
@@ -80,7 +86,13 @@ const keys = {
         "en": "Prestige:  `$(value)`"
     },
     "STATS_ITEMS": {
-        "en": "Item bonuses:  "
+        "en": "Items bonus:  "
+    },
+    "STATS_EFFECTS": {
+        "en": "Effects bonus:  "
+    },
+    "STATS_EQUIPMENTS": {
+        "en": "Equipments bonus:  "
     },
     "STATS_ITEMS_PERM": {
         "en": "`+$(value)%`   "
@@ -163,11 +175,23 @@ const keys = {
     "ITEMS_LIST_NOITEMS": {
         "en": "*$(username)* you have no items or active bonuses yet.\nKeep texting, sooner or later you will find something!"
     },
+    "ITEMS_CARD_FULL": {
+        "en": "$(itemicon)  _$(itemname)_   `$(value)`\n$(itemdescription)\n\nType: `$(itemtype)`\nChance: `$(itemchance)`"
+    },
+    "ITEMS_CARD_COMPACT": {
+        "en": "$(itemicon)  _$(itemname)_   `$(value)`"
+    },
+    "ITEMS_CRAFT_FULL": {
+        "en": "*$(username)* put together $(recipe) and got:\n\n$(itemcard)"
+    },
+    "ITEMS_CRAFT_COMPACT": {
+        "en": "*$(username)* put together $(recipe) and got:\n$(itemcard)"
+    },
     "ITEMS_PICKUP_FULL": {
-        "en": "*$(username)* found an item:\n\n$(itemicon)  _$(itemname)_   `$(value)`\n$(itemdescription)\n\nType: `$(itemtype)`\nChance: `$(itemchance)%`"
+        "en": "*$(username)* found an item:\n\n$(itemcard)"
     },
     "ITEMS_PICKUP_COMPACT": {
-        "en": "*$(username)* found an item: _$(itemname)_   `$(value)`"
+        "en": "*$(username)* found an item:\n$(itemcard)"
     },
     "ITEMS_TITLE_BAG": {
         "en": "Bag of money"
@@ -197,7 +221,7 @@ const keys = {
         "en": "Small Stone"
     },
     "ITEMS_DESCRIPTION_STONE": {
-        "en": "A little stone. Can be found on the side of the road, just be carefull to not picking up the yellow ones.. trust me, leave them there."
+        "en": "A little stone. Can be found on the side of the road, just be careful to not picking up the yellow ones.. trust me, leave them there."
     },
     "ITEMS_TITLE_BANANA": {
         "en": "Banana"
@@ -227,7 +251,7 @@ const keys = {
         "en": "Big Sausage"
     },
     "ITEMS_DESCRIPTION_SAUSAGE": {
-        "en": "It's a sausage! ..and a BIG one! did you bring the BBQ?"
+        "en": "It's a sausage! ..and a BIG one! did you bring the BBQ sauce?"
     },
     "ITEMS_TITLE_STICK": {
         "en": "Pointy Stick"
@@ -283,6 +307,78 @@ const keys = {
     "ITEMS_DESCRIPTION_SHIT": {
         "en": "Oh sh\\*t.. literally, You stepped on a big poop. Brown and smelly it will slow you down for a while.."
     },
+    "ITEMS_TITLE_DUST": {
+        "en": "Dust"
+    },
+    "ITEMS_DESCRIPTION_DUST": {
+        "en": "You collected some dust from the ground and put it in your pocket ..what a strange person."
+    },
+    "ITEMS_TITLE_STRING": {
+        "en": "Thin string"
+    },
+    "ITEMS_DESCRIPTION_STRING": {
+        "en": "Thin and weak as a small hair, you can throw it in the wind to see it fly."
+    },
+    "ITEMS_TITLE_PAPER": {
+        "en": "Piece of paper"
+    },
+    "ITEMS_DESCRIPTION_PAPER": {
+        "en": "Useful to write down a list of the people you hate most with the respective tortures you have in mind ...or just the shopping list. (don't forget the milk)"
+    },
+    "ITEMS_TITLE_STRAWBERRY": {
+        "en": "Strawberry"
+    },
+    "ITEMS_DESCRIPTION_STRAWBERRY": {
+        "en": "While walking your way home you noticed an impressive bush full of strawberries in your neighbor's garden. You quickly grab one and run away." 
+    },
+    "ITEMS_TITLE_DUSTBALL": {
+        "en": "Dust ball"
+    },
+    "ITEMS_DESCRIPTION_DUSTBALL": {
+        "en": "After collecting a lot of dust, balls of compact dust have formed in your pockets. happy with the result you get back on the road proud of yourself."
+    },
+    "ITEMS_TITLE_BOOK": {
+        "en": "Book"
+    },
+    "ITEMS_DESCRIPTION_BOOK": {
+        "en": "After having fun drawing strange shapes on pieces of paper you decide to group them creating a nice colored book. noice."
+    },
+    "ITEMS_TITLE_BOUQUET": {
+        "en": "Bouquet of flowers"
+    },
+    "ITEMS_DESCRIPTION_BOUQUET": {
+        "en": "What's better than a beautiful flower? MANY beautiful flowers put together! a pleasure to smell too."
+    },
+    "ITEMS_TITLE_ROPE": {
+        "en": "Rope"
+    },
+    "ITEMS_DESCRIPTION_ROPE": {
+        "en": "Unity is strength! this is what you thought by putting together more and more strings to form a little rope."
+    },
+    "ITEMS_TITLE_CAIRN": {
+        "en": "Cairn"
+    },
+    "ITEMS_DESCRIPTION_CAIRN": {
+        "en": "You have learned the skill of putting multiple stones together to create a tower. Even if it is not very tall it still makes a good impression."
+    },
+    "ITEMS_TITLE_MACEDONIA": {
+        "en": "Macedonia"
+    },
+    "ITEMS_DESCRIPTION_MACEDONIA": {
+        "en": "You read this method for lazy people to eat more fruit together in a cooking magazine ..and you couldn't not try it yourself. Still looks edible, good job."
+    },
+    "ITEMS_TITLE_BBQ": {
+        "en": "Barbecue"
+    },
+    "ITEMS_DESCRIPTION_BBQ": {
+        "en": "Oh yes, delicious grilled meat. Everyone looks at you with their mouth watering."
+    },
+    "ITEMS_TITLE_DIAMOND": {
+        "en": "Shiny diamond"
+    },
+    "ITEMS_DESCRIPTION_DIAMOND": {
+        "en": "All those little crystal were pieces of a bigger and shiny diamond. You need 2 sun glasses to be able to look directly at it!"
+    },
 
     
     // Others
@@ -307,6 +403,9 @@ const keys = {
     },
     "LABEL_GROUPONLY_COMMAND": {
         "en": "This command can only be used in group chats."
+    },
+    "LABEL_CRAFTED": {
+        "en": "Crafted"
     },
     "ERROR_MARKUP_NOTFOUND": {
         "en": "_Modal disabled._"

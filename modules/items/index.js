@@ -115,19 +115,80 @@ function getItemRarityIcon(name){
 
     if (!item) return icon;
 
-    if (item.weight <= 5) {
-        icon = "🟧";                // 5  - 0   epic
+    if (item.weight == 0) {
+        icon = "🔲";                // 0 == crafted
+    } else if (item.weight <= 5) {
+        icon = "🟧";                // 5  -  0.001   epic
     } else if (item.weight <= 10) {
-        icon = "🟪";                // 10 - 6   super rare
+        icon = "🟪";                // 10 -  5.001   super rare
     } else if (item.weight <= 40) {
-        icon = "🟦";                // 40 - 11  rare
+        icon = "🟦";                // 40 - 10.001  rare
     } else if (item.weight <= 70) {
-        icon = "🟩";                // 70 - 41  uncommon
+        icon = "🟩";                // 70 - 40.001  uncommon
     } else {
-        icon = "⬜️";                // oo - 71  common
+        icon = "⬜️";                // oo - 70.001  common
     }
 
     return icon;
+}
+
+/**
+ * 
+ * @param {object} userItems lista degli oggetti in possesso di un utente
+ */
+function checkForCraftableItem(userItems){
+    let newItem = null;
+
+    utils.each(userItems, function(itemName){
+        var item = getItem(itemName);
+
+        // interrompe se l'oggetto non permette di craftare altri oggetti
+        if (!item.craft) return;
+
+        // per ogni possibile ricetta craftabile con l'oggetto corrente
+        utils.each(item.craft, function(index, craftableItemName){
+            let craftableItem = getItem(craftableItemName);
+            let isCraftable = true;
+    
+            // controlla se è possibile craftare l'oggetto nuovo con gli in oggetti possesso
+            utils.each(craftableItem.recipe, function(index, requiredItem){
+                if ((userItems[requiredItem.name] || 0) < requiredItem.quantity) {
+                    isCraftable = false;
+                    return false;
+                }
+            });
+
+            // se è possibile
+            if (isCraftable) {
+                newItem = craftableItem;
+
+                // rimuove gli oggetti che sono serviti per creare il nuovo oggetto
+                utils.each(newItem.recipe, function(index, requiredItem){
+                    userItems[requiredItem.name] -= requiredItem.quantity;
+
+                    if (userItems[requiredItem.name] <= 0){
+                        delete userItems[requiredItem.name];
+                    }
+                });
+
+                // aggiunge il nuovo oggetto
+                if (userItems[newItem.name]) {
+                    userItems[newItem.name] ++;
+                } else {
+                    userItems[newItem.name] = 1;
+                }
+
+                // interrompe la ricerca di altri oggetti da craftare
+                return false;
+            }
+        });
+
+        // interrompe se è stato trovato un oggetto craftabile
+        if (newItem) return false;
+    });
+
+    // ritorna l'oggetto craftato se è stato possibile oppure null
+    return newItem;
 }
 
 /**
@@ -136,6 +197,8 @@ function getItemRarityIcon(name){
 function init() {
 
     var addEntry = function(type){
+
+        // aggiunge l'oggetto con i dati relativi al tipo da richiedere
         entries[type] = { 
             totalWeight: 0, 
             list: utils.shuffle(require('./' + type)), 
@@ -175,4 +238,6 @@ module.exports = {
 
     getItemsBuff,
     getItemRarityIcon,
+
+    checkForCraftableItem,
 };

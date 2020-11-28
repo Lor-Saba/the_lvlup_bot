@@ -1048,23 +1048,62 @@ function dropItemCanche(ctx, user){
         if (chat.settings.notifyUserPickupItem === 'full') {
             ctx.replyWithMarkdown(lexicon.get('ITEMS_PICKUP_FULL', {
                 username: user.username,
-                itemicon: items.getItemRarityIcon(item.name),
-                itemname: lexicon.get('ITEMS_TITLE_' + item.name),
-                itemdescription: lexicon.get('ITEMS_DESCRIPTION_' + item.name),
-                itemtype: lexicon.get('LABEL_ITEMTYPE_' + item.type.toUpperCase()),
-                itemchance: utils.formatNumber(item.chance * 100),
-                value: valueLabel
+                itemcard: lexicon.get('ITEMS_CARD_FULL', {
+                    itemicon: items.getItemRarityIcon(item.name),
+                    itemname: lexicon.get('ITEMS_TITLE_' + item.name),
+                    itemdescription: lexicon.get('ITEMS_DESCRIPTION_' + item.name),
+                    itemtype: lexicon.get('LABEL_ITEMTYPE_' + item.type.toUpperCase()),
+                    itemchance: utils.formatNumber(item.chance * 100) + '%',
+                    value: valueLabel
+                })
             }));                
         }
         if (chat.settings.notifyUserPickupItem === 'compact') {
             ctx.replyWithMarkdown(lexicon.get('ITEMS_PICKUP_COMPACT', {
                 username: user.username,
-                itemname: lexicon.get('ITEMS_TITLE_' + item.name),
-                value: valueLabel
+                itemcard: lexicon.get('ITEMS_CARD_COMPACT', {
+                    itemname: lexicon.get('ITEMS_TITLE_' + item.name),
+                    value: valueLabel
+                })
             }));
         }
 
-        // craft items
+        var checkForCraftableItem = function(){
+            var newItem = items.checkForCraftableItem(userStats.items);
+            if (newItem) {
+
+                valueLabel = '+' + (newItem.power * 100).toFixed(1) + '% ' + lexicon.get('LABEL_EXP');
+
+                if (chat.settings.notifyUserPickupItem === 'full') {
+                    ctx.replyWithMarkdown(lexicon.get('ITEMS_CRAFT_FULL', {
+                        username: user.username,
+                        recipe: newItem.recipe.map(i => i.quantity + 'x ' + lexicon.get('ITEMS_TITLE_' + i.name)).join(', '),
+                        itemcard: lexicon.get('ITEMS_CARD_FULL', {
+                            itemicon: items.getItemRarityIcon(newItem.name),
+                            itemname: lexicon.get('ITEMS_TITLE_' + newItem.name),
+                            itemdescription: lexicon.get('ITEMS_DESCRIPTION_' + newItem.name),
+                            itemtype: lexicon.get('LABEL_ITEMTYPE_' + newItem.type.toUpperCase()),
+                            itemchance: lexicon.get('LABEL_CRAFTED'),
+                            value: valueLabel
+                        })
+                    }));                
+                }
+                if (chat.settings.notifyUserPickupItem === 'compact') {
+                    ctx.replyWithMarkdown(lexicon.get('ITEMS_CRAFT_COMPACT', {
+                        username: user.username,
+                        recipe: newItem.recipe.map(i => i.quantity + 'x ' + lexicon.get('ITEMS_TITLE_' + i.name)).join(', '),
+                        itemcard: lexicon.get('ITEMS_CARD_COMPACT', {
+                            itemname: lexicon.get('ITEMS_TITLE_' + newItem.name),
+                            value: valueLabel
+                        })
+                    }));
+                }
+
+                setTimeout(checkForCraftableItem, 200);
+            }
+        };
+
+        setTimeout(checkForCraftableItem, 200);
     }
 }
 
