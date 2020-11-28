@@ -575,6 +575,18 @@ function setBotCommands(){
 
         text += '\n';
 
+        // aggiunge il valore dell' EPM "Exp Per Message"
+        text += '\n' + lexicon.get('STATS_EPM', { 
+            value: utils.formatNumber(calcUserExpGain(ctx, user, 1, true)) 
+        });
+
+        // aggiunge il bonus derivato dal prestigio
+        if (BigNumber(userStats.prestige).isGreaterThan(0)){
+            text += '\n' + lexicon.get('STATS_PRESTIGE_BONUS', { 
+                value: utils.formatNumber(utils.calcExpGain(userStats.prestige).minus(1).multipliedBy(100), 0)
+            });
+        }
+
         // aggiunge il bonus degli oggetti raccattati
         if (Object.keys(userStats.items).length){
             var itemsBuff = items.getItemsBuff(userStats.items, mexData.date);
@@ -1005,7 +1017,7 @@ function dropItemCanche(ctx, user){
 
     // probabilità di ottenere un oggetto 
     if (user.lastItemDate + (60 * 60 * 8) < mexData.date    // tempo minimo di 8 ore tra ogni drop
-    &&  Math.random() < 0.011) { 
+    &&  Math.random() < 0.012) { 
 
         user.lastItemDate = mexData.date;
 
@@ -1051,6 +1063,8 @@ function dropItemCanche(ctx, user){
                 value: valueLabel
             }));
         }
+
+        // craft items
     }
 }
 
