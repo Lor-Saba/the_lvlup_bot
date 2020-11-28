@@ -85,13 +85,9 @@ function list() {
             // interrompe se si è verificato un errore
             if (err) return ko(err);
 
-            var list = [];
+            let list = files.map(file => file.replace('.dbtxt', ''));
 
-            utils.each(files, function(index, file){
-                list.push(file);
-            });
-            
-            return list;
+            ok(list);
         });   
     })
 

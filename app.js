@@ -328,9 +328,9 @@ function setBotCommands(){
                 break;
 
             case 'listbackup':
-                var fileName = commandArgs.shift();
-
-                storage.listBackup(fileName + '.dbtxt');
+                storage.listBackup().then(list => {
+                    ctx.telegram.sendMessage(userId, 'Backups list:\n\n' + list.join('\n'));
+                });
                 break;
             
             case 'downloadbackup': 
@@ -376,7 +376,6 @@ function setBotCommands(){
 
                 if (item.type === 'perm') {
                     itemsPerm.push(lexicon.get('ITEMS_LIST_ITEM_PERM', { 
-                        icon: items.getItemRarityIcon(key),
                         name: lexicon.get('ITEMS_TITLE_' + key), 
                         value: (item.power * 100).toFixed(1), 
                         quantity: value
@@ -384,7 +383,6 @@ function setBotCommands(){
                 }
                 if (item.type === 'temp') {
                     itemsTemp.push(lexicon.get('ITEMS_LIST_ITEM_TEMP', { 
-                        icon: items.getItemRarityIcon(key),
                         name: lexicon.get('ITEMS_TITLE_' + key), 
                         value: (item.power).toFixed(1),
                         timeout: utils.secondsToHms(value + ( 60 * 60 * item.timeout) - mexData.date)
@@ -476,7 +474,7 @@ function setBotCommands(){
 
             ctx.replyWithMarkdown(
                 lexicon.get('USER_PRESTIGE_SUCCESS', { username: mexData.username, prestige: userStats.prestige }) +
-                BigNumber(userStats.prestige).isEqualTo(2) ? lexicon.get('USER_SILENCED_LEVELUP') : ''
+                (BigNumber(userStats.prestige).isEqualTo(2) ? lexicon.get('USER_SILENCED_LEVELUP') : '')
             );
         } else {
                 
@@ -979,7 +977,7 @@ function calcUserExpGain(ctx, user, messagesPower = 1, passive = false) {
 
             if (chat.settings.notifyUserPrestige) {
                 setTimeout(function(){
-                    ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: user.username, level: utils.toFloor(newLevel) }));
+                    ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: user.username }));
                 }, 500);
             }
         }
