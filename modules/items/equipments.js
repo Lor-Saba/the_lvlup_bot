@@ -3,5 +3,5 @@ module.exports = [
 
     // permanenti
 
-    { type: 'perm', droppable: true, name: 'DAISY',     weight: 100, power: 0.01  }
+    //{ type: 'perm', droppable: true, name: 'DAISY',     weight: 100, power: 0.01  }
 ];

@@ -116,15 +116,15 @@ function getItemRarityIcon(name){
     if (!item) return icon;
 
     if (item.weight <= 5) {
-        icon = "🟧";
+        icon = "🟧";                // 5  - 0   epic
     } else if (item.weight <= 10) {
-        icon = "🟪";
+        icon = "🟪";                // 10 - 6   super rare
     } else if (item.weight <= 40) {
-        icon = "🟦";
+        icon = "🟦";                // 40 - 11  rare
     } else if (item.weight <= 70) {
-        icon = "🟩";
+        icon = "🟩";                // 70 - 41  uncommon
     } else {
-        icon = "⬜️";
+        icon = "⬜️";                // oo - 71  common
     }
 
     return icon;
