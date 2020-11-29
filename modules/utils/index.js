@@ -189,7 +189,7 @@ function getMessageData(ctx){
         date:       message.date,
         isMarkup:   message.reply_markup !== undefined,
         isPrivate:  ctx.chat.type === 'private',
-        isBot:      ctx.from.is_bot,
+        isBot:      ctx.from.is_bot || !!message.via_bot,
         username:   ctx.from.username || ctx.from.first_name,
         userId:     ctx.from.id,
         chatId:     ctx.chat.id,

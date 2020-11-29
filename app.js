@@ -697,7 +697,7 @@ function setBotEvents(){
 
         if (!user) {
             console.log('---');
-            utils.errorlog('calcUserExpGain', JSON.stringify({
+            utils.errorlog('bot.on "text"', JSON.stringify({
                 state: ctx.state,
                 from: ctx.from,
                 chat: ctx.chat
