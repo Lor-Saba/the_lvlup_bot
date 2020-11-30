@@ -16,7 +16,9 @@ var scheduleMap = [
     // “At 01:00.” 
     { rule: '0 1 * * *', type: 'backup' },
     // “At 08:00 on every day-of-week from Monday through Friday.” 
-    { rule: '0 8 * * 1-5', type: 'daily' }
+    { rule: '0 8 * * 1-5', type: 'daily' },
+    // “At minute 0.” 
+    { rule: '0 * * * *', type: 'dbsync' }
 ];
 
 

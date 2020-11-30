@@ -36,7 +36,7 @@ var startupDate = 0;
  * Connessione alle API telegram per gestire il bot
  */
 function connectTelegramAPI(){
-    return new Promise(function(ok){
+    return new Promise(ok => {
 
         bot = new Telegraf(process.env["accessToken"]);
 
@@ -53,13 +53,48 @@ function connectTelegramAPI(){
  * Connessione al mongodb 
  */
 function connectMongoDB(){
-    return new Promise(function(ok, ko){
-        storage.connectMongoDB(process.env['mongodb']).then(function(){
-            storage.startQueue();
-            ok();
-        });
+    return new Promise(ok => {
+        storage.connectMongoDB(process.env['mongodb']).then(ok);
     });
 }
+
+/**
+ * Assegnazione degli eventi dello scheduler
+ */
+function initSchedulerEvents(){
+    return new Promise(ok => {
+
+        scheduler.on('backup', function(){
+            storage.saveBackup();
+        });
+
+        scheduler.on('dbsync', function(){
+            storage.syncDatabase();
+        });
+
+        console.log("> Cron events initialized");
+
+        ok();
+    });
+}
+
+/**
+ * Controlla se è stato aggiornato il bot dall'ultimo avvio 
+ * ed in caso invia una notifica globale a tutte le chat
+ */
+//function checkIfUpdated(){
+//    var currentVersion = require('./package.json').version;
+//    var lastVersion = storage.getVersion();
+//
+//    if (currentVersion !== lastVersion){
+//        storage.setVersion(currentVersion);
+//        
+//        utils.each(storage.getChats(), function(chatId) {
+//            ctx.telegram.sendMessage(chatId, '', { parse_mode: 'markdown' });
+//        });
+//    }
+//}
+
 
 /**
  * 
@@ -894,10 +929,6 @@ function setBotEvents(){
         utils.errorlog('GLOBAL CATCH:', ctx.updateType, JSON.stringify(err));
     });
 
-    scheduler.on('backup', function(){
-        storage.saveBackup();
-    });
-
     console.log("  - loaded bot general events");
 }
 
@@ -1135,6 +1166,7 @@ function init(){
     Promise.resolve()
     .then(connectMongoDB)
     .then(connectTelegramAPI)
+    .then(initSchedulerEvents)
     .then(() => {
         
         // Avvia il bot
@@ -1142,6 +1174,8 @@ function init(){
 
             // imposta una variabile clobale per indicare che il bot è stato lanciato
             global.botRunning = true;
+
+            //checkIfUpdated();
 
             console.log('-----\nBot running!');
         });

@@ -356,24 +356,6 @@ function syncDatabase(force){
 }
 
 /**
- * interrompe l'esecuzione dell'intervallo di sincronizzazione
- */
-function stopQueue(){
-    clearInterval(queue.id);
-}
-
-
-/**
- * avvia l'intervallo di sincronizzazione
- */
-function startQueue(){
-
-    stopQueue();
-
-    queue.id = setInterval(syncDatabase, 1000 * 60 * 60);  // 1h
-}
-
-/**
  * 
  * @param {number} chatId 
  */
@@ -486,7 +468,6 @@ module.exports = {
     setUser,
     setChat,
     setUserChat,
-    startQueue,
     getChatLeaderboard,
     resetChatStats,
     resetUserStats,
