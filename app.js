@@ -82,18 +82,24 @@ function initSchedulerEvents(){
  * Controlla se è stato aggiornato il bot dall'ultimo avvio 
  * ed in caso invia una notifica globale a tutte le chat
  */
-//function checkIfUpdated(){
-//    var currentVersion = require('./package.json').version;
-//    var lastVersion = storage.getVersion();
-//
-//    if (currentVersion !== lastVersion){
-//        storage.setVersion(currentVersion);
-//        
-//        utils.each(storage.getChats(), function(chatId) {
-//            ctx.telegram.sendMessage(chatId, '', { parse_mode: 'markdown' });
-//        });
-//    }
-//}
+function checkIfUpdated(){
+    var currentVersion = require('./package.json').version;
+    var lastVersion = storage.getVersion();
+    var lexicon = Lexicon.lang('en');
+
+    if (currentVersion !== lastVersion){
+        storage.setVersion(currentVersion);
+        
+        utils.each(storage.getChats(), function(chatId) {
+            bot.telegram.sendMessage(chatId, lexicon.get('UPDATED_LABEL', { version: currentVersion }), Markup.inlineKeyboard([
+                Markup.urlButton(
+                    lexicon.get('UPDATED_BUTTON'), 
+                    'https://raw.githubusercontent.com/Lor-Saba/the_lvlup_bot/master/changelog/' + currentVersion + '.md'
+                )
+            ]).extra({ parse_mode: 'markdown' }));
+        });
+    }
+}
 
 
 /**
@@ -127,23 +133,17 @@ function setBotMiddlewares(){
             ctx.state.chat = chat;
         };
 
-        // se è un messaggio che arriva da un bot
+        // interrompe se non è stato possibile generare l'oggetto mexData
         if (!mexData) {
             utils.errorlog('middleware', JSON.stringify({ type: ctx.updateType, user: ctx.from, chat: ctx.chat }));
             return false;
         }
-
-        // se è un messaggio che arriva da un bot
-        if (mexData.isBot) return false;
-
-        // interrompe il middleware e continua se è la selezione di un markup
-        if (mexData.isMarkup) {
-            saveState();
-            return next();
-        } 
         
         // blocca l'esecuzione se si stanno ricevendo eventi precedenti all'avvio del bot
         if (mexData.date < startupDate) return false;
+
+        // se è un messaggio che arriva da un bot
+        if (mexData.isBot) return false;
 
         // bypassa il middleware se si tratta del comando /su
         if (ctx.state.command && ctx.state.command.command == 'su') {
@@ -151,65 +151,67 @@ function setBotMiddlewares(){
             return next();
         }
 
+        // interrompe il middleware e continua se è la selezione di un markup
+        if (mexData.isMarkup) {
+            saveState();
+            return next();
+        } 
+
+        // blocca l'esecuzione se ci troviamo in una chat privata tra il bot e l'utente
+        if (mexData.isPrivate) return false;
+
         // crea l'oggetto dell'utente se non esiste
         user = storage.getUser(mexData.userId);
-
         if (!user) {
             user = storage.setUser(mexData.userId, { id: mexData.userId });
             utils.log('New USER:', '"' + mexData.username + '"', mexData.userId);
         }
         
-        // aggiorna il nome dell'utente
-        user.username = mexData.username;
-        
-        // calcolo dati relativi alla chat corrente se si tratta di un gruppo
-        if (!mexData.isPrivate) {
-
-            // crea l'oggetto delle statistiche dell'utente nella chat corrente se non esiste
-            userStats = user.chats[mexData.chatId]; 
-
-            if (!userStats){
-                userStats = storage.setUserChat(mexData.userId, mexData.chatId, {});
-            }
-
-            // crea l'oggetto della chat se non esiste
-            chat = storage.getChat(mexData.chatId);
-
-            if (!chat) {
-                chat = storage.setChat(mexData.chatId, { id: mexData.chatId });
-                utils.log('New CHAT:', '"' + mexData.chatTitle + '"', mexData.chatId);
-            }
-
-            // aggiorna il nome della chat
-            chat.title = mexData.chatTitle;
-
-            // gestione della penalità in caso di spam
-            oldPenalityLevel = user.penality.level;
-            isSpam = utils.calcPenality(user, mexData.date, 1.1);
-
-            if (isSpam && chat.settings.notifyPenality) {
-
-                if (oldPenalityLevel == 1) {
-                    ctx.replyWithMarkdown(lexicon.get('PENALITY_LEVEL_2', { username: mexData.username }));
-                }
-                if (oldPenalityLevel == 3) {
-                    ctx.replyWithMarkdown(lexicon.get('PENALITY_LEVEL_4', { username: mexData.username }));
-                }
-            }
-
-            // aggiunge la chat in queue
-            storage.addChatToQueue(chat.id);
+        // crea l'oggetto delle statistiche dell'utente nella chat corrente se non esiste
+        userStats = user.chats[mexData.chatId]; 
+        if (!userStats){
+            userStats = storage.setUserChat(mexData.userId, mexData.chatId, {});
+            utils.log('New CHAT','"' + mexData.chatTitle + '"', mexData.chatId, 'for USER:', '"' + mexData.username + '"', mexData.userId);
         }
 
-        // aggiunge l'utente in queue
-        storage.addUserToQueue(user.id);
+        // crea l'oggetto della chat se non esiste
+        chat = storage.getChat(mexData.chatId);
+        if (!chat) {
+            chat = storage.setChat(mexData.chatId, { id: mexData.chatId });
+            utils.log('New CHAT:', '"' + mexData.chatTitle + '"', mexData.chatId);
+        }
+
+        // gestione della penalità in caso di spam messaggi
+        oldPenalityLevel = userStats.penality.level;
+        isSpam = utils.calcPenality(userStats, mexData.date, 1.1);
+
+        if (isSpam && chat.settings.notifyPenality) {
+
+            if (oldPenalityLevel == 1) {
+                ctx.replyWithMarkdown(lexicon.get('PENALITY_LEVEL_2', { username: mexData.username }));
+            }
+            if (oldPenalityLevel == 3) {
+                ctx.replyWithMarkdown(lexicon.get('PENALITY_LEVEL_4', { username: mexData.username }));
+            }
+        }
         
         // protezione spam dei comandi
         if (ctx.state.command) {
-            if (mexData.date - user.lastCommandDate < 2) return false;   
+            if (mexData.date - userStats.lastCommandDate < 2) return false;   
              
-            user.lastCommandDate = mexData.date;   
+            userStats.lastCommandDate = mexData.date;   
         }
+
+        // aggiorna il nome della chat
+        chat.title = mexData.chatTitle;
+        // aggiorna il nome dell'utente
+        user.username = mexData.username;
+        // aggiorna la data dell'ultimo messaggio
+        userStats.lastMessageDate = mexData.date;
+        // aggiunge la chat in queue
+        storage.addChatToQueue(chat.id);
+        // aggiunge l'utente in queue
+        storage.addUserToQueue(user.id);
 
         // salva i dati del messaggio per l'handler successivo 
         saveState();
@@ -641,9 +643,9 @@ function setBotCommands(){
         }
 
         // aggiunge il livello di penalità attivo
-        if (user.penality.level >= 2) {
+        if (userStats.penality.level >= 2) {
             text += '\n' + lexicon.get('STATS_PENALITY_LEVEL');
-            text += ['🟢','🟡','🟠','🔴','❌'][user.penality.level];         
+            text += ['🟢','🟡','🟠','🔴','❌'][userStats.penality.level];         
         }
 
         text += '\n';   
@@ -693,15 +695,19 @@ function setBotCommands(){
 
         // ottiene il riferimento all'utente
         var user = ctx.state.user;
+        // ottiene il riferimento alle stats dell'utente per la chat corrente
+        var userStats = ctx.state.userStats;
+        // cooldown per poter richiedere il prossimo challenge
+        var cooldownTime = 60 * 60 * 2;
 
         // protezione spam dei comandi
-        if (mexData.date - user.lastChallengeDate < 60 * 60 * 2) {
+        if (mexData.date - userStats.lastChallengeDate < cooldownTime) {
             return ctx.replyWithMarkdown(lexicon.get('CHALLENGE_TIMEOUT', { 
                 username: user.username, 
-                timeout: utils.secondsToHms((user.lastChallengeDate + 60 * 60 * 2) - mexData.date, true)
+                timeout: utils.secondsToHms((userStats.lastChallengeDate + cooldownTime) - mexData.date, true)
             }));
         } else {
-            user.lastChallengeDate = mexData.date;
+            userStats.lastChallengeDate = mexData.date;
         }
 
         var markupData = markup.get('CHALLENGE_START', ctx.update.message, { 
@@ -722,11 +728,6 @@ function setBotCommands(){
 function setBotEvents(){
 
     bot.on('text', function(ctx){
-        var mexData = ctx.state.mexData;
-
-        // esce se non è un messaggio scritto 
-        if (mexData.isPrivate) return;
-
         // ottiene il riferimento all'utente
         var user = ctx.state.user;
 
@@ -743,8 +744,6 @@ function setBotEvents(){
 
         dropItemCanche(ctx, user);
         calcUserExpGain(ctx, user, 1);
-
-        user.lastMessageDate = mexData.date;
     });
 
     bot.on('callback_query', function(ctx){ 
@@ -962,10 +961,10 @@ function calcUserExpGain(ctx, user, messagesPower = 1, passive = false) {
     var expGain = utils.calcExpGain(userStats.prestige);
 
     // applica eventuale debuff in base al livello di penalità dell'utente
-    if (user.penality.level === 2){
+    if (userStats.penality.level === 2){
         expGain = BigNumber(expGain).multipliedBy(.25);
     }
-    if (user.penality.level === 4){
+    if (userStats.penality.level === 4){
         expGain = BigNumber(expGain).multipliedBy(0);
     }
 
@@ -1043,12 +1042,14 @@ function dropItemCanche(ctx, user){
     var chat = storage.getChat(mexData.chatId);
     // ottiene il riferimento alle stats dell'utente per la chat corrente
     var userStats = user.chats[mexData.chatId];
+    // tempo di cooldown prima di poter droppare un altro oggetto
+    var cooldownTime = 60 * 60 * 8;
 
     // probabilità di ottenere un oggetto 
-    if (user.lastItemDate + (60 * 60 * 8) < mexData.date    // tempo minimo di 8 ore tra ogni drop
+    if (userStats.lastItemDate + cooldownTime < mexData.date
     &&  Math.random() < 0.012) { 
 
-        user.lastItemDate = mexData.date;
+        userStats.lastItemDate = mexData.date;
 
         var item = items.pickItem();
         var hasItem = userStats.items[item.name];
@@ -1175,7 +1176,8 @@ function init(){
             // imposta una variabile clobale per indicare che il bot è stato lanciato
             global.botRunning = true;
 
-            //checkIfUpdated();
+            // controlla se è stato aggiornata la versione del bot dall'ultimo riavvio ed in caso manda una notifica a tutte le chat
+            checkIfUpdated();
 
             console.log('-----\nBot running!');
         });

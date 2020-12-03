@@ -460,6 +460,23 @@ function listBackup(){
     return backup.list();
 }
 
+/**
+ * restituisce la versione conosciuta dell'app 
+ */
+function getVersion(){
+    return cache.config.appVersion;
+}
+
+/**
+ * imposta la versione conosciuta dell'app 
+ * 
+ * @param {string} version  
+ */
+function setVersion(version){
+    cache.config.appVersion = version;
+    queue.config = true;
+}
+
 module.exports = {
     connectMongoDB,
     getUser,
@@ -482,4 +499,6 @@ module.exports = {
     loadBackup,
     listBackup,
     getBackup,
+    getVersion,
+    setVersion
 };

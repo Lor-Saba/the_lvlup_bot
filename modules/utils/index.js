@@ -67,19 +67,19 @@ function log() {
 
 /**
  * 
- * @param {object} user oggetto db dell'utente
+ * @param {object} userStats oggetto con le statistiche utente di una chat
  * @param {number} dateNow timestamp della data attuale (del messaggio)
  * @param {number} dateDiff tempo in secondi usato per validare lo stato di spam
  */
-function calcPenality(user, dateNow, dateDiff = 1){
+function calcPenality(userStats, dateNow, dateDiff = 1){
 
-    var isSpam = dateNow - user.lastMessageDate < dateDiff;
+    var isSpam = dateNow - userStats.lastMessageDate < dateDiff;
 
     // controllo per gestire un possibile spam di messaggi
     // (viene considerato spam se è stato inviato un altro messaggio meno di 1 secondo fa)
     if (isSpam) {
-        user.penality.level = Math.min(user.penality.level + 1, 4);
-        user.penality.resetDate = dateNow + (user.penality.level * Math.pow(2, user.penality.level) * 5);
+        userStats.penality.level = Math.min(userStats.penality.level + 1, 4);
+        userStats.penality.resetDate = dateNow + (userStats.penality.level * Math.pow(2, userStats.penality.level) * 5);
 
         /*
             reset date:
@@ -90,9 +90,9 @@ function calcPenality(user, dateNow, dateDiff = 1){
                 4 ❌ - 320s     <-  0% exp gain
         */
     } else {
-        if (user.penality.level > 0 && user.penality.resetDate - dateNow < 0) {
-            user.penality.level = 0;
-            user.penality.resetDate = 0;
+        if (userStats.penality.level > 0 && userStats.penality.resetDate - dateNow < 0) {
+            userStats.penality.level = 0;
+            userStats.penality.resetDate = 0;
         }
     }
 
