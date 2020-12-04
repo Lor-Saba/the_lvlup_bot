@@ -10,6 +10,11 @@ module.exports = {
         health: 0,
         attackers: {}
     },
+    dungeon: {
+        active: false,
+        spawnDate: 0,
+        users: {}
+    },
     settings: {
         notifyPenality: true,
         notifyUserLevelup: true,

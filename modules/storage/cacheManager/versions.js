@@ -49,6 +49,13 @@ module.exports = {
                     health: 0,
                     attackers: {}
                 };
+
+                // oggetto per il dungeon che appare nel fine settimana
+                chat.dungeon = {
+                    active: false,
+                    spawnDate: 0,
+                    users: {}
+                }
             });
 
             return cache;
