@@ -1,12 +1,13 @@
 - eventi casuali giornalieri
     - possibilità di attivare un evento casuale che si applica a tutta la chat 
     - tipi di eventi possibili: boost exp / boost o debuff / dungeon 
-- spawn di un boss
+- spawn di un mostro
     - appare nel fine settimana a tempo limitato
-    - richiede piu attacchi per eliminarlo ()
-    - i boss spawnano con piu vita in base a quanti boss sono stati sconfitti nella chat
+    - richiede la collaborazione di piu utenti per sconfiggerlo
+    - il mostro spawna con piu vita in base a quanti mostri sono stati sconfitti nella chat
     - è possibile attaccarlo una volta ogni ora
     - il danno inflitto corrisponde al livello dell'utente + bonus di eventuali equipaggiamenti
+    - se non viene eliminato in tempo la chat subirà un debuff del guadagno di exp per 2 giorni
 - Dungeon 
     - E' possibile partecipare una sola volta 
     - durata limitata di un'oretta
@@ -16,5 +17,5 @@
     - tipo: attacco (aumenta il danno base, user.level + equipment)
     - tipo: velocità di attacco (diminuisce il tempo di timeout necessario per poter riaattaccare)
     - tipo: critico (bonus casuale al danno in %)
-- oggetti assemblabili
-    - al drop verificare gli oggetti in possesso e nel caso "fondere" un set di oggetti per averne uno piu forte
+- aggiungere effetti alle challenge
+- aggiungere effetti alle chat
