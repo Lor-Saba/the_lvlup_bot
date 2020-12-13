@@ -5,9 +5,12 @@ module.exports = {
     effects: {},
     monster: {
         active: false,
-        spawnDate: 0,
+        attackable: false,
+        expired: false,
+        messageId: 0,
         level: 1,
-        health: 0,
+        health: "0",
+        healthMax: "0",
         attackers: {}
     },
     dungeon: {

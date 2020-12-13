@@ -21,7 +21,7 @@ module.exports = [
     { type: 'perm', droppable: true,  name: 'PAPER',      weight: 60,  power: 0.015, craft: ['BOOK'] },
     { type: 'perm', droppable: true,  name: 'SAUCE',      weight: 60,  power: 0.015, craft: ['BBQ'] },
     { type: 'perm', droppable: true,  name: 'SAUSAGE',    weight: 50,  power: 0.018, craft: ['BBQ'] },
-    { type: 'perm', droppable: true,  name: 'STICK',      weight: 35,  power: 0.020, craft: ['BBQ']  },
+    { type: 'perm', droppable: true,  name: 'STICK',      weight: 35,  power: 0.020, craft: ['BBQ'] },
     { type: 'perm', droppable: true,  name: 'CRYSTAL',    weight: 10,  power: 0.050, craft: ['DIAMOND'] },
     { type: 'perm', droppable: true,  name: 'SUSEYE',     weight: 3,   power: 0.100 },
     { type: 'perm', droppable: true,  name: 'DRAGONEGG',  weight: 2,   power: 0.150 },

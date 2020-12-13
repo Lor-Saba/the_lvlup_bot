@@ -35,6 +35,15 @@ function calcExpGain(prestige) {
 
 /**
  * 
+ * @param {number} monsterLevel livello del mostro a cui calcolare la vita
+ */
+function calcMonsterHealth(monsterLevel){
+    // return Math.floor(Math.sqrt(Math.pow(1.85, monsterLevel - 1)) * 25);
+    return BigNumber.maximum(0, BigNumber(1.85).pow(BigNumber(monsterLevel)).sqrt().multipliedBy(25)).toFixed(0).valueOf();
+}
+
+/**
+ * 
  * @param {object|array} obj Lista da iterare
  * @param {function} fn callback
  */
@@ -276,7 +285,18 @@ function secondsToHms(seconds, extended) {
     }
 
     return result; 
-}
+}               
+
+/**
+ * timeout concatenabile alla catena di promesse
+ * 
+ * @param {number} timeout tempo di attesa in ms 
+ */
+function promiseTimeout(timeout) {
+    return arg => { return new Promise(ok => {
+        setTimeout(() => ok(arg), timeout);
+    }) };
+};
 
 module.exports = {
     log,
@@ -293,5 +313,7 @@ module.exports = {
     formatNumber,
     toFloor,
     shuffle,
-    secondsToHms
+    secondsToHms,
+    calcMonsterHealth,
+    promiseTimeout
 };

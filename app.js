@@ -44,6 +44,7 @@ function connectTelegramAPI(){
 
         setBotMiddlewares();
         setBotCommands();
+        setBotActions();
         setBotEvents();
         ok();
     });
@@ -70,6 +71,48 @@ function initSchedulerEvents(){
 
         scheduler.on('dbsync', function(){
             storage.syncDatabase();
+        });
+
+        scheduler.on('monster', function(){
+            var lexicon = Lexicon.lang('en');
+            var button = Markup.inlineKeyboard(
+                [
+                    Markup.callbackButton(
+                        lexicon.get('MONSTER_ATTACK_LABEL'), 
+                        'monster_attack'
+                    )
+                ]
+            ).extra({ parse_mode: 'markdown' });
+
+            var spawnMonster = function(chat){
+                var attackTimeout = 1000 * 60 * 60 * 1;
+
+                chat.monster.active = false;
+                chat.monster.attackable = true;
+                chat.monster.expired = false;
+                chat.monster.messageId = 0;
+                chat.monster.attackers = {};
+                chat.monster.health = utils.calcMonsterHealth(chat.monster.level);
+                chat.monster.healthMax = chat.monster.health;
+
+                bot.telegram.sendMessage(chat.id, lexicon.get('MONSTER_SPAWN'), button).then(ctxSpawn => {
+                    setTimeout(() => endMonster(ctxSpawn, chat), attackTimeout);
+                }).catch(()=>{});
+            }
+
+            var endMonster = function(ctxSpawn, chat){
+
+                // interrompe se il mostro è attivo o se non ha piu vita
+                if (chat.monster.active || BigNumber(chat.monster.health).isEqualTo(0)) return;
+
+                // elimina il messaggio per iniziare l'attacco
+                bot.telegram.editMessageText(chat.id, ctxSpawn.message_id, null, lexicon.get('MONSTER_OLD_MESSAGE'), { parse_mode: 'markdown' }).catch(()=>{});
+            };
+
+            var counter = 5;
+            utils.each(storage.getChats(), (chatId, chat) => {
+                setTimeout(() => spawnMonster(chat), counter += 5);
+            });
         });
 
         console.log("> Cron events initialized");
@@ -100,7 +143,6 @@ function checkIfUpdated(){
         });
     }
 }
-
 
 /**
  * 
@@ -549,11 +591,6 @@ function setBotCommands(){
         });
 
         ctx.replyWithMarkdown(lbList.join('\n'));
-
-        //bot.telegram.sendMessage(chatId, lbList.join('\n'), {
-        //    parse_mode: 'markdown',
-        //    reply_to_message_id: ctx.update.message.message_id
-        //});
     });
     
     bot.command('stats', function(ctx){
@@ -723,6 +760,194 @@ function setBotCommands(){
 }
 
 /**
+ * assegnazione degli handlers per delle callback_query specifiche
+ */
+function setBotActions(){
+
+    bot.action('monster_attack', function(ctx){
+        var lexicon = ctx.state.lexicon;
+        var mexData = ctx.state.mexData;
+
+        // ottiene il riferimento all'utente
+        var user = storage.getUser(mexData.userId);
+        // ottiene il riferimento alle stats dell'utente per la chat corrente
+        var userStats = user.chats[mexData.chatId];
+        // ottiene il riferimento alla chat
+        var chat = storage.getChat(mexData.chatId);
+        // tempo di cooldown per attacco
+        var attackCooldown = 1000 * 60 * 30;
+        // tempo limite per poter abbattere il mostro
+        var monsterTimeLimit = 1000 * 60 * 60 * 8;
+        
+        // interrompe se la vita è a zero
+        if (chat.monster.expired == true) return false;
+        
+        // interrompe se la vita è a zero
+        if (BigNumber(chat.monster.health).isEqualTo(0)) return false;
+
+        // blocca gli attacchi successivi o interrompe se non è attaccabile
+        if (chat.monster.attackable == true) {
+            chat.monster.attackable = false;
+        } else {
+            return false;
+        }
+
+        // aggiunge l'utente se è il suo primo attacco
+        if (!chat.monster.attackers[user.id]) {
+            chat.monster.attackers[user.id] = { username: user.username, count: 0, damage: 0, lastAttackDate: 0 };
+        }
+        
+        // interrompe se l'utente ha già attaccato meno di mezz'ora fa
+        if (chat.monster.attackers[user.id].lastAttackDate + attackCooldown > Date.now()){
+            chat.monster.attackable = true;
+
+            var timeDiff = (chat.monster.attackers[user.id].lastAttackDate + attackCooldown) - Date.now();
+
+            return ctx.answerCbQuery(lexicon.get('MONSTER_ATTACK_COOLDOWN', {
+                time: utils.secondsToHms(timeDiff / 1000, true)
+            }), true).catch(()=>{});
+        }
+
+        // mostra il messaggio del primo attacco 
+        if (chat.monster.active == false) {
+            chat.monster.active = true;
+            bot.telegram.sendMessage(chat.id, lexicon.get('MONSTER_START', { username: user.username }), { parse_mode: 'markdown' }).catch(()=>{});
+ 
+            // timeout di 8 ore per abbattere il mostro
+            setTimeout(function(){
+                var triesCounter = 60;
+                var removeMonster = function(){
+
+                    if (BigNumber(chat.monster.health).isEqualTo(0)) {
+                        return;
+                    }
+
+                    if (chat.monster.attackable == false && triesCounter > 0) {
+                        triesCounter --;
+                        setTimeout(removeMonster, 1000);
+                        return;
+                    }
+
+                    chat.monster.active = false;
+                    chat.monster.attackable = false;
+                    bot.telegram.editMessageText(chat.id, chat.monster.messageId, null, lexicon.get('MONSTER_ESCAPED'), { parse_mode: 'markdown' }).catch(()=>{});
+                };
+
+                chat.monster.expired = true;
+                removeMonster();
+            }, monsterTimeLimit);
+        }
+
+        // calc damage
+        var damage = BigNumber(userStats.level);
+
+        // scala la vita del mostro
+        chat.monster.health = BigNumber.maximum(0, BigNumber(chat.monster.health).minus(damage)).valueOf();
+        
+        // aggiorna l'attacco dell'utente 
+        chat.monster.attackers[user.id].count ++;
+        chat.monster.attackers[user.id].damage = BigNumber(chat.monster.attackers[user.id].damage).plus(damage).valueOf();
+        chat.monster.attackers[user.id].lastAttackDate = Date.now();
+        
+        // rimuove il messaggio corrente
+        ctx.deleteMessage().catch(()=>{});
+
+        // caso in cui il mostro è stato eliminato
+        var monsterDefeated = function(){
+            var attUsersLabels = [];
+
+            // genera la lista delle ricompense per ogni utente
+            utils.each(chat.monster.attackers, function(attUserId, attUser){
+
+                // calcola il guadagno in base a quanti attacchi sono stati fatti
+                var expReward = calcUserExpGain(ctx, storage.getUser(attUserId), attUser.count * 10);
+
+                attUsersLabels.push(lexicon.get('MONSTER_DEFEATED_ATTACKER', { 
+                    username: attUser.username,
+                    reward: utils.formatNumber(expReward)
+                }));
+            });
+
+            // incrementa il livello del mostro per la prossima apparizione e lo disattiva
+            chat.monster.level ++;
+            chat.monster.active = false;
+            chat.monster.expired = true;
+
+            // testo messaggio
+            var messageText = lexicon.get('MONSTER_DEFEATED', { usersrewards: attUsersLabels.join('\n') });
+    
+            // invia il messaggio di notifica del mostro sconfitto
+            bot.telegram.sendMessage(chat.id, messageText, { parse_mode: 'markdown' }).catch(()=>{});            
+        };
+
+        // caso in cui il mostro non è stato ancora sconfitto
+        var monsterAttacked = function(){
+            var attUsersLabels = [];
+
+            // genera la lista delle ricompense per ogni utente
+            utils.each(chat.monster.attackers, function(attUserId, attUser){
+                attUsersLabels.push(lexicon.get('MONSTER_MESSAGE_ATTACKER', { 
+                    username: attUser.username,
+                    count: attUser.count,
+                    damage: utils.formatNumber(attUser.damage)
+                }));
+            });
+
+            // calcola la barra della vita
+            var maxBarsLength = 10;
+            var healthBar = '';
+            var healthDiff = BigNumber(chat.monster.health).dividedBy(chat.monster.healthMax);
+                healthDiff = Number(healthDiff.valueOf());
+
+            for(var ind = 0; ind < maxBarsLength; ind++){
+                healthBar += (ind / maxBarsLength < healthDiff) ? '❤️' : (ind == 0 ? '❤️' : '🤍');
+            }
+
+            // crea il testo del lexicon da mostrare
+            var messageText = lexicon.get('MONSTER_MESSAGE', { 
+                level: chat.monster.level,
+                health: utils.formatNumber(chat.monster.health),
+                healthmax: chat.monster.healthMax,
+                healthPercentage: (healthDiff * 100).toFixed(2),
+                healthbar: healthBar,
+                attackers: attUsersLabels.join('\n')
+            });
+
+            // bottone per attaccare
+            var button = Markup.inlineKeyboard(
+                [
+                    Markup.callbackButton(
+                        lexicon.get('MONSTER_ATTACK_LABEL'), 
+                        'monster_attack'
+                    )
+                ]
+            ).extra({ parse_mode: 'markdown' });
+    
+            // invia il messaggio del mostro
+            bot.telegram.sendMessage(chat.id, messageText, button)
+            .then(function(mstCtx){
+                chat.monster.messageId = mstCtx.message_id;
+                chat.monster.attackable = true;
+            })
+            .catch(err => {
+                chat.monster.attackable = true;
+            });
+        };
+
+        // dopo un leggero timeout mostra lo stato del boss
+        setTimeout(function(){
+            if (BigNumber(chat.monster.health).isEqualTo(0)){
+                monsterDefeated();
+            } else {
+                monsterAttacked();
+            }
+        }, 250);
+    });
+
+    console.log("  - loaded bot actions");
+}
+
+/**
  * assegnazione degli handlers generici
  */
 function setBotEvents(){
@@ -733,11 +958,7 @@ function setBotEvents(){
 
         if (!user) {
             console.log('---');
-            utils.errorlog('bot.on "text"', JSON.stringify({
-                state: ctx.state,
-                from: ctx.from,
-                chat: ctx.chat
-            }));
+            utils.errorlog('bot.on "text"', JSON.stringify({ state: ctx.state, from: ctx.from, chat: ctx.chat }));
             
             return false;
         }
@@ -754,11 +975,11 @@ function setBotEvents(){
 
         var modalError = function(){
 
-            // setTimeout(function(){
-            //     ctx.deleteMessage();
-            // }, 1000 * 5); 
+            setTimeout(function(){
+                ctx.deleteMessage().catch(()=>{});
+            }, 1000 * 5); 
 
-            return ctx.editMessageText(lexicon.get('ERROR_MARKUP_NOTFOUND'), { parse_mode: 'markdown' });
+            return ctx.editMessageText(lexicon.get('ERROR_MARKUP_NOTFOUND'), { parse_mode: 'markdown' }).catch(()=>{});
         }
 
         if (!queryData) return modalError();
@@ -868,28 +1089,21 @@ function setBotEvents(){
                 ctx.deleteMessage().catch(err => {
                     utils.errorlog('CHALLENGE_BUTTON: unable to delete message', JSON.stringify(ctx.state));
                 });
-
-                // timeout concatenabile alla catena di promesse
-                var promiseTimeout = function(timeout){
-                    return arg => { return new Promise(ok => {
-                        setTimeout(() => ok(arg), timeout);
-                    }) };
-                };
                 
                 // assegna lo stato di challenge in corso
                 chat.isChallengeActive = true;
 
                 // inizio catena del challenge
                 Promise.resolve()
-                .then(promiseTimeout(500))
+                .then(utils.promiseTimeout(500))
                 .then(() => {
                     return ctx.replyWithMarkdown(lexicon.get('CHALLENGE_ACCEPTED', { usernameA: userA.username , usernameB: userB.username }));
                 })
-                .then(promiseTimeout(1000))
+                .then(utils.promiseTimeout(1000))
                 .then(() => {
                     return ctx.replyWithDice();
                 })
-                .then(promiseTimeout(5000))
+                .then(utils.promiseTimeout(5000))
                 .then(ctxDice => {
                     var diceValue = ctxDice.dice.value;
 
@@ -916,7 +1130,7 @@ function setBotEvents(){
 
                     chat.isChallengeActive = false;
                 }).catch(err => {
-                    utils.errorlog('CHALLENGE_BUTTON', err);
+                    utils.errorlog('CHALLENGE_BUTTON', JSON.stringify(err));
 
                     chat.isChallengeActive = false;
                 });
@@ -1179,6 +1393,14 @@ function init(){
             // controlla se è stato aggiornata la versione del bot dall'ultimo riavvio ed in caso manda una notifica a tutte le chat
             checkIfUpdated();
 
+            //setTimeout(function(){
+            //    bot.telegram.sendMessage(-247381772, 'UUU').then((ctxSpawn)=>{
+            //        setTimeout(function(){
+            //            bot.telegram.editMessageText(-247381772, ctxSpawn.message_id, null, 'AAA').catch(()=>{});
+            //        }, 2000);
+            //    });
+            //}, 2000);
+
             console.log('-----\nBot running!');
         });
 
@@ -1186,7 +1408,7 @@ function init(){
     .catch(err => {
 
         // Errore
-        utils.errorlog('Errors in initialization, Bot not launched.', err);
+        utils.errorlog('Errors in initialization, Bot not launched.', JSON.stringify(err));
     });
 }
 
