@@ -1,5 +1,15 @@
 
-var keys = require('./keys');
+var keys = Object.assign(
+    require('./keys/challenge'),
+    require('./keys/generic'),
+    require('./keys/items'),
+    require('./keys/monster'),
+    require('./keys/penality'),
+    require('./keys/settings'),
+    require('./keys/stats'),
+    require('./keys/updated'),
+    require('./keys/user')
+);
 
 /**
  * 

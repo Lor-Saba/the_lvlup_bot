@@ -6,7 +6,7 @@ const BigNumber = require('bignumber.js');
 // modulo con vari metodi di utilità
 const utils = require('../utils');
 // modulo con le strutture
-const structs = require('./structs');
+const structs = require('../structs');
 // sistema di controllo versionamento dei dati in cache
 const cacheVersion = require('./cacheManager');
 // modulo per la gestione di backup
