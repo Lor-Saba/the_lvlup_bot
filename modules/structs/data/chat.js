@@ -3,16 +3,8 @@ module.exports = {
     title: "<unknown>",
     isChallengeActive: false,
     effects: {},
-    monster: {
-        active: false,
-        attackable: false,
-        expired: false,
-        messageId: 0,
-        level: 1,
-        health: "0",
-        healthMax: "0",
-        attackers: {}
-    },
+    monsterDefeated: 0,
+    monsterEscaped: 0,
     dungeon: {
         active: false,
         spawnDate: 0,

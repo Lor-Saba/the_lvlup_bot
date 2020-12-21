@@ -42,16 +42,8 @@ module.exports = {
                 chat.effects = {};
                 
                 // oggetto per il mostro che appare nel fine settimana
-                chat.monster = {
-                    active: false,
-                    attackable: false,
-                    expired: false,
-                    messageId: 0,
-                    level: 1,
-                    health: "0",
-                    healthMax: "0",
-                    attackers: {}
-                };
+                chat.monsterDefeated = 0;
+                chat.monsterEscaped = 0;
 
                 // oggetto per il dungeon che appare nel fine settimana
                 chat.dungeon = {

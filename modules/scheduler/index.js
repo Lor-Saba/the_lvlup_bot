@@ -37,19 +37,27 @@ function on(type, callback){
     eventsList[type].fn.push(callback);
 }
 
+/**
+ * Forza l'esecuzione di uno degli eventi schedulati
+ * 
+ * @param {string} type tipo di evento da eseguire
+ */
+function trigger(type){
+    if (!eventsList[type]) return;
+    if (!global.botRunning) return; 
+    
+    utils.each(eventsList[type].fn, (indexEvent, event) => event());
+}
+
 
 // genera la lista di eventi da controllare
 utils.each(scheduleMap, function(indexItem, item){
-    schedule.scheduleJob(item.rule, () => {
-        if (!eventsList[item.type]) return;
-        if (!global.botRunning) return; 
-        
-        utils.each(eventsList[item.type].fn, (indexEvent, event) => event());
-    });
+    schedule.scheduleJob(item.rule, () => trigger(item.type));
 });
 
 // live cron schedule expressions tester
 // https://crontab.guru/#0_10_*_*_0
 module.exports = {
-    on
+    on,
+    trigger
 }
