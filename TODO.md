@@ -17,5 +17,5 @@
     - tipo: attacco (aumenta il danno base, user.level + equipment)
     - tipo: velocità di attacco (diminuisce il tempo di timeout necessario per poter riaattaccare)
     - tipo: critico (bonus casuale al danno in %)
-- aggiungere effetti alle challenge
-- aggiungere effetti alle chat
+- aggiungere oggetti che influiscono l'exp e tempo di attesa delle challenge
+- aggiungere oggetti che influiscono l'exp e drop delle chat
