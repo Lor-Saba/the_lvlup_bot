@@ -238,7 +238,7 @@ function initSchedulerEvents(){
             }
 
             // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
-            var counter = 5;
+            var counter = 50;
             utils.each(storage.getChats(), (chatId, chat) => {
                 setTimeout(() => monsters.spawn(chat, {
                     onSpawn: onSpawn,
@@ -248,7 +248,7 @@ function initSchedulerEvents(){
                     onUpdate: onUpdate,
                     onDefeated: onDefeated,
                     onEscaped: onEscaped
-                }), counter += 5);
+                }), counter += 50);
             });
         });
 
@@ -516,8 +516,13 @@ function setBotCommands(){
                 break;
 
             case 'messageall': 
+                var counter = 50;
+
                 utils.each(storage.getChats(), function(chatId) {
-                    ctx.telegram.sendMessage(chatId, commandArgs.join(' '), { parse_mode: 'markdown' });
+                    setTimeout(
+                        () => ctx.telegram.sendMessage(chatId, commandArgs.join(' '), { parse_mode: 'markdown' }), 
+                        counter += 50
+                    );
                 });
                 break;
 
