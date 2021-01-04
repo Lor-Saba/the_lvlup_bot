@@ -1,5 +1,20 @@
 module.exports = {
     
+    "LABEL_CHALLENGE_WINEXP": {
+        "en": "Ch. winExp"
+    },
+    "LABEL_CHALLENGE_LOSEEXP": {
+        "en": "Ch. loseExp"
+    },
+    "LABEL_CHALLENGE_COOLDOWN": {
+        "en": "Ch. Cooldown"
+    },
+    "LABEL_EXPGAIN": {
+        "en": "ExpGain"
+    },
+    "LABEL_DROPCHANCE": {
+        "en": "DropChance"
+    },    
     "LABEL_EXP": {
         "en": "Exp"
     },

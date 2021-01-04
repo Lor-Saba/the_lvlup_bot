@@ -302,12 +302,15 @@ function syncDatabase(force){
 
         try {
             db.collection("lvlup_users").bulkWrite(operations);
+
+            usersIdList.length = 0;
+            operations.length = 0;
         } catch(err) {
             utils.errorlog('syncDatabase', err);
-        }
 
-        usersIdList.length = 0;
-        operations.length = 0;
+            usersIdList.length = 0;
+            operations.length = 0;
+        }
     }
 
     // se in coda ci sono modifiche da applicare per le classi..
@@ -328,12 +331,15 @@ function syncDatabase(force){
 
         try {
             db.collection("lvlup_chats").bulkWrite(operations);
+
+            chatsIdList.length = 0;
+            operations.length = 0;
         } catch(err) {
             utils.errorlog('syncDatabase', err);
-        }
 
-        chatsIdList.length = 0;
-        operations.length = 0;
+            chatsIdList.length = 0;
+            operations.length = 0;
+        }
     }
 
     // se in coda ci sono modifiche da applicare per la config..

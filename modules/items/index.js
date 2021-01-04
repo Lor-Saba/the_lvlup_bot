@@ -1,108 +1,175 @@
 // modulo con vari metodi di utilità
 const utils = require('../utils');
-// lista degli "items" con relativa mappa e weight totale
-var entries = {};
+// lista degli items con relativa mappa e weight totale
+var items = {};
+var itemsMap = {};
+var itemTypes = ['drop', 'challenge', 'dungeon', 'monster'];
 
 
 /**
- * Get a random Entry
+ * Get a random item by type
+ * @param {string|array} type tipo o lista di tipi dell'item da ottenere
  */
 function pick(type){
-    let list = entries[type].list;
-    let winner = Math.random() * entries[type].totalWeight;
+    let types = type ? [].concat(type) : itemTypes;
+    let totalWeight = 0;
+    let winner = 0;
     let threshold = 0;
 
-    for (let i = 0; i < list.length; i++) {
-        threshold += list[i].weight;
+    for (let j = 0; j < types.length; j++) {
+        totalWeight += items[types[j]].totalWeight;
+    }
 
-        if (threshold > winner) {
-            return JSON.parse(JSON.stringify(list[i]));
+    winner = Math.random() * totalWeight;
+
+    for (let j = 0; j < types.length; j++) {
+        let list = items[types[j]].list;
+    
+        for (let i = 0; i < list.length; i++) {
+
+            if (!list[i].weight) continue;
+
+            threshold += list[i].weight;
+    
+            if (threshold > winner) {
+                return JSON.parse(JSON.stringify(list[i]));
+            }
         }
     }
 }
 
-
 /**
  * Get a random Item
  */
-function pickItem(){
-    return pick('items');
+function pickDrop(){
+    return pick('drop');
 }
 
-
 /**
  * Get a random Item
  */
-function pickEffect(){
-    return pick('effects');
+function pickDungeon(){
+    return pick('dungeon');
 }
 
-
 /**
  * Get a random Item
  */
-function pickEquipment(){
-    return pick('equipments');
+function pickMonster(){
+    return pick('monster');
 }
 
 /**
  * 
- * @param {object} userItems lista di oggetti dell'utente con relativa quantità o data 
+ * @param {string} target target dell'item da filtrare
+ * @param {number} value valore da ricercarenegli item
  */
-function getItemsBuff(userItems){
-    let dateNow = Date.now();
-    let tempBuff = 1;
-    let permBuff = 1;
+function pickCHFor(target, value){
+    let list = items['challenge'].list;
 
+    for (let i = 0; i < list.length; i++) {
+        if (list[i].target === target && list[i].for.includes(value)) {
+            return JSON.parse(JSON.stringify(list[i]));
+        }
+    }
+
+    return null;
+}
+
+/**
+ * 
+ * @param {array|object} userItems lista di oggetti dell'utente con relativa quantità o data 
+ * @param {string} target filtro
+ * @param {function} callback funzione di callback per ritornare l'oggetto
+ */
+function eachByTarget(userItems, target, callback) {
     utils.each(userItems, function(key, value){
-        let item = getItem(key);
+        let item = get(key);
 
+        if (item && item.target == target) {
+            callback(item, value);
+        }
+    });
+}
+
+/**
+ * 
+ * @param {array|object} userItems lista di oggetti dell'utente con relativa quantità o data 
+ * @param {string} group filtro
+ * @param {function} callback funzione di callback per ritornare l'oggetto
+ */
+function eachByGroup(userItems, group, callback) {
+    utils.each(userItems, function(key, value){
+        let item = get(key);
+
+        if (item && item.group == group) {
+            callback(item, value);
+        }
+    });
+}
+
+/**
+ * 
+ * @param {object} itemsList lista di oggetti della chat
+ */
+function getItemsBuff(itemsList){
+    let dateNow = Date.now();
+    let result = { 
+        exp: 1, 
+        ch_win: 1, ch_lose: 1, ch_cd: 1,
+        drop_chance: 1, drop_cd: 1,
+        attack_damage: 1, attack_crit: 1, attack_cd: 1
+    };
+
+    let resultMult = JSON.parse(JSON.stringify(result));
+
+    // modalità di operazioni per accumulare il buff dell'item
+    let setTargetByType = function(target, mode, value, qnt){
+
+        if (mode === '*') {
+            resultMult[target] *= (value * qnt);
+        } else if (mode === '-') {
+            result[target] -= (value * qnt);
+        } else if (mode === '+'){
+            result[target] += (value * qnt);
+        }
+    }
+
+    // per ogni item passato da trasformare in buff
+    utils.each(itemsList, function(key, value){
+
+        // ottiene il riferimento all'item 
+        let item = get(key);
+
+        // interrompe se non esiste (magari è stato eliminato)
         if (!item) return;
 
+        // applica il buff a seconda del tipo se permanente o temporaneo
         if (item.type === 'temp') {
-            if (dateNow < value + (item.timeout * 60 * 60)) {
-                tempBuff *= item.power;
+            if (value + (item.timeout * 60 * 60) > dateNow) {
+                setTargetByType(item.target, item.powermode, item.power, 1);
             } else {
-                delete userItems[key];
+                delete itemsList[key];
             }
         }
         if (item.type === 'perm') {
-            permBuff += item.power * value;
+            setTargetByType(item.target, item.powermode, item.power, value);
         }
     });
     
-    return { 
-        perm: permBuff, 
-        temp: tempBuff 
-    };
-}
+    // controlli finali per applicare i buff moltiplicativi e per non far scendere sotto zero i buff
+    utils.each(result, (target, value) => result[target] = Math.max(0, value * resultMult[target]));
 
-function getEntry(type, name){
-    return entries[type].list[entries[type].map[name]];
+    // ritorna la lista dei buff
+    return result;
 }
 
 /**
  * 
- * @param {string} name nome dell'entità di tipo "items" da ottenere
+ * @param {string} name nome dell'item da ritornare
  */
-function getItem(name){
-    return getEntry('items', name);
-}
-
-/**
- * 
- * @param {string} name nome dell'entità di tipo "effects" da ottenere
- */
-function getEffect(name){
-    return getEntry('effects', name);
-}
-
-/**
- * 
- * @param {string} name nome dell'entità di tipo "equipments" da ottenere
- */
-function getEquipment(name){
-    return getEntry('equipments', name);
+function get(name){
+    return itemsMap[name] || null;
 }
 
 /**
@@ -111,7 +178,7 @@ function getEquipment(name){
  */
 function getItemRarityIcon(name){
     var icon = "";
-    var item = getItem(name);
+    var item = get(name);
 
     if (!item) return icon;
 
@@ -140,14 +207,14 @@ function checkForCraftableItem(userItems){
     let newItem = null;
 
     utils.each(userItems, function(itemName){
-        var item = getItem(itemName);
+        var item = get(itemName);
 
         // interrompe se l'oggetto non permette di craftare altri oggetti
         if (!item.craft) return;
 
         // per ogni possibile ricetta craftabile con l'oggetto corrente
         utils.each(item.craft, function(index, craftableItemName){
-            let craftableItem = getItem(craftableItemName);
+            let craftableItem = get(craftableItemName);
             let isCraftable = true;
     
             // controlla se è possibile craftare l'oggetto nuovo con gli in oggetti possesso
@@ -196,48 +263,47 @@ function checkForCraftableItem(userItems){
  */
 function init() {
 
-    var addEntry = function(type){
+    var addItem = function(itemType){
 
         // aggiunge l'oggetto con i dati relativi al tipo da richiedere
-        entries[type] = { 
+        items[itemType] = { 
             totalWeight: 0, 
-            list: utils.shuffle(require('./' + type)), 
-            map: {} 
+            list: utils.shuffle(require('./types/' + itemType))
         };
 
-        // crea la mappa per collegare rapidamente la lista degli items con i nomi
-        // e conteggia il totale del peso dei vari oggetti (usato nell'estrazione)
-        utils.each(entries[type].list, (index, entry) => {
-            entries[type].map[entry.name] = index;
-            entries[type].totalWeight += entry.droppable ? entry.weight : 0;
+        // cicla la lista degli items per parsare gli items assegnando eventuali proprietà utili
+        utils.each(items[itemType].list, (index, item) => {
+
+            // assegna il tipo dell'item come proprietà gruppo
+            item.group = itemType;
+
+            // incrementa il weigth totale 
+            items[itemType].totalWeight += item.weight || 0;
+
+            // assegna il riferimento dell'item corrente nella mappa  
+            itemsMap[item.name] = item;
         });
 
         // calcola e assegna la probabilità di sorteggio ad ogni oggetto
-        utils.each(entries[type].list, (index, entry) => {
-            entry.chance = entry.droppable ? entry.weight / entries[type].totalWeight : 0;
+        utils.each(items[itemType].list, (index, item) => {
+            item.chance = item.weight ? item.weight / items[itemType].totalWeight : 0;
         });
-
     };
 
-    addEntry('items');
-    addEntry('effects');
-    addEntry('equipments');
+    // aggiunge gli oggetti per ogni tipo itemType registrato
+    utils.each(itemTypes, (index, itemType) => addItem(itemType));
 }
 
 // inizializza
 init();
 
 module.exports = {
-    pickItem,
-    pickEffect,
-    pickEquipment,
-
-    getItem,
-    getEffect,
-    getEquipment,
-
+    pickDrop,
+    pickDungeon,
+    pickMonster,
+    pickCHFor,
+    get,
     getItemsBuff,
     getItemRarityIcon,
-
     checkForCraftableItem,
 };

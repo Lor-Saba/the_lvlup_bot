@@ -22,10 +22,9 @@ module.exports = {
                     userStats.lastItemDate = user.lastItemDate;
                     userStats.penality = user.penality;
 
-                    // nuova proprietà "equipments" in preparazione del nuovo tipo di oggetti
-                    userStats.equipments = {};
-                    // nuova proprietà "effects" in preparazione del nuovo tipo di oggetti
-                    userStats.effects = {};
+                    // resetta le statistiche delle challenge
+                    userStats.challengeWon = 0;
+                    userStats.challengeLost = 0;
                 });
             
                 // rimozione delle proprietà spostate
@@ -38,19 +37,15 @@ module.exports = {
 
             utils.each(cache.chats, function(chatId, chat){
                 
-                // nuova proprietà "effects" in preparazione del nuovo tipo di oggetti
-                chat.effects = {};
+                // nuova proprietà "items" 
+                chat.items = {};
                 
-                // oggetto per il mostro che appare nel fine settimana
+                // proprietà di statistica per il mostro che appare nel fine settimana
                 chat.monsterDefeated = 0;
                 chat.monsterEscaped = 0;
 
-                // oggetto per il dungeon che appare nel fine settimana
-                chat.dungeon = {
-                    active: false,
-                    spawnDate: 0,
-                    users: {}
-                }
+                // oggetto per il dungeon
+                chat.isDungeonActive = false;
             });
 
             return cache;

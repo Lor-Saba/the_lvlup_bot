@@ -269,22 +269,28 @@ function secondsToHms(seconds, extended) {
     var m = Math.floor(seconds % 3600 / 60);
     var s = Math.floor(seconds % 3600 % 60);
 
-    var result = '';
+    // var g = Math.floor(seconds / 86400);
+    // var h = Math.floor(seconds % 3600 % 24);
+    // var m = Math.floor(seconds % 3600 / 60);
+    // var s = Math.floor(seconds % 3600 % 60);
+
+    var result = [];
 
     if (extended) {
-        if (h) result += h + 'h ';
-        if (m) result += m + 'm ';
+        // if (g) result += g + 'g ';
+        if (h) result.push(h + 'h');
+        if (m) result.push(m + 'm');
 
-        result += s + 's';
+        if (s || (h == 0 & m == 0)) {
+            result.push(s + 's');
+        }
     } else {
-        result  = ('0' + h).slice(-2) 
-                + ':'
-                + ('0' + m).slice(-2)
-                + ':'
-                + ('0' + s).slice(-2)
+        result.push(('0' + h).slice(-2));
+        result.push(('0' + m).slice(-2));
+        result.push(('0' + s).slice(-2));
     }
 
-    return result; 
+    return result.join(extended ? ' ' : ':'); 
 }               
 
 /**

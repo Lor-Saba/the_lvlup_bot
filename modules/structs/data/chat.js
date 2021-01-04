@@ -2,14 +2,10 @@ module.exports = {
     id: null, 
     title: "<unknown>",
     isChallengeActive: false,
-    effects: {},
+    isDungeonActive: false,
+    items: {},
     monsterDefeated: 0,
     monsterEscaped: 0,
-    dungeon: {
-        active: false,
-        spawnDate: 0,
-        users: {}
-    },
     settings: {
         notifyPenality: true,
         notifyUserLevelup: true,

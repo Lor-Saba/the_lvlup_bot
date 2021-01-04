@@ -106,7 +106,7 @@ module.exports = {
         "en": "..what do you need to know? It's shiny and colorful, just pick it up and leave."
     },
     "ITEMS_TITLE_SUSEYE": {
-        "en": "Suspicious  Eye"
+        "en": "Suspicious Eye"
     },
     "ITEMS_DESCRIPTION_SUSEYE": {
         "en": "A kinda SUS eyeball. Found in elettrical. Ah wait, it was Green who told me! I was in security doing tasks."
@@ -218,5 +218,132 @@ module.exports = {
     },
     "ITEMS_DESCRIPTION_DIAMOND": {
         "en": "All those little crystal were pieces of a bigger and shiny diamond. You need 2 sun glasses to be able to look directly at it!"
+    },
+    "ITEMS_TITLE_BANANASBUNCH": {
+        "en": "Bunch of bananas"
+    },
+    "ITEMS_DESCRIPTION_BANANASBUNCH": {
+        "en": "You've got a lot of bananas, watch out for monkies!! they're hungry and everywhere."
+    },
+    "ITEMS_TITLE_BALOON": {
+        "en": "Long baloon"
+    },
+    "ITEMS_DESCRIPTION_BALOON": {
+        "en": "A long shaped baloon, it makes a nice BONK sound when used to hit stuff."
+    },
+    "ITEMS_TITLE_BUTTERKNIFE": {
+        "en": "Butter knife"
+    },
+    "ITEMS_DESCRIPTION_BUTTERKNIFE": {
+        "en": "Don't be fooled by its rounded tip, it is the undisputed champion in spreading butter and jam."
+    },
+    "ITEMS_TITLE_WOODENSWORD": {
+        "en": "Wooden sword"
+    },
+    "ITEMS_DESCRIPTION_WOODENSWORD": {
+        "en": "A little unbalanced but still makes a good impression. Approved by Billy, the neighbors' child."
+    },
+    "ITEMS_TITLE_PILLOW": {
+        "en": "Pillow"
+    },
+    "ITEMS_DESCRIPTION_PILLOW": {
+        "en": "You can fill it with feathers or iron balls depending on how much you dislike the opponent."
+    },
+    "ITEMS_TITLE_WOODOODOLL": {
+        "en": "Woodoo doll"
+    },
+    "ITEMS_DESCRIPTION_WOODOODOLL": {
+        "en": "A little worn and smelly, the kind old lady who gave it to you said to use it with care."
+    },
+    "ITEMS_TITLE_PEPPERSPRAY": {
+        "en": "Pepper spray"
+    },
+    "ITEMS_DESCRIPTION_PEPPERSPRAY": {
+        "en": "Useful to always have with you. For when you want to add a little spiciness to your spaghetti dish and the restaurant doesn't have any to give to you."
+    },
+    "ITEMS_TITLE_PICKAXE": {
+        "en": "Pickaxe"
+    },
+    "ITEMS_DESCRIPTION_PICKAXE": {
+        "en": "On the side of the handle there is an inscription \"Never dig under your feet!\". Who knows what that means.."
+    },
+    "ITEMS_TITLE_SCYTHE": {
+        "en": "Long scythe"
+    },
+    "ITEMS_DESCRIPTION_SCYTHE": {
+        "en": "Rustic but sharp AF. It causes terror to your enemies just by holding it."
+    },
+    "ITEMS_TITLE_KATANA": {
+        "en": "Katana"
+    },
+    "ITEMS_DESCRIPTION_KATANA": {
+        "en": "Wake the f\\*ck up samurai, we have a lot of Exp to farm."
+    },
+    "ITEMS_TITLE_PISTOL": {
+        "en": "Pistol"
+    },
+    "ITEMS_DESCRIPTION_PISTOL": {
+        "en": "When a man with a knife meets a man with a pistol, the one with a knife is a dead man. And you are the one with a pistol."
+    },
+    "ITEMS_TITLE_BAZOOKA": {
+        "en": "Bazooka"
+    },
+    "ITEMS_DESCRIPTION_BAZOOKA": {
+        "en": "Very loud and powerful. Can destroy a man in less than a second... but lets stop talking about angry girls now. You got a bazooka uh? nice!"
+    },
+
+
+    // Monster items
+
+    "ITEMS_TITLE_POISONOUSSTENCH": {
+        "en": "Poisonous stench"
+    },
+    "ITEMS_TITLE_MENACINGPRESENCE": {
+        "en": "Menacing presence"
+    },
+    "ITEMS_TITLE_ANCIENTCURSE": {
+        "en": "Ancient curse"
+    },
+    "ITEMS_TITLE_SCORCHEDGROUND": {
+        "en": "Scorched ground"
+    },
+
+
+    // Challenge items
+
+    "ITEMS_TITLE_CHW_1": {
+        "en": "Worn-out talisman"
+    },
+    "ITEMS_TITLE_CHW_2": {
+        "en": "Minor talisman"
+    },
+    "ITEMS_TITLE_CHW_3": {
+        "en": "Refined talisman"
+    },
+    "ITEMS_TITLE_CHW_4": {
+        "en": "Superior talisman"
+    },
+
+    "ITEMS_TITLE_CHL_1": {
+        "en": "Dream catcher"
+    },
+    "ITEMS_TITLE_CHL_2": {
+        "en": "Golden beetle"
+    },
+    "ITEMS_TITLE_CHL_3": {
+        "en": "Crystal horseshoe"
+    },
+
+    "ITEMS_TITLE_CHT_1": {
+        "en": "Lucky coin"
+    },
+    "ITEMS_TITLE_CHT_2": {
+        "en": "Four-leaf clover"
+    },
+    "ITEMS_TITLE_CHT_3": {
+        "en": "Yellow ladybug"
+    },
+    "ITEMS_TITLE_CHT_4": {
+        "en": "Joker card"
     }
 };

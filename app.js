@@ -113,6 +113,7 @@ function initSchedulerEvents(){
                 });
     
                 // calcola la barra della vita
+                var iconEmoji = ['🐁', '🐈', '🐩', '🐖', '🦨', '🦩', '🐺', '🐝', '🐗', '🐌', '🦋', '🕷', '🦟', '🐍', '🦑', '🦆', '🦉', '🐊', '🐋', '🐘', '🦧', '🐬', '🐟', '🦜', '🐫', '🦒', '🦐', '🦂', '🐢', '🦕', '🦖'];
                 var maxBarsLength = 10;
                 var healthBar = '';
                 var healthDiff = BigNumber(data.monster.health).dividedBy(data.monster.healthMax);
@@ -124,7 +125,8 @@ function initSchedulerEvents(){
     
                 // crea il testo del lexicon da mostrare
                 var messageText = lexicon.get('MONSTER_MESSAGE', { 
-                    level: data.monster.level,
+                    icon: iconEmoji[data.monster.level % iconEmoji.length],
+                    level: data.monster.level + 1,
                     health: utils.formatNumber(data.monster.health),
                     healthmax: data.monster.healthMax,
                     healthPercentage: (healthDiff * 100).toFixed(2),
@@ -168,7 +170,7 @@ function initSchedulerEvents(){
                 utils.each(data.monster.attackers, function(attUserId, attUser){
     
                     // calcola il guadagno in base a quanti attacchi sono stati fatti
-                    var expReward = calcUserExpGain(data.ctx, storage.getUser(attUserId), attUser.count * 10);
+                    var expReward = calcUserExpGain(data.ctx, storage.getUser(attUserId), attUser.count * 5);
     
                     attUsersLabels.push(lexicon.get('MONSTER_DEFEATED_ATTACKER', { 
                         username: attUser.username,
@@ -197,15 +199,32 @@ function initSchedulerEvents(){
 
             var onEscaped = function(data){
 
+                // droppa un item casuale di debuff
+                var monsterItem = items.pickMonster();
+                var valueText = '';
+                
+                if (monsterItem.target === 'exp') {
+                    valueText = utils.formatNumber((monsterItem.power - 1) * 100, 0) + '% ' + lexicon.get('LABEL_EXPGAIN');
+                } else if (monsterItem.target === 'drop') {
+                    valueText = utils.formatNumber((monsterItem.power - 1) * 100, 0) + '% ' + lexicon.get('LABEL_DROPCHANCE');
+                }
+
                 // invio messaggio per notificare che il mostro è scappato e l'attacco è fallito
                 bot.telegram.editMessageText(
                     data.chat.id, 
                     data.monster.extra.messageId, 
                     null, 
-                    lexicon.get('MONSTER_ESCAPED'), 
+                    lexicon.get('MONSTER_ESCAPED', {
+                        itemname: lexicon.get('ITEMS_TITLE_' + monsterItem.name),
+                        value: valueText,
+                        timeout: monsterItem.timeout
+                    }), 
                     { parse_mode: 'markdown' }
                 )
                 .catch(()=>{});
+
+                // aggiunge l'item droppato alla chat
+                data.chat.items[monsterItem.name] = Date.now();
             };
 
             var onExpire = function(data){
@@ -570,9 +589,7 @@ function setBotCommands(){
         var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
 
-        if (mexData.isPrivate) {
-            return ctx.replyWithMarkdown(lexicon.get('LABEL_GROUPONLY_COMMAND'));
-        }
+        return false;
 
         // ottiene il riferimento all'utente
         var user = ctx.state.user;
@@ -593,7 +610,7 @@ function setBotCommands(){
             text += '\n\n';
             
             utils.each(userStats.items, function(key, value){
-                var item = items.getItem(key);
+                var item = items.get(key);
 
                 if (item.type === 'perm') {
                     itemsPerm.push(lexicon.get('ITEMS_LIST_ITEM_PERM', { 
@@ -644,10 +661,6 @@ function setBotCommands(){
         var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
 
-        if (mexData.isPrivate) {
-            return ctx.replyWithMarkdown(lexicon.get('LABEL_GROUPONLY_COMMAND'));
-        }
-
         bot.telegram.getChatAdministrators(mexData.chatId)
         .then(administrators => {
             var hasPermission = false;
@@ -679,10 +692,6 @@ function setBotCommands(){
     bot.command('prestige', function(ctx){
         var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
-
-        if (mexData.isPrivate) {
-            return ctx.replyWithMarkdown(lexicon.get('LABEL_GROUPONLY_COMMAND'));
-        }
         
         // ottiene il riferimento alle stats dell'utente per la chat corrente
         var userStats = ctx.state.userStats;
@@ -706,13 +715,7 @@ function setBotCommands(){
     });
     
     bot.command('leaderboard', function(ctx){
-        var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
-
-        if (mexData.isPrivate) {
-            return ctx.replyWithMarkdown(lexicon.get('LABEL_GROUPONLY_COMMAND'));
-        }
-
         var leaderboard = storage.getChatLeaderboard(mexData.chatId);
         var lbList = [];
 
@@ -738,10 +741,6 @@ function setBotCommands(){
     bot.command('stats', function(ctx){
         var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
-
-        if (mexData.isPrivate) {
-            return ctx.replyWithMarkdown(lexicon.get('LABEL_GROUPONLY_COMMAND'));
-        }
 
         // ottiene il riferimento all'utente
         var user = ctx.state.user;
@@ -802,8 +801,8 @@ function setBotCommands(){
         }
 
         // aggiunge il bonus degli oggetti raccattati
-        if (Object.keys(userStats.items).length){
-            var itemsBuff = items.getItemsBuff(userStats.items, mexData.date);
+        if (Object.keys(userStats.items).length && false){
+            var itemsBuff = items.getItemsBuff(userStats.items);
             var valuePerm = ((itemsBuff.perm - 1) * 100).toFixed(2);
             var valueTemp = (itemsBuff.temp).toFixed(2);
 
@@ -868,23 +867,21 @@ function setBotCommands(){
         var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
 
-        if (mexData.isPrivate) {
-            return ctx.replyWithMarkdown(lexicon.get('LABEL_GROUPONLY_COMMAND'));
-        }
-
         // ottiene il riferimento all'utente
         var user = ctx.state.user;
         // ottiene il riferimento alle stats dell'utente per la chat corrente
         var userStats = ctx.state.userStats;
+        // ottiene i moltiplicatori degli oggetti dell'user relativi alle challenge
+        var itemsBuff = items.getItemsBuff(userStats.items);
         // cooldown per poter richiedere il prossimo challenge
-        var cooldownTime = 60 * 60 * 2;
+        var cooldownTime = (60 * 60 * 2) * itemsBuff.ch_cd;
 
         // protezione spam dei comandi
         if (mexData.date - userStats.lastChallengeDate < cooldownTime) {
             return ctx.replyWithMarkdown(lexicon.get('CHALLENGE_TIMEOUT', { 
                 username: user.username, 
                 timeout: utils.secondsToHms((userStats.lastChallengeDate + cooldownTime) - mexData.date, true)
-            }));
+            })).catch(() => {});
         } else {
             userStats.lastChallengeDate = mexData.date;
         }
@@ -926,8 +923,8 @@ function setBotActions(){
  */
 function setBotEvents(){
 
+    // gestisce i messaggi semplici di testo
     bot.on('text', function(ctx){
-        // ottiene il riferimento all'utente
         var user = ctx.state.user;
 
         if (!user) {
@@ -937,8 +934,22 @@ function setBotEvents(){
             return false;
         }
 
-        dropItemCanche(ctx, user);
+        dropItemChance(ctx, user);
         calcUserExpGain(ctx, user, 1);
+    });
+
+    // gestisce i messaggi con sticker e immagini
+    bot.on(['sticker', 'photo'], function(ctx){
+        var user = ctx.state.user;
+
+        if (!user) {
+            console.log('---');
+            utils.errorlog('bot.on "sticker|photo"', JSON.stringify({ state: ctx.state, from: ctx.from, chat: ctx.chat }));
+            
+            return false;
+        }
+
+        calcUserExpGain(ctx, user, 0.2);
     });
 
     bot.on('callback_query', function(ctx){ 
@@ -1071,22 +1082,24 @@ function setBotEvents(){
                 Promise.resolve()
                 .then(utils.promiseTimeout(500))
                 .then(() => {
-                    return ctx.replyWithMarkdown(lexicon.get('CHALLENGE_ACCEPTED', { usernameA: userA.username , usernameB: userB.username }));
+                    return ctx.replyWithMarkdown(lexicon.get('CHALLENGE_ACCEPTED', { usernameA: userA.username , usernameB: userB.username })).catch(()=>{});
                 })
                 .then(utils.promiseTimeout(1000))
                 .then(() => {
-                    return ctx.replyWithDice();
+                    return ctx.replyWithDice().catch(()=>{});
                 })
                 .then(utils.promiseTimeout(5000))
                 .then(ctxDice => {
-                    var diceValue = ctxDice.dice.value;
+                    var diceValue = ctxDice ? ctxDice.dice.value : 1;
 
                     var userW = diceValue % 2 ? userB : userA;
                     var userL = diceValue % 2 ? userA : userB;
                     var userStatsW = userW.chats[mexData.chatId];
                     var userStatsL = userL.chats[mexData.chatId];
-                    var expGainW = calcUserExpGain(ctx, userW, 7);
-                    var expGainL = calcUserExpGain(ctx, userL, -5);
+                    var itemsBuffW = items.getItemsBuff(userStatsW.items);
+                    var itemsBuffL = items.getItemsBuff(userStatsL.items);
+                    var expGainW = calcUserExpGain(ctx, userW, ( 3 * itemsBuffW.ch_win ).toFixed(2));
+                    var expGainL = calcUserExpGain(ctx, userL, (-3 * itemsBuffL.ch_lose).toFixed(2));
 
                     ctx.replyWithMarkdown(lexicon.get('CHALLENGE_RESULT', { 
                         result: diceValue,
@@ -1094,11 +1107,101 @@ function setBotEvents(){
                         usernameL: userL.username,
                         expGainW: utils.formatNumber(expGainW),
                         expGainL: utils.formatNumber(expGainL)
-                    }));
+                    })).catch(()=>{});
 
                     userStatsW.challengeWon  += 1;
                     userStatsL.challengeLost += 1;
 
+                    // drop di eventuali items per le challenge
+                    var newItemWW = items.pickCHFor('ch_win', userStatsW.challengeWon);
+                    var newItemLL = items.pickCHFor('ch_lose', userStatsL.challengeLost);
+                    var newItemWT = items.pickCHFor('ch_cd', userStatsW.challengeWon + userStatsW.challengeLost);
+                    var newItemLT = items.pickCHFor('ch_cd', userStatsL.challengeWon + userStatsL.challengeLost);
+
+                    // invia un messaggio di
+                    if (newItemWW || newItemWT || newItemLL || newItemLT) {
+                        var newItemsText = '';
+                        var addChallengeDrop = function(u, us, iX, iT, type){
+
+                            // aggiunge un po di spaziatura se contiene gia del testo
+                            if (newItemsText) newItemsText += '\n\n';
+                            
+                            // aggiunge il titolo
+                            newItemsText += lexicon.get('CHALLENGE_DROP_TITLE', { username: u.username });
+
+                            // aggiunge i dettagli degli eventuali items droppati
+                            if (iX) {
+                                var valueText = type === 'W' ? '+' : '-';
+
+                                valueText += (iX.power * 100).toFixed(1) + '% ';
+                                valueText += type === 'W' ? lexicon.get('LABEL_CHALLENGE_WINEXP') : lexicon.get('LABEL_CHALLENGE_LOSEEXP');
+                                
+                                newItemsText += '\n' + lexicon.get('CHALLENGE_DROP_ITEM', { 
+                                    itemname: lexicon.get('ITEMS_TITLE_' + iX.name),
+                                    value: valueText
+                                });
+
+                                // inserimento dell'oggetto in lista items dell'user
+                                if (us.items[iX.name]) {
+                                    us.items[iX.name] ++;
+                                } else {
+                                    us.items[iX.name] = 1;
+                                }
+                            }
+                            if (iT) {
+                                var valueText = '-';
+
+                                valueText += (iT.power * 100).toFixed(1) + '% ';
+                                valueText += lexicon.get('LABEL_CHALLENGE_COOLDOWN');
+                                
+                                newItemsText += '\n' + lexicon.get('CHALLENGE_DROP_ITEM', { 
+                                    itemname: lexicon.get('ITEMS_TITLE_' + iT.name),
+                                    value: valueText
+                                });
+
+                                // inserimento dell'oggetto in lista items dell'user
+                                if (us.items[iT.name]) {
+                                    us.items[iT.name] ++;
+                                } else {
+                                    us.items[iT.name] = 1;
+                                }
+                            }
+
+                            // aggiunge il footer relativo a quali items sono stati droppati
+                            if (iX && !iT) {
+                                newItemsText += '\n' + lexicon.get('CHALLENGE_DROP_FOOTER_' + type, { 
+                                    value: type === 'W' ? us.challengeWon : us.challengeLost
+                                });
+                            } else if (iX && iT) {
+                                newItemsText += '\n' + lexicon.get('CHALLENGE_DROP_FOOTER_' + type + 'T', { 
+                                    value: type === 'W' ? us.challengeWon : us.challengeLost,
+                                    total: us.challengeWon + us.challengeLost,
+                                });
+                            } else if (!iX && iT) {
+                                newItemsText += '\n' + lexicon.get('CHALLENGE_DROP_FOOTER_T', { 
+                                    total: us.challengeWon + us.challengeLost 
+                                });
+                            } 
+                        }
+
+                        // aggiunge il messaggio relativo al drop dell'user che ha vinto
+                        if (newItemWW || newItemWT) {
+                            addChallengeDrop(userW, userStatsW, newItemWW, newItemWT, 'W');
+                        }
+
+                        // aggiunge il messaggio relativo al drop dell'user che ha perso
+                        if (newItemLL || newItemLT) {
+                            addChallengeDrop(userL, userStatsL, newItemLL, newItemLT, 'L');
+                        }
+                        
+                        // invia il messaggio costruito
+                        setTimeout(function(){
+                            ctx.replyWithMarkdown(newItemsText).catch(()=>{});
+                        }, 500);
+
+                    }
+
+                    // aggiunge gli utenti in coda per aggiornare il db
                     storage.addUserToQueue(userA.id);
                     storage.addUserToQueue(userB.id);
 
@@ -1157,8 +1260,8 @@ function calcUserExpGain(ctx, user, messagesPower = 1, passive = false) {
     }
 
     // applica i bonus degli eventuali oggetti raccolti
-    var itemsBuff = items.getItemsBuff(userStats.items, mexData.date);
-    expGain = BigNumber(expGain).multipliedBy(itemsBuff.perm).multipliedBy(itemsBuff.temp);
+    var itemsBuff = items.getItemsBuff(userStats.items);
+    expGain = BigNumber(expGain).multipliedBy(itemsBuff.exp);
 
     // applica il numero di messaggi da considerare
     expGain = BigNumber(expGain).multipliedBy(messagesPower);
@@ -1215,7 +1318,7 @@ function calcUserExpGain(ctx, user, messagesPower = 1, passive = false) {
  * @param {contextMessage} ctx Oggetto ritornato dagli ascoltatori di telegram
  * @param {object} user Oggetto con i dati di un utente
  */
-function dropItemCanche(ctx, user){
+function dropItemChance(ctx, user){
 
     if (!user) {
         console.log('---');
@@ -1234,11 +1337,11 @@ function dropItemCanche(ctx, user){
 
     // probabilità di ottenere un oggetto 
     if (userStats.lastItemDate + cooldownTime < mexData.date
-    &&  Math.random() < 0.012) { 
+    &&  Math.random() < 0.015) { 
 
         userStats.lastItemDate = mexData.date;
 
-        var item = items.pickItem();
+        var item = items.pickDrop();
         var hasItem = userStats.items[item.name];
         var valueLabel = '';
 
@@ -1366,14 +1469,6 @@ function init(){
             // controlla se è stato aggiornata la versione del bot dall'ultimo riavvio ed in caso manda una notifica a tutte le chat
             checkIfUpdated();
 
-            //setTimeout(function(){
-            //    bot.telegram.sendMessage(-247381772, 'UUU').then((ctxSpawn)=>{
-            //        setTimeout(function(){
-            //            bot.telegram.editMessageText(-247381772, ctxSpawn.message_id, null, 'AAA').catch(()=>{});
-            //        }, 2000);
-            //    });
-            //}, 2000);
-
             console.log('-----\nBot running!');
         });
 
@@ -1387,3 +1482,12 @@ function init(){
 
 // inizializza il bot
 init();
+
+// setTimeout(() => {
+//     scheduler.trigger('monster');
+// }, 5000);
+
+// setInterval(() => {
+//     var item = items.pickMonster();
+//     console.log(Lexicon.get('ITEMS_TITLE_' + item.name));
+// }, 300);

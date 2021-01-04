@@ -7,7 +7,7 @@ module.exports = {
         "en": "*$(username)* angered the monster!\n\n_(You have 8h to defeat it or you will pay the consequences.)_"
     },
     "MONSTER_MESSAGE": {
-        "en": "👹 *Monster*\n\nLevel:  `$(level)`\nHealth:  `$(health) / $(healthmax)`   _($(healthPercentage)%)_\n$(healthbar)\n\nAttacks:\n$(attackers)"
+        "en": "$(icon) *Monster*\n\nLevel:  `$(level)`\nHealth:  `$(health) / $(healthmax)`   _($(healthPercentage)%)_\n$(healthbar)\n\nAttacks:\n$(attackers)"
     },
     "MONSTER_MESSAGE_ATTACKER": {
         "en": "  - *$(username)*  _x$(count)_  `$(damage) Dmg`"
@@ -22,7 +22,7 @@ module.exports = {
         "en": "Wait!\nYou can attack again in $(time)"
     },
     "MONSTER_ESCAPED": {
-        "en": "The monster survived.\nEnraged by what had happened, he placed a curse on the group before fleeing.\n\n$(effectcard)"
+        "en": "The monster survived.\nEnraged by what had happened, the \"Lord of Dungeon\" casted a strong curse to avenge the monster..\n\n🌀 _$(itemname)_\n\n$(value)  for  $(timeout)h"
     },
     "MONSTER_ATTACK_LABEL": {
         "en": "⚔️ Attack! ⚔️"

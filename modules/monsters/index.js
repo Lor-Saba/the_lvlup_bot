@@ -1,6 +1,8 @@
 
 // modulo con vari metodi di utilità
 const utils = require('../utils');
+// modulo con vari metodi di utilità
+const items = require('../items');
 // modulo per gestire i numeri
 const BigNumber = require('bignumber.js');
 // tempo limite per poter attaccare il mostro appena spawnato
@@ -65,6 +67,8 @@ function callEvent(callback, data){
 function attack(chat, user, ctx){
     // ottiene il riferimento alle stats dell'utente per la chat corrente
     var userStats = user.chats[chat.id];
+    // ottiene il riferimento alle stats dell'utente per la chat corrente
+    var itemsBuff = items.getItemsBuff(userStats.items);
     // ottiene il riferimento al mostro da attaccare
     var monster = monsters[chat.id];
     // oggetto da restituire agli eventi
@@ -148,8 +152,8 @@ function attack(chat, user, ctx){
         }, monsterTimeLimit);
     }
 
-    // calc damage
-    var damage = BigNumber(userStats.level);
+    // calcola il danno da applicare
+    var damage = BigNumber(userStats.level).multipliedBy(itemsBuff.attack_damage).decimalPlaces(0, 1);
 
     // scala la vita del mostro
     monster.health = BigNumber.maximum(0, BigNumber(monster.health).minus(damage)).valueOf();
