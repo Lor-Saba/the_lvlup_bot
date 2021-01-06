@@ -300,17 +300,14 @@ function syncDatabase(force){
             });
         });
 
-        try {
-            db.collection("lvlup_users").bulkWrite(operations);
-
+        db.collection("lvlup_users").bulkWrite(operations)
+        .catch(err => {
+            utils.errorlog('syncDatabase | lvlup_users', operations, err);
+        })
+        .then(() => {
             usersIdList.length = 0;
             operations.length = 0;
-        } catch(err) {
-            utils.errorlog('syncDatabase', err);
-
-            usersIdList.length = 0;
-            operations.length = 0;
-        }
+        });
     }
 
     // se in coda ci sono modifiche da applicare per le classi..
@@ -329,17 +326,14 @@ function syncDatabase(force){
             });
         });
 
-        try {
-            db.collection("lvlup_chats").bulkWrite(operations);
-
+        db.collection("lvlup_chats").bulkWrite(operations)
+        .catch(err => {
+            utils.errorlog('syncDatabase | lvlup_chats', operations, err);
+        })
+        .then(() => {
             chatsIdList.length = 0;
             operations.length = 0;
-        } catch(err) {
-            utils.errorlog('syncDatabase', err);
-
-            chatsIdList.length = 0;
-            operations.length = 0;
-        }
+        });
     }
 
     // se in coda ci sono modifiche da applicare per la config..
@@ -352,12 +346,14 @@ function syncDatabase(force){
             } 
         }];
 
-        try {
-            db.collection("lvlup_config").bulkWrite(operations);
-        } catch(err) {
-            utils.errorlog('syncDatabase', err);
-        }
-
+        db.collection("lvlup_config").bulkWrite(operations)
+        .catch(err => {
+            utils.errorlog('syncDatabase | lvlup_config', operations, err);
+        })
+        .then(() => {
+            chatsIdList.length = 0;
+            operations.length = 0;
+        });
     }
 }
 

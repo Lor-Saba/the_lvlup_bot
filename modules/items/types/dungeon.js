@@ -25,7 +25,7 @@ module.exports = [
 
     // EXP - temporanei
 
-    { target: 'exp', type: 'temp', name: 'ELIXIR',     weight: 25, power: 0.3, powermode: '+', timeout: 8  },
-    { target: 'exp', type: 'temp', name: 'MEGAELIXIR', weight: 10, power: 0.5, powermode: '+', timeout: 12 },
-    { target: 'exp', type: 'temp', name: 'SHIT',       weight: 5,  power: 0.3, powermode: '-', timeout: 1  }
+    { target: 'exp', type: 'temp', name: 'ELIXIR',     weight: 25, power: 1.25, powermode: '*', timeout: 8  },
+    { target: 'exp', type: 'temp', name: 'MEGAELIXIR', weight: 10, power: 1.50, powermode: '*', timeout: 12 },
+    { target: 'exp', type: 'temp', name: 'SHIT',       weight: 5,  power: 0.65, powermode: '*', timeout: 1  }
 ];

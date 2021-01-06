@@ -90,7 +90,6 @@ var markup = {
         result.buttons = markupWrap([
             [ 
                 markupButton(message, (value === 'full'    ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_FULL')   , Object.assign(data, { action: 'SETTINGS_NOTIFY_ITEM_PICKUP', value: 'full'    })),
-                markupButton(message, (value === 'compact' ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_COMPACT'), Object.assign(data, { action: 'SETTINGS_NOTIFY_ITEM_PICKUP', value: 'compact' })) ,
                 markupButton(message, (value === false     ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_OFF')    , Object.assign(data, { action: 'SETTINGS_NOTIFY_ITEM_PICKUP', value: false     })) 
             ],
             [ 

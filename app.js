@@ -224,7 +224,7 @@ function initSchedulerEvents(){
                 .catch(()=>{});
 
                 // aggiunge l'item droppato alla chat
-                data.chat.items[monsterItem.name] = Date.now();
+                data.chat.items[monsterItem.name] = Date.now() / 1000;
             };
 
             var onExpire = function(data){
@@ -295,7 +295,7 @@ function checkIfUpdated(){
                     lexicon.get('UPDATED_BUTTON'), 
                     'https://raw.githubusercontent.com/Lor-Saba/the_lvlup_bot/master/changelog/' + currentVersion + '.md'
                 )
-            ]).extra({ parse_mode: 'markdown' }));
+            ]).extra({ parse_mode: 'markdown' })).catch(()=>{});
         });
     }
 }
@@ -386,10 +386,10 @@ function setBotMiddlewares(){
         if (isSpam && chat.settings.notifyPenality) {
 
             if (oldPenalityLevel == 1) {
-                ctx.replyWithMarkdown(lexicon.get('PENALITY_LEVEL_2', { username: mexData.username }));
+                ctx.replyWithMarkdown(lexicon.get('PENALITY_LEVEL_2', { username: mexData.username })).catch(()=>{});
             }
             if (oldPenalityLevel == 3) {
-                ctx.replyWithMarkdown(lexicon.get('PENALITY_LEVEL_4', { username: mexData.username }));
+                ctx.replyWithMarkdown(lexicon.get('PENALITY_LEVEL_4', { username: mexData.username })).catch(()=>{});
             }
         }
         
@@ -451,40 +451,6 @@ function setBotCommands(){
 
         switch(action){
 
-            case 'info':
-                var text = ['Chat info.'];
-
-                Promise.resolve()
-                .then(function(){
-                    // proprietà della chat -> ctx.update.message.chat.*
-                    utils.each(ctx.update.message.chat, function(key, value){
-                        text.push('  ' + key + ': ' + JSON.stringify(value));
-                    });
-                })
-                .then(function(){
-
-                    // skip if is from a private chat
-                    if (ctx.update.message.chat.type == 'private') return;
-
-                    // lista utenti amministratori
-                    text.push('\nAdministrators.')
-                    return bot.telegram.getChatAdministrators(ctx.update.message.chat.id).then(function(users){
-                        utils.each(users, function(index, member){
-                            text.push('- status: ' + member.status);
-
-                            utils.each(member.user, function(key, value){
-                                text.push('  ' + key + ': ' + JSON.stringify(value));
-                            });
-                        });
-                    })
-                })
-                .then(function(){
-                    // compone il messaggio
-                    ctx.telegram.sendMessage(userId, text.join('\n'));
-                });
-
-                break;
-
             case 'reset': 
                 var type = commandArgs.shift();
 
@@ -530,7 +496,7 @@ function setBotCommands(){
                 var cacheString = storage.getCache();
 
                 fs.writeFileSync('db.txt', cacheString, 'utf8');
-                ctx.telegram.sendDocument(userId, { source: fs.readFileSync('db.txt'), filename: 'db.txt' });
+                ctx.telegram.sendDocument(userId, { source: fs.readFileSync('db.txt'), filename: 'db.txt' }).catch(() => {});
                 fs.unlinkSync('db.txt');
                 break;
 
@@ -539,7 +505,7 @@ function setBotCommands(){
 
                 utils.each(storage.getChats(), function(chatId) {
                     setTimeout(
-                        () => ctx.telegram.sendMessage(chatId, commandArgs.join(' '), { parse_mode: 'markdown' }), 
+                        () => ctx.telegram.sendMessage(chatId, commandArgs.join(' '), { parse_mode: 'markdown' }).catch(()=>{}), 
                         counter += 50
                     );
                 });
@@ -550,7 +516,7 @@ function setBotCommands(){
                 var chatId = commandArgs.shift();
 
                 if (chats[chatId]) {
-                    ctx.telegram.sendMessage(chatId, commandArgs.join(' '), { parse_mode: 'markdown' });
+                    ctx.telegram.sendMessage(chatId, commandArgs.join(' '), { parse_mode: 'markdown' }).catch(()=>{});
                 }
                 break;
 
@@ -560,16 +526,16 @@ function setBotCommands(){
                 // carica il backup indicato
                 storage.loadBackup(fileName + '.dbtxt')
                 .then(() => {
-                    ctx.telegram.sendMessage(userId, 'Backup "' + fileName + '" loaded.');
+                    ctx.telegram.sendMessage(userId, 'Backup "' + fileName + '" loaded.').catch(()=>{});
                 })
                 .catch(err => {
-                    ctx.telegram.sendMessage(userId, 'Unable to load backup: ' + fileName);
+                    ctx.telegram.sendMessage(userId, 'Unable to load backup: ' + fileName).catch(()=>{});
                 });
                 break;
 
             case 'listbackup':
                 storage.listBackup().then(list => {
-                    ctx.telegram.sendMessage(userId, 'Backups list:\n\n' + list.join('\n'));
+                    ctx.telegram.sendMessage(userId, 'Backups list:\n\n' + list.join('\n')).catch(()=>{});
                 });
                 break;
             
@@ -580,7 +546,7 @@ function setBotCommands(){
                 ctx.telegram.sendDocument(userId, { 
                     source: fs.readFileSync(filePath), 
                     filename: fileName + '.dbtxt'
-                });
+                }).catch(() => {});
                 break;
         }
     })
@@ -589,72 +555,46 @@ function setBotCommands(){
         var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
 
-        return false;
-
         // ottiene il riferimento all'utente
         var user = ctx.state.user;
         // ottiene il riferimento alle stats dell'utente per la chat corrente
         var userStats = ctx.state.userStats;
         // testo finale contenente la lista di oggetti
         var text = '';
+        // lista dei testi degli items
+        var itemsText = {};
 
-        // aggiunge il bonus degli oggetti raccattati
+        // elenca il bonus degli oggetti raccattati
         if (Object.keys(userStats.items).length){
             var itemsBuff = items.getItemsBuff(userStats.items);
-            var totalPerm = ((itemsBuff.perm - 1) * 100).toFixed(2);
-            var totalTemp = (itemsBuff.temp).toFixed(2);
-            var itemsPerm = [];
-            var itemsTemp = [];
 
-            text += lexicon.get('ITEMS_LIST_TITLE', { username: user.username });
-            text += '\n\n';
-            
             utils.each(userStats.items, function(key, value){
                 var item = items.get(key);
+                var buff = itemsBuff[item.target] - 1;
+                var timeout = item.timeout ? utils.secondsToHms(value + ( 60 * 60 * item.timeout) - mexData.date) : '';
 
-                if (item.type === 'perm') {
-                    itemsPerm.push(lexicon.get('ITEMS_LIST_ITEM_PERM', { 
-                        name: lexicon.get('ITEMS_TITLE_' + key), 
-                        value: (item.power * 100).toFixed(1), 
-                        quantity: value
-                    }));
+                if (!itemsText[item.target]) {
+                    itemsText[item.target] = '\n\n' + lexicon.get('ITEMS_LIST_GROUP', { 
+                        target: lexicon.get('ITEMS_LIST_TARGET_' + item.target.toUpperCase()),
+                        value: (buff >= 0 ? '+' : '') + (buff * 100).toFixed(2) + '%'
+                    });
                 }
-                if (item.type === 'temp') {
-                    itemsTemp.push(lexicon.get('ITEMS_LIST_ITEM_TEMP', { 
-                        name: lexicon.get('ITEMS_TITLE_' + key), 
-                        value: (item.power).toFixed(1),
-                        timeout: utils.secondsToHms(value + ( 60 * 60 * item.timeout) - mexData.date)
-                    }));
-                }
+                
+                itemsText[item.target] += '\n' + lexicon.get('ITEMS_LIST_ITEM', {
+                    itemname: lexicon.get('ITEMS_TITLE_' + key),
+                    itembuff: items.getItemBuffText(item),
+                    quantity: item.timeout ? '' : '(x' + value + ')',
+                    timeout: timeout
+                });
             });
-
-            if (itemsPerm.length) {
-                text += itemsPerm.join('\n');
-                text += '\n';
-            }
-            if (itemsTemp.length) {
-                text += itemsTemp.join('\n');
-                text += '\n';
-            }
-
-            text += '\n';
-
-            if (itemsBuff.perm != 1 || itemsBuff.temp != 1) {
-
-                text += lexicon.get('ITEMS_LIST_TOTAL');
-
-                if (itemsBuff.perm != 1) {
-                    text += lexicon.get('STATS_ITEMS_PERM', { value: totalPerm });
-                }
-                if (itemsBuff.temp != 1) {
-                    text += lexicon.get('STATS_ITEMS_TEMP', { value: totalTemp });
-                }
-            }
-        } else {
-            text += lexicon.get('ITEMS_LIST_NOITEMS', { username: user.username });
         }
 
-        ctx.replyWithMarkdown(text);
+        // assembla il testo degli items
+        text = lexicon.get('ITEMS_LIST_TITLE', { username: user.username });
+        utils.each(itemsText, (key, value) => text += value);
+
+        // invia il testo completo di risposta
+        ctx.replyWithMarkdown(text).catch(()=>{});
     });
 
     bot.command('settings', function(ctx){
@@ -681,10 +621,10 @@ function setBotCommands(){
 
                 bot.telegram.sendMessage(mexData.userId, markupData.text, markupData.buttons).catch(() => {});
 
-                return ctx.replyWithMarkdown(lexicon.get('SETTINGS_PRIVATE_MESSAGE_SENT', { username: mexData.username }));
+                return ctx.replyWithMarkdown(lexicon.get('SETTINGS_PRIVATE_MESSAGE_SENT', { username: mexData.username })).catch(()=>{});
             } else {
 
-                return ctx.replyWithMarkdown(lexicon.get('SETTINGS_NOPERMISSION', { username: mexData.username }));
+                return ctx.replyWithMarkdown(lexicon.get('SETTINGS_NOPERMISSION', { username: mexData.username })).catch(()=>{});
             }
         });
     });
@@ -705,10 +645,10 @@ function setBotCommands(){
             ctx.replyWithMarkdown(
                 lexicon.get('USER_PRESTIGE_SUCCESS', { username: mexData.username, prestige: userStats.prestige }) +
                 (BigNumber(userStats.prestige).isEqualTo(2) ? lexicon.get('USER_SILENCED_LEVELUP') : '')
-            );
+            ).catch(()=>{});
         } else {
                 
-            ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_FAIL', { username: mexData.username }));
+            ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_FAIL', { username: mexData.username })).catch(()=>{});
         }
 
         return storage.addUserToQueue(mexData.userId);
@@ -735,7 +675,7 @@ function setBotCommands(){
             lbList.push(text);
         });
 
-        ctx.replyWithMarkdown(lbList.join('\n'));
+        ctx.replyWithMarkdown(lbList.join('\n')).catch(()=>{});
     });
     
     bot.command('stats', function(ctx){
@@ -751,7 +691,7 @@ function setBotCommands(){
         if (BigNumber(userStats.exp).isEqualTo(0) 
         &&  BigNumber(userStats.level).isEqualTo(0) 
         &&  BigNumber(userStats.prestige).isEqualTo(0)) {
-            return ctx.replyWithMarkdown(lexicon.get('STATS_NOUSER', { username: mexData.username }));
+            return ctx.replyWithMarkdown(lexicon.get('STATS_NOUSER', { username: mexData.username })).catch(()=>{});
         }
 
         var leaderboard = storage.getChatLeaderboard(mexData.chatId);
@@ -860,7 +800,7 @@ function setBotCommands(){
             }            
         }
 
-        ctx.replyWithMarkdown(text);
+        ctx.replyWithMarkdown(text).catch(()=>{});
     });
 
     bot.command('challengeme', function(ctx){
@@ -972,6 +912,8 @@ function setBotEvents(){
         switch(queryData.action){
 
             case 'SETTINGS_START': 
+                markup.deleteData(query);
+
                 var markupData = markup.get(queryData.action, mexData.message, { 
                     chatTitle: queryData.chatTitle, 
                     chatId: queryData.chatId 
@@ -988,6 +930,8 @@ function setBotEvents(){
                 if (queryData.value !== undefined) {
                     chat.settings.notifyPenality = queryData.value;
                 }
+
+                markup.deleteData(query);
 
                 var markupData = markup.get(queryData.action, mexData.message, { 
                     chatTitle: chat.title, 
@@ -1008,6 +952,8 @@ function setBotEvents(){
                     chat.settings.notifyUserLevelup = queryData.value;
                 }
 
+                markup.deleteData(query);
+
                 var markupData = markup.get(queryData.action, mexData.message, { 
                     chatTitle: chat.title, 
                     chatId: chat.id, 
@@ -1027,6 +973,8 @@ function setBotEvents(){
                     chat.settings.notifyUserPrestige = queryData.value;
                 }
 
+                markup.deleteData(query);
+
                 var markupData = markup.get(queryData.action, mexData.message, { 
                     chatTitle: chat.title, 
                     chatId: chat.id, 
@@ -1045,6 +993,8 @@ function setBotEvents(){
                 if (queryData.value !== undefined) {
                     chat.settings.notifyUserPickupItem = queryData.value;
                 }
+
+                markup.deleteData(query);
 
                 var markupData = markup.get(queryData.action, mexData.message, { 
                     chatTitle: chat.title, 
@@ -1278,7 +1228,7 @@ function calcUserExpGain(ctx, user, messagesPower = 1, passive = false) {
         if (BigNumber(utils.toFloor(userStats.level)).isLessThan(utils.toFloor(newLevel))) {
             if (chat.settings.notifyUserLevelup && BigNumber(userStats.prestige).isLessThan(2)) {
                 setTimeout(function(){
-                    ctx.replyWithMarkdown(lexicon.get('USER_LEVELUP', { username: user.username, level: utils.toFloor(newLevel) }));
+                    ctx.replyWithMarkdown(lexicon.get('USER_LEVELUP', { username: user.username, level: utils.toFloor(newLevel) })).catch(()=>{});
                 }, 500);
             }
         }
@@ -1287,7 +1237,7 @@ function calcUserExpGain(ctx, user, messagesPower = 1, passive = false) {
         if (BigNumber(utils.toFloor(userStats.level)).isGreaterThan(utils.toFloor(newLevel))) {
             if (chat.settings.notifyUserLevelup && BigNumber(userStats.prestige).isLessThan(2)) {
                 setTimeout(function(){
-                    ctx.replyWithMarkdown(lexicon.get('USER_LEVELDOWN', { username: user.username, level: utils.toFloor(newLevel) }));
+                    ctx.replyWithMarkdown(lexicon.get('USER_LEVELDOWN', { username: user.username, level: utils.toFloor(newLevel) })).catch(()=>{});
                 }, 500);
             }
         }
@@ -1298,7 +1248,7 @@ function calcUserExpGain(ctx, user, messagesPower = 1, passive = false) {
 
             if (chat.settings.notifyUserPrestige) {
                 setTimeout(function(){
-                    ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: user.username }));
+                    ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: user.username })).catch(()=>{});
                 }, 500);
             }
         }
@@ -1322,7 +1272,7 @@ function dropItemChance(ctx, user){
 
     if (!user) {
         console.log('---');
-        utils.errorlog('DropItemCanche', JSON.stringify({ state: ctx.state }));
+        utils.errorlog('dropItemChance', JSON.stringify({ state: ctx.state }));
     }
 
     var lexicon = ctx.state.lexicon;
@@ -1334,58 +1284,49 @@ function dropItemChance(ctx, user){
     var userStats = user.chats[mexData.chatId];
     // tempo di cooldown prima di poter droppare un altro oggetto
     var cooldownTime = 60 * 60 * 8;
+    // chance di drop 
+    var dropchance = 0.015;
 
     // probabilità di ottenere un oggetto 
     if (userStats.lastItemDate + cooldownTime < mexData.date
-    &&  Math.random() < 0.015) { 
+    &&  Math.random() < dropchance) { 
 
         userStats.lastItemDate = mexData.date;
 
         var item = items.pickDrop();
-        var hasItem = userStats.items[item.name];
         var valueLabel = '';
 
-        if (item.type === 'inst') {
-            var bonusExpGain = calcUserExpGain(ctx, user, item.messages, true);
-
-            valueLabel = '+' + utils.formatNumber(bonusExpGain) + ' ' + lexicon.get('LABEL_EXP');
-        }
+        // if (item.type === 'inst') {
+        //     var bonusExpGain = calcUserExpGain(ctx, user, item.messages, true);
+        // 
+        //     valueLabel = '+' + utils.formatNumber(bonusExpGain);
+        // } 
+        
         if (item.type === 'temp') {
             userStats.items[item.name] = mexData.date;
-
-            valueLabel = (item.power > 1 ? '+': '') + utils.formatNumber((item.power - 1) * 100, 0) + '% ' + lexicon.get('LABEL_EXP') + ' (' + item.timeout + 'h) ';
         }
         if (item.type === 'perm') {
-            if (hasItem) {
+            if (userStats.items[item.name]) {
                 userStats.items[item.name]++;
             } else {
                 userStats.items[item.name] = 1;
             }
-
-            valueLabel = '+' + (item.power * 100).toFixed(1) + '% ' + lexicon.get('LABEL_EXP');
         }
 
-        if (chat.settings.notifyUserPickupItem === 'full') {
+        valueLabel = items.getItemBuffText(item) + ' ' + lexicon.get('LABEL_EXP');
+
+        if (chat.settings.notifyUserPickupItem) {
             ctx.replyWithMarkdown(lexicon.get('ITEMS_PICKUP_FULL', {
                 username: user.username,
                 itemcard: lexicon.get('ITEMS_CARD_FULL', {
                     itemicon: items.getItemRarityIcon(item.name),
-                    itemname: lexicon.get('ITEMS_TITLE_' + item.name),
+                    itemname: lexicon.get('ITEMS_TITLE_' + item.name) + ( item.timeout ? '  (' + item.timeout + 'h)' : ''),
                     itemdescription: lexicon.get('ITEMS_DESCRIPTION_' + item.name),
                     itemtype: lexicon.get('LABEL_ITEMTYPE_' + item.type.toUpperCase()),
                     itemchance: utils.formatNumber(item.chance * 100) + '%',
-                    value: valueLabel
+                    itembonus: valueLabel
                 })
-            }));                
-        }
-        if (chat.settings.notifyUserPickupItem === 'compact') {
-            ctx.replyWithMarkdown(lexicon.get('ITEMS_PICKUP_COMPACT', {
-                username: user.username,
-                itemcard: lexicon.get('ITEMS_CARD_COMPACT', {
-                    itemname: lexicon.get('ITEMS_TITLE_' + item.name),
-                    value: valueLabel
-                })
-            }));
+            })).catch(()=>{});                
         }
 
         var checkForCraftableItem = function(){
@@ -1394,7 +1335,7 @@ function dropItemChance(ctx, user){
 
                 valueLabel = '+' + (newItem.power * 100).toFixed(1) + '% ' + lexicon.get('LABEL_EXP');
 
-                if (chat.settings.notifyUserPickupItem === 'full') {
+                if (chat.settings.notifyUserPickupItem) {
                     ctx.replyWithMarkdown(lexicon.get('ITEMS_CRAFT_FULL', {
                         username: user.username,
                         recipe: newItem.recipe.map(i => i.quantity + 'x ' + lexicon.get('ITEMS_TITLE_' + i.name)).join(', '),
@@ -1404,19 +1345,9 @@ function dropItemChance(ctx, user){
                             itemdescription: lexicon.get('ITEMS_DESCRIPTION_' + newItem.name),
                             itemtype: lexicon.get('LABEL_ITEMTYPE_' + newItem.type.toUpperCase()),
                             itemchance: lexicon.get('LABEL_CRAFTED'),
-                            value: valueLabel
+                            itembonus: valueLabel
                         })
-                    }));                
-                }
-                if (chat.settings.notifyUserPickupItem === 'compact') {
-                    ctx.replyWithMarkdown(lexicon.get('ITEMS_CRAFT_COMPACT', {
-                        username: user.username,
-                        recipe: newItem.recipe.map(i => i.quantity + 'x ' + lexicon.get('ITEMS_TITLE_' + i.name)).join(', '),
-                        itemcard: lexicon.get('ITEMS_CARD_COMPACT', {
-                            itemname: lexicon.get('ITEMS_TITLE_' + newItem.name),
-                            value: valueLabel
-                        })
-                    }));
+                    })).catch(()=>{});
                 }
 
                 setTimeout(checkForCraftableItem, 200);

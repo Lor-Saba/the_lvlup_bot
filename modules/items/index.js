@@ -113,7 +113,7 @@ function eachByGroup(userItems, group, callback) {
  * @param {object} itemsList lista di oggetti della chat
  */
 function getItemsBuff(itemsList){
-    let dateNow = Date.now();
+    let dateNow = Date.now() / 1000;
     let result = { 
         exp: 1, 
         ch_win: 1, ch_lose: 1, ch_cd: 1,
@@ -162,6 +162,22 @@ function getItemsBuff(itemsList){
 
     // ritorna la lista dei buff
     return result;
+}
+
+/**
+ * 
+ * @param {object} item item da cui ricavare la label di buff
+ */
+function getItemBuffText(item) {
+    if (item.powermode === '*') {
+        return 'x' + (item.power).toFixed(1) + '';
+    } else if (item.powermode === '+') {
+        return '+' + (item.power * 100).toFixed(1) + '%';
+    } else if (item.powermode === '-') {
+        return '-' + (item.power * 100).toFixed(1) + '%';
+    }
+
+    return '';
 }
 
 /**
@@ -304,6 +320,7 @@ module.exports = {
     pickCHFor,
     get,
     getItemsBuff,
+    getItemBuffText,
     getItemRarityIcon,
     checkForCraftableItem,
 };

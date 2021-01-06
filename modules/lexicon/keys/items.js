@@ -3,6 +3,32 @@ module.exports = {
     "ITEMS_LIST_TITLE": {
         "en": "💎 *$(username)*'s items list:"
     },
+    "ITEMS_LIST_GROUP": {
+        "en": "$(target) bonus:   `$(value)`"
+    },
+    "ITEMS_LIST_ITEM": {
+        "en": "- _$(itemname)_   `$(itembuff)`   $(quantity)  $(timeout)"
+    },
+
+    "ITEMS_LIST_TARGET_EXP": {
+        "en": "Exp"
+    },
+    "ITEMS_LIST_TARGET_ATTACK_DAMAGE": {
+        "en": "Att. Damage"
+    },
+    "ITEMS_LIST_TARGET_DROP_CHANCE": {
+        "en": "Drop Chance"
+    },
+    "ITEMS_LIST_TARGET_CH_WIN": {
+        "en": "Ch. WinExp"
+    },
+    "ITEMS_LIST_TARGET_CH_LOSE": {
+        "en": "Ch. LoseExp"
+    },
+    "ITEMS_LIST_TARGET_CH_CD": {
+        "en": "Ch. Cooldown"
+    },
+
     "ITEMS_LIST_ITEM_PERM": {
         "en": "_$(name)_    `+$(value)%`   (x$(quantity))"
     },
@@ -16,22 +42,13 @@ module.exports = {
         "en": "*$(username)* you have no items or active bonuses yet.\nKeep texting, sooner or later you will find something!"
     },
     "ITEMS_CARD_FULL": {
-        "en": "$(itemicon)  _$(itemname)_   `$(value)`\n$(itemdescription)\n\nType: `$(itemtype)`\nChance: `$(itemchance)`"
-    },
-    "ITEMS_CARD_COMPACT": {
-        "en": "$(itemicon)  _$(itemname)_   `$(value)`"
+        "en": "$(itemicon)  _$(itemname)_\n$(itemdescription)\n\nBonus: `$(itembonus)`\nType: `$(itemtype)`\nChance: `$(itemchance)`"
     },
     "ITEMS_CRAFT_FULL": {
         "en": "*$(username)* put together $(recipe) and got:\n\n$(itemcard)"
     },
-    "ITEMS_CRAFT_COMPACT": {
-        "en": "*$(username)* put together $(recipe) and got:\n$(itemcard)"
-    },
     "ITEMS_PICKUP_FULL": {
         "en": "*$(username)* found an item:\n\n$(itemcard)"
-    },
-    "ITEMS_PICKUP_COMPACT": {
-        "en": "*$(username)* found an item:\n$(itemcard)"
     },
     "ITEMS_TITLE_BAG": {
         "en": "Bag of money"

@@ -35,8 +35,5 @@ module.exports = {
     },
     "SETTINGS_REPLY_FULL": {
         "en": "Full"
-    },
-    "SETTINGS_REPLY_COMPACT": {
-        "en": "Compact"
     }
 };
