@@ -36,17 +36,14 @@ module.exports = {
     "STATS_ITEMS": {
         "en": "Items bonus:  "
     },
+    "STATS_ITEM_TARGET": {
+        "en": " - $(target):   `$(value)`"
+    },
     "STATS_EFFECTS": {
         "en": "Effects bonus:  "
     },
     "STATS_EQUIPMENTS": {
         "en": "Equipments bonus:  "
-    },
-    "STATS_ITEMS_PERM": {
-        "en": "`+$(value)%`   "
-    },
-    "STATS_ITEMS_TEMP": {
-        "en": "(`x$(value)`)"
     },
     "STATS_CHALLENGE_LUCK": {
         "en": "Challenges:  _W_ `$(valueW)` - _L_ `$(valueL)`"

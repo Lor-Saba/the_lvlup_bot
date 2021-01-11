@@ -589,8 +589,16 @@ function setBotCommands(){
             });
         }
 
-        // assembla il testo degli items
+        // aggiunge il titolo 
         text = lexicon.get('ITEMS_LIST_TITLE', { username: user.username });
+
+        // aggiunge gli items che modificano l'exp per primi
+        if (itemsText['exp']) {
+            text += itemsText['exp'];
+            delete itemsText['exp'];
+        }
+
+        // aggiunge il resto degli items in lista 
         utils.each(itemsText, (key, value) => text += value);
 
         // invia il testo completo di risposta
@@ -741,18 +749,23 @@ function setBotCommands(){
         }
 
         // aggiunge il bonus degli oggetti raccattati
-        if (Object.keys(userStats.items).length && false){
+        if (Object.keys(userStats.items).length){
+            
             var itemsBuff = items.getItemsBuff(userStats.items);
-            var valuePerm = ((itemsBuff.perm - 1) * 100).toFixed(2);
-            var valueTemp = (itemsBuff.temp).toFixed(2);
 
             text += '\n' + lexicon.get('STATS_ITEMS');
-            if (itemsBuff.perm != 1) {
-                text += lexicon.get('STATS_ITEMS_PERM', { value: valuePerm });
-            }
-            if (itemsBuff.temp != 1) {
-                text += lexicon.get('STATS_ITEMS_TEMP', { value: valueTemp });
-            }
+
+            utils.each(itemsBuff, function(target, value){
+                var buff = value - 1;
+
+
+                if (buff === 0) return;
+
+                text += '\n' + lexicon.get('STATS_ITEM_TARGET', { 
+                    target: lexicon.get('ITEMS_LIST_TARGET_' + target.toUpperCase()),
+                    value: (buff >= 0 ? '+' : '') + (buff * 100).toFixed(2) + '%'
+                });
+            });
         }
 
         // aggiunge il conteggio del numero di challenges vinte e perse
@@ -1061,6 +1074,18 @@ function setBotEvents(){
 
                     userStatsW.challengeWon  += 1;
                     userStatsL.challengeLost += 1;
+
+                    // aggiunge la statistiche dello sfidante
+                    if (!userStatsW.challengers[userL.username]) {
+                        userStatsW.challengers[userL.username] = { won: 0, lost: 0};
+                    }
+                    if (!userStatsL.challengers[userW.username]) {
+                        userStatsL.challengers[userW.username] = { won: 0, lost: 0};
+                    }
+
+                    // aggiorna la statistiche dello sfidante
+                    userStatsW.challengers[userL.username].won ++;
+                    userStatsL.challengers[userW.username].lost ++;
 
                     // drop di eventuali items per le challenge
                     var newItemWW = items.pickCHFor('ch_win', userStatsW.challengeWon);

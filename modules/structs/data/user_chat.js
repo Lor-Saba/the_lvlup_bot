@@ -3,6 +3,7 @@ module.exports = {
     level: "0", 
     prestige: "0",
     prestigeAvailable: false,
+    challengers: {},
     challengeWon: 0,
     challengeLost: 0,
     lastMessageDate: 0,

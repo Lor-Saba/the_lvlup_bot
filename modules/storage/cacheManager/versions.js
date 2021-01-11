@@ -25,6 +25,7 @@ module.exports = {
                     // resetta le statistiche delle challenge
                     userStats.challengeWon = 0;
                     userStats.challengeLost = 0;
+                    userStats.challengers = {};
                 });
             
                 // rimozione delle proprietà spostate
