@@ -828,6 +828,16 @@ function setBotCommands(){
         var itemsBuff = items.getItemsBuff(userStats.items);
         // cooldown per poter richiedere il prossimo challenge
         var cooldownTime = (60 * 60 * 2) * itemsBuff.ch_cd;
+        // id utente a cui ha risposto
+        var challengedUser = null;
+        // oggetto per il markup 
+        var markupData = null;
+
+        // assegna l'id dell'user a cui è indirizzato il challenge
+        if (mexData.message.reply_to_message
+        &&  mexData.message.reply_to_message.from.is_bot === false) {
+            challengedUser = storage.getUser(mexData.message.reply_to_message.from.id);
+        }
 
         // protezione spam dei comandi
         if (mexData.date - userStats.lastChallengeDate < cooldownTime) {
@@ -839,11 +849,28 @@ function setBotCommands(){
             userStats.lastChallengeDate = mexData.date;
         }
 
-        var markupData = markup.get('CHALLENGE_START', ctx.update.message, { 
-            username: mexData.username, 
-            userId: mexData.userId, 
-            chatId: mexData.chatId 
-        });
+        // blocca se è stata lanciata una challenge a se stessi
+        if (challengedUser && challengedUser.id === mexData.userId) {
+            return ctx.replyWithMarkdown(lexicon.get('CHALLENGE_SELF_CHALLENGE', { 
+                username: user.username
+            })).catch(() => {});
+        }
+
+        if (challengedUser) {
+            markupData = markup.get('CHALLENGE_START', ctx.update.message, { 
+                username: mexData.username, 
+                userId: mexData.userId, 
+                chatId: mexData.chatId,
+                challengedId: challengedUser.id,
+                challengedUsername: challengedUser.username
+            });            
+        } else {
+            markupData = markup.get('CHALLENGE_START', ctx.update.message, { 
+                username: mexData.username, 
+                userId: mexData.userId, 
+                chatId: mexData.chatId
+            });
+        }
 
         bot.telegram.sendMessage(mexData.chatId, markupData.text, markupData.buttons).catch(() => {});
     });
@@ -1032,6 +1059,11 @@ function setBotEvents(){
 
                 // interrompe se è già in corso un challenge
                 if (chat.isChallengeActive) return false;
+
+                // interrompe se non è l'utente a cui è stato richiesto il challenge 
+                if (mexData.userId !== queryData.challengedId) {
+                    return ctx.answerCbQuery(lexicon.get('CHALLENGE_CANNOT_ACCEPTED'), true).catch(()=>{});
+                }
                 
                 markup.deleteData(query);
                 ctx.deleteMessage().catch(err => {
@@ -1234,9 +1266,10 @@ function calcUserExpGain(ctx, user, messagesPower = 1, passive = false) {
         expGain = BigNumber(expGain).multipliedBy(0);
     }
 
-    // applica i bonus degli eventuali oggetti raccolti
-    var itemsBuff = items.getItemsBuff(userStats.items);
-    expGain = BigNumber(expGain).multipliedBy(itemsBuff.exp);
+    // applica i bonus degli eventuali oggetti raccolti dell'utente e della chat
+    var userItemsBuff = items.getItemsBuff(userStats.items);
+    var chatItemsBuff = items.getItemsBuff(chat.items);
+    expGain = BigNumber(expGain).multipliedBy(userItemsBuff.exp).multipliedBy(chatItemsBuff.exp);
 
     // applica il numero di messaggi da considerare
     expGain = BigNumber(expGain).multipliedBy(messagesPower);
@@ -1307,10 +1340,12 @@ function dropItemChance(ctx, user){
     var chat = storage.getChat(mexData.chatId);
     // ottiene il riferimento alle stats dell'utente per la chat corrente
     var userStats = user.chats[mexData.chatId];
+    // otiene la lista dei bonus degli eventuali oggetti della chat
+    var chatItemsBuff = items.getItemsBuff(chat.items);
     // tempo di cooldown prima di poter droppare un altro oggetto
-    var cooldownTime = 60 * 60 * 8;
+    var cooldownTime = (60 * 60 * 8) * chatItemsBuff.drop_cd;
     // chance di drop 
-    var dropchance = 0.015;
+    var dropchance = (0.015) * chatItemsBuff.drop_chance;
 
     // probabilità di ottenere un oggetto 
     if (userStats.lastItemDate + cooldownTime < mexData.date

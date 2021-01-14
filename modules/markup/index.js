@@ -103,7 +103,12 @@ var markup = {
     'CHALLENGE_START': function(message, data, lexicon){
         var result = {};
 
-        result.text = lexicon.get('CHALLENGE_START', { username: data.username });
+        if (data.challengedUsername) {
+            result.text = lexicon.get('CHALLENGE_START_DIRECT', { username: data.username, challengedUsername: data.challengedUsername });
+        } else {
+            result.text = lexicon.get('CHALLENGE_START', { username: data.username });
+        }
+        
         result.buttons = markupWrap([
             [ 
                 markupButton(message, lexicon.get('CHALLENGE_BUTTON') , Object.assign(data, { action: 'CHALLENGE_BUTTON' }) )

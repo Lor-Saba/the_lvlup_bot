@@ -3,6 +3,10 @@ module.exports = {
     "CHALLENGE_START": {
         "en": "*$(username)* asks to be challenged!\nAnyone brave enough to accept?"
     },
+    "CHALLENGE_START_DIRECT": {
+        //"en": "*$(usernameB)* accepted *$(usernameA)*'s challenge!\n\nA dice will be rolled.\nIf an even number comes out *$(usernameA)* wins,\notherwise it's a *$(usernameB)*'s win"
+        "en": "*$(username)* challenged *$(challengedUsername)*!\nwill he/she be brave enough to accept?"
+    },
     "CHALLENGE_BUTTON": {
         "en": "Challenge!"
     },
@@ -23,8 +27,12 @@ module.exports = {
     "CHALLENGE_ERROR_LEVEL": {
         "en": "*$(username)*, you must be at least level `3` to be able to create and accept challenges."
     },
-
-
+    "CHALLENGE_SELF_CHALLENGE": {
+        "en": "Ehm.. you can't challenge yourself *$(username)*.\n_The action was blocked but still counted as a requested challenge_"
+    },
+    "CHALLENGE_CANNOT_ACCEPTED": {
+        "en": "Sorry, you can't accept this challenge."
+    },
     "CHALLENGE_DROP_TITLE": {
         "en": "*$(username)* dropped"
     },
