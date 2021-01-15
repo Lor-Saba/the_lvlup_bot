@@ -1061,7 +1061,7 @@ function setBotEvents(){
                 if (chat.isChallengeActive) return false;
 
                 // interrompe se non è l'utente a cui è stato richiesto il challenge 
-                if (mexData.userId !== queryData.challengedId) {
+                if (queryData.challengedId && mexData.userId !== queryData.challengedId) {
                     return ctx.answerCbQuery(lexicon.get('CHALLENGE_CANNOT_ACCEPTED'), true).catch(()=>{});
                 }
                 
@@ -1073,15 +1073,27 @@ function setBotEvents(){
                 // assegna lo stato di challenge in corso
                 chat.isChallengeActive = true;
 
+                // id dei messaggi
+                var messageIdAccepted = null;
+                var messageIdDice = null;
+
                 // inizio catena del challenge
                 Promise.resolve()
                 .then(utils.promiseTimeout(500))
                 .then(() => {
-                    return ctx.replyWithMarkdown(lexicon.get('CHALLENGE_ACCEPTED', { usernameA: userA.username , usernameB: userB.username })).catch(()=>{});
+                    return ctx.replyWithMarkdown(lexicon.get('CHALLENGE_ACCEPTED', { usernameA: userA.username , usernameB: userB.username }))
+                    .then(function(ctxMasg){
+                        messageIdAccepted = ctxMasg.message_id;
+                    })
+                    .catch(()=>{});
                 })
                 .then(utils.promiseTimeout(1000))
                 .then(() => {
-                    return ctx.replyWithDice().catch(()=>{});
+                    return ctx.replyWithDice()
+                    .then(function(ctxMasg){
+                        messageIdDice = ctxMasg.message_id;
+                    })
+                    .catch(()=>{});
                 })
                 .then(utils.promiseTimeout(5000))
                 .then(ctxDice => {
@@ -1096,14 +1108,24 @@ function setBotEvents(){
                     var expGainW = calcUserExpGain(ctx, userW, ( 3 * itemsBuffW.ch_win ).toFixed(2));
                     var expGainL = calcUserExpGain(ctx, userL, (-3 * itemsBuffL.ch_lose).toFixed(2));
 
-                    ctx.replyWithMarkdown(lexicon.get('CHALLENGE_RESULT', { 
-                        result: diceValue,
-                        usernameW: userW.username, 
-                        usernameL: userL.username,
-                        expGainW: utils.formatNumber(expGainW),
-                        expGainL: utils.formatNumber(expGainL)
-                    })).catch(()=>{});
+                    bot.telegram.deleteMessage(mexData.chatId, messageIdDice).catch(()=>{});
+                    bot.telegram.editMessageText(
+                        mexData.chatId, 
+                        messageIdAccepted, 
+                        null, 
+                        lexicon.get('CHALLENGE_RESULT', { 
+                            result: diceValue,
+                            usernameA: userA.username, 
+                            usernameB: userB.username,
+                            usernameW: userW.username, 
+                            usernameL: userL.username,
+                            expGainW: utils.formatNumber(expGainW),
+                            expGainL: utils.formatNumber(expGainL)
+                        }), 
+                        { parse_mode: 'markdown' }
+                    ).catch(()=>{});
 
+                    // aggiorna le statistiche personali delle challenge
                     userStatsW.challengeWon  += 1;
                     userStatsL.challengeLost += 1;
 
