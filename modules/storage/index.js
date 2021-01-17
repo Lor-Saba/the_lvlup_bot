@@ -361,8 +361,8 @@ function syncDatabase(force){
  * 
  * @param {number} chatId 
  */
-function getChatLeaderboard(chatId){
-    var LBUsers = [];
+function getChatUsers(chatId){
+    var chatUsers = [];
 
     var getUserData = function(user){
         return {
@@ -370,29 +370,20 @@ function getChatLeaderboard(chatId){
             username: user.username,
             exp: user.chats[chatId].exp,
             level: user.chats[chatId].level,
-            prestige: user.chats[chatId].prestige
+            prestige: user.chats[chatId].prestige,
+            challengeWon: user.chats[chatId].challengeWon,
+            challengeLost: user.chats[chatId].challengeLost,
+            chratio: user.chats[chatId].challengeWon / (user.chats[chatId].challengeLost || 1)
         }
     };
 
     utils.each(cache.users, function(userId, user){
         if (!user.chats[chatId]) return true;
-
-        var added = false;
-
-        utils.each(LBUsers, function(index, LBUser){
-            if (BigNumber(LBUser.exp).isLessThan(BigNumber(user.chats[chatId].exp))) {
-                LBUsers.splice(index, 0, getUserData(user));
-                added = true;
-                return false;
-            } 
-        });    
-        
-        if (!added) {
-            LBUsers.push(getUserData(user));
-        }
+            
+        chatUsers.push(getUserData(user));
     });
 
-    return LBUsers;
+    return chatUsers;
 }
 
 /**
@@ -487,7 +478,7 @@ module.exports = {
     setUser,
     setChat,
     setUserChat,
-    getChatLeaderboard,
+    getChatUsers,
     resetChatStats,
     resetUserStats,
     resetAll,

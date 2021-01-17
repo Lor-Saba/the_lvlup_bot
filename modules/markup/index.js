@@ -116,6 +116,23 @@ var markup = {
         ]);
         
         return result;
+    },
+
+    'LEADERBOARD': function(message, data, lexicon){
+        var result = {};
+
+        result.text = lexicon.get('LEADERBOARD_TITLE');
+        result.buttons = markupWrap([
+            [ 
+                markupButton(message, lexicon.get('LEADERBOARD_OPTION_EXP')     , Object.assign(data, { action: 'LEADERBOARD', type: 'exp'     }) ),
+                markupButton(message, lexicon.get('LEADERBOARD_OPTION_ABSEXP')  , Object.assign(data, { action: 'LEADERBOARD', type: 'absexp'  }) )
+            ],
+            [
+                markupButton(message, lexicon.get('LEADERBOARD_OPTION_CHRATIO') , Object.assign(data, { action: 'LEADERBOARD', type: 'chratio' }) )
+            ]
+        ]);
+        
+        return result;
     }
 
 }

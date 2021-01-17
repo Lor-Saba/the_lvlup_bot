@@ -4,7 +4,6 @@ module.exports = {
         "en": "*$(username)* asks to be challenged!\nAnyone brave enough to accept?"
     },
     "CHALLENGE_START_DIRECT": {
-        //"en": "*$(usernameB)* accepted *$(usernameA)*'s challenge!\n\nA dice will be rolled.\nIf an even number comes out *$(usernameA)* wins,\notherwise it's a *$(usernameB)*'s win"
         "en": "*$(username)* challenged *$(challengedUsername)*!\nwill he/she be brave enough to accept?"
     },
     "CHALLENGE_BUTTON": {

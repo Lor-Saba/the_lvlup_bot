@@ -3,6 +3,7 @@ var keys = Object.assign(
     require('./keys/challenge'),
     require('./keys/generic'),
     require('./keys/items'),
+    require('./keys/leaderboard'),
     require('./keys/monster'),
     require('./keys/penality'),
     require('./keys/settings'),

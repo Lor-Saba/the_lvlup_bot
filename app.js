@@ -664,26 +664,12 @@ function setBotCommands(){
     
     bot.command('leaderboard', function(ctx){
         var mexData = ctx.state.mexData;
-        var leaderboard = storage.getChatLeaderboard(mexData.chatId);
-        var lbList = [];
-
-        utils.each(leaderboard, function(index, userStats){
-            var text = '';
-
-            //text += index === 0 ? '👑 ' : ' ';
-            text += '#' + (index + 1) + ' *' + userStats.username + '*';
-            text += '\n';
-            text += '       ';
-            text += '‎_';
-            text += BigNumber(userStats.prestige).isGreaterThan(0) ? 'ptg: ' + userStats.prestige + ' • ' : '';
-            text += 'lv: ' + utils.formatNumber(utils.toFloor(userStats.level)) + ' • ';
-            text += 'exp: ' + utils.formatNumber(userStats.exp);
-            text += '_';
-
-            lbList.push(text);
+        var markupData = markup.get('LEADERBOARD', ctx.update.message, {
+            userId: mexData.userId, 
+            chatId: mexData.chatId
         });
 
-        ctx.replyWithMarkdown(lbList.join('\n')).catch(()=>{});
+        bot.telegram.sendMessage(mexData.chatId, markupData.text, markupData.buttons).catch(() => {});
     });
     
     bot.command('stats', function(ctx){
@@ -702,26 +688,12 @@ function setBotCommands(){
             return ctx.replyWithMarkdown(lexicon.get('STATS_NOUSER', { username: mexData.username })).catch(()=>{});
         }
 
-        var leaderboard = storage.getChatLeaderboard(mexData.chatId);
-        var leaderboardPosition = leaderboard.indexOf(leaderboard.filter(userData => userData.id === user.id)[0]);
         var maxBarsLength = 12;
         var text = '';
 
         // aggiunge il nome e titolo
         text += lexicon.get('STATS_INFO', { username: mexData.username });
         text += '\n';
-
-        // aggiunge la posizione dell'utente nella leaderboard se
-        if (leaderboardPosition != -1) {
-            text += '\n' + lexicon.get('STATS_LEADERBOARD_POSITION') + ':';
-
-                 if (leaderboardPosition === 0) text += '  🥇';
-            else if (leaderboardPosition === 1) text += '  🥈';
-            else if (leaderboardPosition === 2) text += '  🥉';
-            else text += '   ' + (leaderboardPosition + 1) + '°';
-
-            text += '\n';
-        }
 
         // agiunge le statistiche basi: Exp, Level, Prestige
         if (BigNumber(userStats.exp).isGreaterThan(0)) {
@@ -1044,6 +1016,32 @@ function setBotEvents(){
 
                 ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
                 storage.addChatToQueue(chat.id);
+                break;
+
+            case 'LEADERBOARD': 
+
+                // interrompe se non è stato cliccato da chi ha richiesto la leaderboard
+                if (queryData.userId !== mexData.userId) {
+                    return ctx.answerCbQuery(lexicon.get('LEADERBOARD_CANNOT_ACCEPT'), true).catch(()=>{});
+                }
+                
+                // ottiene il testo della leaderboard da mostrare a seconda del tipo
+                var text = getLeaderboardByType(mexData.chatId, queryData.type);
+                
+                // rimuove i dati markup
+                markup.deleteData(query);
+                
+                // modifica il messaggio con il risultato della leaderboard
+                bot.telegram.editMessageText(
+                    mexData.chatId, 
+                    mexData.message.message_id, 
+                    null, 
+                    text,
+                    { parse_mode: 'markdown' }
+                )
+                .then(()=>{})
+                .catch(()=>{});
+
                 break;
 
             case 'CHALLENGE_BUTTON': 
@@ -1451,6 +1449,60 @@ function addRequireFromRoot(){
     global.requireFromRoot = function(path) {
         return require(resolve(rootPath, path));
     };
+}
+
+/**
+ * 
+ * @param {number} chatId id della chat di riferimento
+ * @param {string} type tipo di leaderboard da mostrare
+ */
+function getLeaderboardByType(chatId, type){
+    var leaderboard = storage.getChatUsers(chatId);
+    var text = '';
+    var getIcon = function(index){
+        return index == 0 ? '🥇' : (index == 1 ? '🥈' : (index == 2 ? '🥉' : '' ));
+    }
+
+    // genera il testo della leaderboard a seconda del tipo scelto
+    if (type == 'exp') {
+        text += Lexicon.get('LEADERBOARD_OPTION_EXP_TITLE') + '\n';
+        utils.each(leaderboard.sort((a, b) => b.exp - a.exp), function(index, userStats){
+            text += '\n' + Lexicon.get('LEADERBOARD_OPTION_EXP_ENTRY', {
+                icon: getIcon(index),
+                position: index + 1,
+                username: userStats.username,
+                prestige: userStats.prestige,
+                level: utils.formatNumber(utils.toFloor(userStats.level)),
+                exp: utils.formatNumber(userStats.exp)
+            });
+        });
+    } else if (type == 'absexp') {
+        text += Lexicon.get('LEADERBOARD_OPTION_ABSEXP_TITLE') + '\n';
+        utils.each(leaderboard.sort((a, b)=> (b.prestige - a.prestige) || (b.exp - a.exp)), function(index, userStats){
+            text += '\n' + Lexicon.get('LEADERBOARD_OPTION_ABSEXP_ENTRY', {
+                icon: getIcon(index),
+                position: index + 1,
+                username: userStats.username,
+                prestige: userStats.prestige,
+                level: utils.formatNumber(utils.toFloor(userStats.level)),
+                exp: utils.formatNumber(userStats.exp)
+            });
+        });
+    } else if (type === 'chratio'){
+        text += Lexicon.get('LEADERBOARD_OPTION_CHRATIO_TITLE') + '\n';
+        utils.each(leaderboard.sort((a, b) => b.chratio - a.chratio), function(index, userStats){
+            text += '\n' + Lexicon.get('LEADERBOARD_OPTION_CHRATIO_ENTRY', {
+                icon: getIcon(index),
+                position: index + 1,
+                username: userStats.username,
+                won: userStats.challengeWon,
+                lost: userStats.challengeLost,
+                ratio: userStats.chratio.toFixed(2)
+            });
+        });
+    }
+
+    return text;
 }
 
 /**
