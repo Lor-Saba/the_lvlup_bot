@@ -1,17 +1,15 @@
-- leaderboard divisa 
-    - elenco per exp
-    - elenco per rateo challenge
-- nuovo comando: "summary/recap" per elencare le challenge personali contro gli altri utenti
-- eventi di calendario
-    - xmas / ...
-- Dungeon 
-    - E' possibile partecipare una sola volta 
-    - durata limitata di un'ora
-    - ricompense: exp o equipaggiamenti
-    - appaiono di martedì e giovedì
-- nuovo output dei messaggi challenge
 
 // ############################################################
-// update dopo
+// update in lavorazione
 
+- nuovo comando: "summary/recap" per elencare le challenge personali contro gli altri utenti
+- nuovo comando: "chatstats" per mostrare le eventuali stats della chat
+- eventi di calendario
+    - xmas / ...
+
+// ############################################################
+// futuri update
+
+- creazione di un modulo "core" dove spostare tutti metodi a funzionalità relative al bot telegram 
+  così da lasciare nel file app.js solo la parte di inizializzazione 
 - sistema di coda per i messaggi con il bot
