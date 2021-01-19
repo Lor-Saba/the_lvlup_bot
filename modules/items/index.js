@@ -275,6 +275,25 @@ function checkForCraftableItem(userItems){
 }
 
 /**
+ * 
+ * @param {object} itemsList lista di items in cui inserire il nuovo item passato
+ * @param {object} item item da inserire
+ */
+function insertItemTo(itemsList, item){
+    
+    if (item.type === 'temp') {
+        itemsList[item.name] = Date.now() / 1000;
+    }
+    if (item.type === 'perm') {
+        if (itemsList[item.name]) {
+            itemsList[item.name]++;
+        } else {
+            itemsList[item.name] = 1;
+        }
+    }
+}
+
+/**
  *  metodo di inizializzazione
  */
 function init() {
@@ -322,5 +341,6 @@ module.exports = {
     getItemsBuff,
     getItemBuffText,
     getItemRarityIcon,
+    insertItemTo,
     checkForCraftableItem,
 };

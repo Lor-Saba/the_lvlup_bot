@@ -1,12 +1,14 @@
 
 var keys = Object.assign(
     require('./keys/challenge'),
+    require('./keys/dungeon'),
     require('./keys/generic'),
     require('./keys/items'),
     require('./keys/leaderboard'),
     require('./keys/monster'),
     require('./keys/penality'),
     require('./keys/settings'),
+    require('./keys/special'),
     require('./keys/stats'),
     require('./keys/updated'),
     require('./keys/user')

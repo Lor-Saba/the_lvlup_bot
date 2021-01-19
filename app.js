@@ -28,6 +28,8 @@ const items = require('./modules/items');
 const scheduler = require('./modules/scheduler');
 // modulo per gestire l'evento del mostro
 const monsters = require('./modules/monsters');
+// modulo per gestire l'evento del dungeon
+const dungeons = require('./modules/dungeon');
 // istanza del bot 
 var bot = null;
 // timestamp dell'avvio del bot
@@ -224,7 +226,7 @@ function initSchedulerEvents(){
                 .catch(()=>{});
 
                 // aggiunge l'item droppato alla chat
-                data.chat.items[monsterItem.name] = Date.now() / 1000;
+                items.insertItemTo(data.chat.items, monsterItem);
             };
 
             var onExpire = function(data){
@@ -254,10 +256,10 @@ function initSchedulerEvents(){
                     data.monster.extra.messageId = ctxSpawn.message_id;
                 })
                 .catch(()=>{});
-            }
+            };
 
             // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
-            var counter = 50;
+            var counter = 75;
             utils.each(storage.getChats(), (chatId, chat) => {
                 setTimeout(() => monsters.spawn(chat, {
                     onSpawn: onSpawn,
@@ -267,9 +269,89 @@ function initSchedulerEvents(){
                     onUpdate: onUpdate,
                     onDefeated: onDefeated,
                     onEscaped: onEscaped
-                }), counter += 50);
+                }), counter += 75);
             });
         });
+
+        scheduler.on('dungeon', function(){
+            var lexicon = Lexicon.lang('en');
+            var button = Markup.inlineKeyboard(
+                [
+                    Markup.callbackButton(
+                        lexicon.get('DUNGEON_EXPLORE_LABEL'), 
+                        'dungeon_explore'
+                    )
+                ]
+            ).extra({ parse_mode: 'markdown' });
+
+            var onSpawn = function(data){
+
+                // crea il messaggio di spawn del mostro e salva l'id
+                bot.telegram.sendMessage(
+                    data.chat.id, 
+                    lexicon.get('DUNGEON_SPAWN'), 
+                    button
+                )
+                .then(ctxSpawn => {
+                    data.dungeon.extra.messageId = ctxSpawn.message_id;
+                })
+                .catch(()=>{});
+            };
+
+            var onExpire = function(data){
+
+                // elimina il messaggio per iniziare l'attacco
+                bot.telegram.editMessageText(
+                    data.chat.id, 
+                    data.dungeon.extra.messageId, 
+                    null, 
+                    lexicon.get('DUNGEON_EXPIRED'), 
+                    { parse_mode: 'markdown' }
+                ).catch(()=>{});
+            };
+
+            var onExplore = function(data){
+                var text = '';
+                var lexicon = data.ctx.state.lexicon;
+                
+                if (Math.random() < 0.25) {
+                    text += lexicon.get('DUNGEON_EXPLORE_FAIL_TITLE', { username: data.user.username });
+                } else {
+                    // oggetto droppato dal dungeon
+                    var item = items.pickDungeon();
+                    // ottiene il riferimento alle stats dell'utente per la chat corrente
+                    var userStats = data.user.chats[data.chat.id];
+
+                    // inserisce l'oggetto nella lista dell'utente
+                    items.insertItemTo(userStats.items, item);
+                        
+                    text += lexicon.get('DUNGEON_EXPLORE_SUCCESS_TITLE', { 
+                        username: data.user.username, 
+                        itemcard: getItemCardText(item, 'en')
+                    });                    
+                }
+
+                // crea il messaggio di spawn del mostro e salva l'id
+                bot.telegram.sendMessage(data.chat.id, text, { parse_mode: 'markdown' }).catch(()=>{});
+            };
+
+            var onAlreadyExplored = function(data){
+
+                // invia un messaggio per notificare quanto manca prima di poter nuovamente attaccare
+                bot.telegram.answerCbQuery(data.ctx.update.callback_query.id, lexicon.get('DUNGEON_CANNOT_EXPLORE'), true).catch(()=>{});
+            };
+
+            // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
+            var counter = 75;
+            utils.each(storage.getChats(), (chatId, chat) => {
+                setTimeout(() => dungeons.spawn(chat, {
+                    onSpawn: onSpawn,
+                    onExpire: onExpire,
+                    onExplore: onExplore,
+                    onAlreadyExplored: onAlreadyExplored
+                }), counter += 75);
+            });
+        })
 
         console.log("> Cron events initialized");
 
@@ -501,12 +583,12 @@ function setBotCommands(){
                 break;
 
             case 'messageall': 
-                var counter = 50;
+                var counter = 75;
 
                 utils.each(storage.getChats(), function(chatId) {
                     setTimeout(
                         () => ctx.telegram.sendMessage(chatId, commandArgs.join(' '), { parse_mode: 'markdown' }).catch(()=>{}), 
-                        counter += 50
+                        counter += 75
                     );
                 });
                 break;
@@ -865,6 +947,22 @@ function setBotActions(){
 
         // attacca il mostro
         monsters.attack(chat, user, ctx);
+
+        return true;
+    });
+
+    bot.action('dungeon_explore', function(ctx){
+        var mexData = ctx.state.mexData;
+
+        // ottiene il riferimento all'utente
+        var user = storage.getUser(mexData.userId);
+        // ottiene il riferimento alla chat
+        var chat = storage.getChat(mexData.chatId);
+
+        // attacca il mostro
+        dungeons.explore(chat, user, ctx);
+
+        return true;
     });
 
     console.log("  - loaded bot actions");
@@ -1373,68 +1471,37 @@ function dropItemChance(ctx, user){
 
         userStats.lastItemDate = mexData.date;
 
+        var dropText = '';
         var item = items.pickDrop();
-        var valueLabel = '';
-
-        // if (item.type === 'inst') {
-        //     var bonusExpGain = calcUserExpGain(ctx, user, item.messages, true);
-        // 
-        //     valueLabel = '+' + utils.formatNumber(bonusExpGain);
-        // } 
-        
-        if (item.type === 'temp') {
-            userStats.items[item.name] = mexData.date;
-        }
-        if (item.type === 'perm') {
-            if (userStats.items[item.name]) {
-                userStats.items[item.name]++;
-            } else {
-                userStats.items[item.name] = 1;
-            }
-        }
-
-        valueLabel = items.getItemBuffText(item) + ' ' + lexicon.get('LABEL_EXP');
-
-        if (chat.settings.notifyUserPickupItem) {
-            ctx.replyWithMarkdown(lexicon.get('ITEMS_PICKUP_FULL', {
-                username: user.username,
-                itemcard: lexicon.get('ITEMS_CARD_FULL', {
-                    itemicon: items.getItemRarityIcon(item.name),
-                    itemname: lexicon.get('ITEMS_TITLE_' + item.name) + ( item.timeout ? '  (' + item.timeout + 'h)' : ''),
-                    itemdescription: lexicon.get('ITEMS_DESCRIPTION_' + item.name),
-                    itemtype: lexicon.get('LABEL_ITEMTYPE_' + item.type.toUpperCase()),
-                    itemchance: utils.formatNumber(item.chance * 100) + '%',
-                    itembonus: valueLabel
-                })
-            })).catch(()=>{});                
-        }
-
         var checkForCraftableItem = function(){
             var newItem = items.checkForCraftableItem(userStats.items);
             if (newItem) {
 
-                valueLabel = '+' + (newItem.power * 100).toFixed(1) + '% ' + lexicon.get('LABEL_EXP');
+                dropText += '\n\n' + lexicon.get('ITEMS_CRAFT_FULL', {
+                    username: user.username,
+                    recipe: newItem.recipe.map(i => i.quantity + 'x ' + lexicon.get('ITEMS_TITLE_' + i.name)).join(', '),
+                    itemcard: getItemCardText(newItem, 'en')
+                });
 
-                if (chat.settings.notifyUserPickupItem) {
-                    ctx.replyWithMarkdown(lexicon.get('ITEMS_CRAFT_FULL', {
-                        username: user.username,
-                        recipe: newItem.recipe.map(i => i.quantity + 'x ' + lexicon.get('ITEMS_TITLE_' + i.name)).join(', '),
-                        itemcard: lexicon.get('ITEMS_CARD_FULL', {
-                            itemicon: items.getItemRarityIcon(newItem.name),
-                            itemname: lexicon.get('ITEMS_TITLE_' + newItem.name),
-                            itemdescription: lexicon.get('ITEMS_DESCRIPTION_' + newItem.name),
-                            itemtype: lexicon.get('LABEL_ITEMTYPE_' + newItem.type.toUpperCase()),
-                            itemchance: lexicon.get('LABEL_CRAFTED'),
-                            itembonus: valueLabel
-                        })
-                    })).catch(()=>{});
-                }
-
-                setTimeout(checkForCraftableItem, 200);
+                checkForCraftableItem();
             }
         };
 
-        setTimeout(checkForCraftableItem, 200);
+        // inserisce il drop nella lista degli items dell'utente
+        items.insertItemTo(userStats.items, item);
+
+        // aggiunge il testo del drop
+        dropText += lexicon.get('ITEMS_PICKUP_FULL', {
+            username: user.username,
+            itemcard: getItemCardText(item, 'en')
+        });
+
+        checkForCraftableItem();
+
+        // se la notifica di drop è abilitata
+        if (!chat.settings.notifyUserPickupItem) {
+            ctx.replyWithMarkdown(dropText).catch(()=>{});
+        }
     }
 }
 
@@ -1457,6 +1524,7 @@ function addRequireFromRoot(){
  * @param {string} type tipo di leaderboard da mostrare
  */
 function getLeaderboardByType(chatId, type){
+    var lexicon = Lexicon.lang('en');
     var leaderboard = storage.getChatUsers(chatId);
     var text = '';
     var getIcon = function(index){
@@ -1465,9 +1533,9 @@ function getLeaderboardByType(chatId, type){
 
     // genera il testo della leaderboard a seconda del tipo scelto
     if (type == 'exp') {
-        text += Lexicon.get('LEADERBOARD_OPTION_EXP_TITLE') + '\n';
+        text += lexicon.get('LEADERBOARD_OPTION_EXP_TITLE') + '\n';
         utils.each(leaderboard.sort((a, b) => b.exp - a.exp), function(index, userStats){
-            text += '\n' + Lexicon.get('LEADERBOARD_OPTION_EXP_ENTRY', {
+            text += '\n' + lexicon.get('LEADERBOARD_OPTION_EXP_ENTRY', {
                 icon: getIcon(index),
                 position: index + 1,
                 username: userStats.username,
@@ -1477,9 +1545,9 @@ function getLeaderboardByType(chatId, type){
             });
         });
     } else if (type == 'absexp') {
-        text += Lexicon.get('LEADERBOARD_OPTION_ABSEXP_TITLE') + '\n';
+        text += lexicon.get('LEADERBOARD_OPTION_ABSEXP_TITLE') + '\n';
         utils.each(leaderboard.sort((a, b)=> (b.prestige - a.prestige) || (b.exp - a.exp)), function(index, userStats){
-            text += '\n' + Lexicon.get('LEADERBOARD_OPTION_ABSEXP_ENTRY', {
+            text += '\n' + lexicon.get('LEADERBOARD_OPTION_ABSEXP_ENTRY', {
                 icon: getIcon(index),
                 position: index + 1,
                 username: userStats.username,
@@ -1489,9 +1557,9 @@ function getLeaderboardByType(chatId, type){
             });
         });
     } else if (type === 'chratio'){
-        text += Lexicon.get('LEADERBOARD_OPTION_CHRATIO_TITLE') + '\n';
+        text += lexicon.get('LEADERBOARD_OPTION_CHRATIO_TITLE') + '\n';
         utils.each(leaderboard.sort((a, b) => b.chratio - a.chratio), function(index, userStats){
-            text += '\n' + Lexicon.get('LEADERBOARD_OPTION_CHRATIO_ENTRY', {
+            text += '\n' + lexicon.get('LEADERBOARD_OPTION_CHRATIO_ENTRY', {
                 icon: getIcon(index),
                 position: index + 1,
                 username: userStats.username,
@@ -1503,6 +1571,33 @@ function getLeaderboardByType(chatId, type){
     }
 
     return text;
+}
+
+/**
+ * 
+ * @param {object} item oggetto dell'item
+ * @param {string} lang lingua da usare nel lexicon
+ */
+function getItemCardText(item, lang = 'en', instPassive = false){
+    var lexicon = Lexicon.lang(lang);
+    var itemBonusText = '';
+
+    if (item.type === 'inst') {
+        var bonusExpGain = calcUserExpGain(data.ctx, data.user, item.messages, instPassive);
+
+        itemBonusText = '+' + utils.formatNumber(bonusExpGain);
+    } else {
+        itemBonusText = items.getItemBuffText(item);
+    }
+
+    return lexicon.get('ITEMS_CARD_FULL', {
+        itemicon: items.getItemRarityIcon(item.name),
+        itemname: lexicon.get('ITEMS_TITLE_' + item.name) + ( item.timeout ? '  (' + item.timeout + 'h)' : ''),
+        itemdescription: lexicon.get('ITEMS_DESCRIPTION_' + item.name),
+        itemtype: lexicon.get('LABEL_ITEMTYPE_' + item.type.toUpperCase()),
+        itemchance: utils.formatNumber(item.chance * 100) + '%',
+        itembonus: itemBonusText + ' ' + lexicon.get('ITEMS_LIST_TARGET_' + item.target.toUpperCase())
+    }); 
 }
 
 /**
@@ -1549,7 +1644,7 @@ function init(){
 init();
 
 // setTimeout(() => {
-//     scheduler.trigger('monster');
+//     scheduler.trigger('dungeon');
 // }, 5000);
 
 // setInterval(() => {
