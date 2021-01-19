@@ -1477,7 +1477,7 @@ function dropItemChance(ctx, user){
             var newItem = items.checkForCraftableItem(userStats.items);
             if (newItem) {
 
-                dropText += '\n\n' + lexicon.get('ITEMS_CRAFT_FULL', {
+                dropText += '\n\n\n' + lexicon.get('ITEMS_CRAFT_FULL', {
                     username: user.username,
                     recipe: newItem.recipe.map(i => i.quantity + 'x ' + lexicon.get('ITEMS_TITLE_' + i.name)).join(', '),
                     itemcard: getItemCardText(newItem, 'en')
@@ -1499,7 +1499,7 @@ function dropItemChance(ctx, user){
         checkForCraftableItem();
 
         // se la notifica di drop è abilitata
-        if (!chat.settings.notifyUserPickupItem) {
+        if (chat.settings.notifyUserPickupItem) {
             ctx.replyWithMarkdown(dropText).catch(()=>{});
         }
     }
