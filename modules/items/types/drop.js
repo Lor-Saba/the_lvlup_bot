@@ -16,7 +16,7 @@ module.exports = [
     { target: 'exp', type: 'perm', name: 'SUSEYE',       weight: 3,   power: 0.100, powermode: '+' },
     { target: 'exp', type: 'perm', name: 'DRAGONEGG',    weight: 2,   power: 0.150, powermode: '+' },
     { target: 'exp', type: 'perm', name: 'RTX3090',      weight: 1,   power: 0.200, powermode: '+' },
-    { target: 'exp', type: 'perm', name: 'DUSTBALL',     weight: 0,   power: 0.065, powermode: '+', recipe: [{ name: 'DUST', quantity: 5 }] },
+    { target: 'exp', type: 'perm', name: 'DUSTBALL',     weight: 0,   power: 0.050, powermode: '+', recipe: [{ name: 'DUST', quantity: 5 }] },
     { target: 'exp', type: 'perm', name: 'BOOK',         weight: 0,   power: 0.065, powermode: '+', recipe: [{ name: 'PAPER', quantity: 3 },{ name: 'STRING', quantity: 1 }] },
     { target: 'exp', type: 'perm', name: 'BOUQUET',      weight: 0,   power: 0.050, powermode: '+', recipe: [{ name: 'DAISY', quantity: 4 }] },
     { target: 'exp', type: 'perm', name: 'ROPE',         weight: 0,   power: 0.045, powermode: '+', recipe: [{ name: 'STRING', quantity: 3 }] },

@@ -7,6 +7,7 @@ module.exports = {
         "en": "Sorry, you can't select this action."
     },
 
+
     "LEADERBOARD_OPTION_EXP": {
         "en": "Relative Exp"
     },
@@ -16,6 +17,7 @@ module.exports = {
     "LEADERBOARD_OPTION_EXP_ENTRY": {
         "en": "#$(position) *$(username)*  $(icon)\n       _exp: $(exp)_"
     },
+
 
     "LEADERBOARD_OPTION_ABSEXP": {
         "en": "Total Exp"
@@ -27,6 +29,7 @@ module.exports = {
         "en": "$(position) *$(username)*  $(icon)\n       _ptg: $(prestige) • lv: $(level) • exp: $(exp)_"
     },
 
+
     "LEADERBOARD_OPTION_CHRATIO": {
         "en": "Challenge W/L"
     },
@@ -34,6 +37,17 @@ module.exports = {
         "en": "🏆 Leaderboard by *Challenge ratio*."
     },
     "LEADERBOARD_OPTION_CHRATIO_ENTRY": {
-        "en": "#$(position) *$(username)*  $(icon)\n       _ratio: $(ratio)_    ( $(won) / $(lost) )"
+        "en": "#$(position) *$(username)*  $(icon)\n       _ratio: $(ratio)_    ( W: $(won) / L: $(lost) )"
+    },
+
+
+    "LEADERBOARD_OPTION_CHSUMMARY": {
+        "en": "Challenged Users"
+    },
+    "LEADERBOARD_OPTION_CHSUMMARY_TITLE": {
+        "en": "🏆 *$(username)*'s history of *Challenged Users*."
+    },
+    "LEADERBOARD_OPTION_CHSUMMARY_ENTRY": {
+        "en": "# _vs_ *$(username)*\n    _ratio: $(ratio)_    ( W: $(won) / L: $(lost) )"
     }
 };

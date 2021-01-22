@@ -1173,9 +1173,12 @@ function setBotEvents(){
                 if (queryData.userId !== mexData.userId) {
                     return ctx.answerCbQuery(lexicon.get('LEADERBOARD_CANNOT_ACCEPT'), true).catch(()=>{});
                 }
+
+                // ottiene il riferimento all'utente
+                var user = storage.getUser(mexData.userId);
                 
                 // ottiene il testo della leaderboard da mostrare a seconda del tipo
-                var text = getLeaderboardByType(mexData.chatId, queryData.type);
+                var text = getLeaderboardByType(mexData.chatId, user, queryData.type);
                 
                 // rimuove i dati markup
                 markup.deleteData(query);
@@ -1574,49 +1577,110 @@ function addRequireFromRoot(){
  * @param {number} chatId id della chat di riferimento
  * @param {string} type tipo di leaderboard da mostrare
  */
-function getLeaderboardByType(chatId, type){
+function getLeaderboardByType(chatId, user, type){
     var lexicon = Lexicon.lang('en');
-    var leaderboard = storage.getChatUsers(chatId);
     var text = '';
     var getIcon = function(index){
         return index == 0 ? '🥇' : (index == 1 ? '🥈' : (index == 2 ? '🥉' : '' ));
-    }
+    };
 
     // genera il testo della leaderboard a seconda del tipo scelto
     if (type == 'exp') {
+        var leaderboard = storage.getChatUsers(chatId);
+        var sortFunction = function(a, b){
+            var c = BigNumber(b.exp).minus(a.exp).isGreaterThanOrEqualTo(0);
+
+            return c ? 1 : -1;
+        }
+
         text += lexicon.get('LEADERBOARD_OPTION_EXP_TITLE') + '\n';
-        utils.each(leaderboard.sort((a, b) => b.exp - a.exp), function(index, userStats){
+
+        // (a, b) => b.exp - a.exp
+        utils.each(leaderboard.sort(sortFunction), function(index, stats){
             text += '\n' + lexicon.get('LEADERBOARD_OPTION_EXP_ENTRY', {
                 icon: getIcon(index),
                 position: index + 1,
-                username: userStats.username,
-                prestige: userStats.prestige,
-                level: utils.formatNumber(utils.toFloor(userStats.level)),
-                exp: utils.formatNumber(userStats.exp)
+                username: stats.username,
+                prestige: stats.prestige,
+                level: utils.formatNumber(utils.toFloor(stats.level)),
+                exp: utils.formatNumber(stats.exp)
             });
         });
     } else if (type == 'absexp') {
+        var leaderboard = storage.getChatUsers(chatId);
+        var sortFunction = function(a, b){
+            var c1 = BigNumber(b.prestige).minus(a.prestige).isGreaterThanOrEqualTo(0);
+            var c2 = BigNumber(b.exp).minus(a.exp).isGreaterThanOrEqualTo(0);
+
+            return (c1 ? 1 : -1) || (c2 ? 1 : -1);
+        }
+
         text += lexicon.get('LEADERBOARD_OPTION_ABSEXP_TITLE') + '\n';
-        utils.each(leaderboard.sort((a, b)=> (b.prestige - a.prestige) || (b.exp - a.exp)), function(index, userStats){
+
+        // (a, b)=> (b.prestige - a.prestige) || (b.exp - a.exp)
+        utils.each(leaderboard.sort(sortFunction), function(index, stats){
             text += '\n' + lexicon.get('LEADERBOARD_OPTION_ABSEXP_ENTRY', {
                 icon: getIcon(index),
                 position: index + 1,
-                username: userStats.username,
-                prestige: userStats.prestige,
-                level: utils.formatNumber(utils.toFloor(userStats.level)),
-                exp: utils.formatNumber(userStats.exp)
+                username: stats.username,
+                prestige: stats.prestige,
+                level: utils.formatNumber(utils.toFloor(stats.level)),
+                exp: utils.formatNumber(stats.exp)
             });
         });
     } else if (type === 'chratio'){
+        var leaderboard = storage.getChatUsers(chatId);
+        var sortFunction = function(a, b){
+            var c = BigNumber(b.chratio).minus(a.chratio).isGreaterThanOrEqualTo(0);
+
+            return c ? 1 : -1;
+        }
+
         text += lexicon.get('LEADERBOARD_OPTION_CHRATIO_TITLE') + '\n';
-        utils.each(leaderboard.sort((a, b) => b.chratio - a.chratio), function(index, userStats){
+
+        // (a, b) => b.chratio - a.chratio
+        utils.each(leaderboard.sort(sortFunction), function(index, stats){
             text += '\n' + lexicon.get('LEADERBOARD_OPTION_CHRATIO_ENTRY', {
                 icon: getIcon(index),
                 position: index + 1,
-                username: userStats.username,
-                won: userStats.challengeWon,
-                lost: userStats.challengeLost,
-                ratio: userStats.chratio.toFixed(2)
+                username: stats.username,
+                won: stats.challengeWon,
+                lost: stats.challengeLost,
+                ratio: stats.chratio.toFixed(2)
+            });
+        });
+    } else if (type === 'chsummary'){
+
+        if (!user) return '';
+
+        var leaderboard = [];
+        var userStats = user.chats[chatId];
+        var sortFunction = function(a, b){
+            var c = BigNumber(b.chratio).minus(a.chratio).isGreaterThanOrEqualTo(0);
+
+            return c ? 1 : -1;
+        }
+
+        if (!userStats) return '';
+
+        utils.each(userStats.challengers, function(username, stats){
+            leaderboard.push({ 
+                username: username,  
+                challengeWon: stats.won,
+                challengeLost: stats.lost,
+                chratio: stats.won / (stats.lost || 1)
+            });
+        }); 
+
+        text += lexicon.get('LEADERBOARD_OPTION_CHSUMMARY_TITLE', { username: user.username }) + '\n';
+
+        // (a, b) => b.chratio - a.chratio
+        utils.each(leaderboard.sort(sortFunction), function(index, stats){
+            text += '\n' + lexicon.get('LEADERBOARD_OPTION_CHSUMMARY_ENTRY', {
+                username: stats.username,
+                won: stats.challengeWon,
+                lost: stats.challengeLost,
+                ratio: stats.chratio.toFixed(2)
             });
         });
     }
