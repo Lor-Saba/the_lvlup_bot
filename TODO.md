@@ -2,10 +2,7 @@
 // ############################################################
 // update in lavorazione
 
-- nuovo comando: "summary/recap" per elencare le challenge personali contro gli altri utenti
 - nuovo comando: "chatstats" per mostrare le eventuali stats della chat
-- eventi di calendario
-    - xmas / ...
 
 // ############################################################
 // futuri update
