@@ -15,6 +15,8 @@ var scheduleMap = [
     { rule: '0 0 25 12 *', type: 'xmas' },
     // “At 10:00 on day-of-month 1 in April.” 
     { rule: '0 10 1 4 *', type: 'aprilfool' },
+    // “At 10:00 on day-of-month 31 in October.” 
+    { rule: '0 10 31 10 *', type: 'halloween' },
     // “At 01:00.” 
     { rule: '0 1 * * *', type: 'backup' },
     // “At 08:00 on every day-of-week from Monday through Friday.” 

@@ -3,7 +3,13 @@ const utils = require('../utils');
 // lista degli items con relativa mappa e weight totale
 var items = {};
 var itemsMap = {};
-var itemTypes = ['drop', 'challenge', 'dungeon', 'monster'];
+var itemTypes = [
+    'drop', 
+    'challenge', 
+    'dungeon', 
+    'monster', 
+    'special'
+];
 
 
 /**
@@ -280,6 +286,8 @@ function checkForCraftableItem(userItems){
  * @param {object} item item da inserire
  */
 function insertItemTo(itemsList, item){
+
+    if (!item) return null;
     
     if (item.type === 'temp') {
         itemsList[item.name] = Date.now() / 1000;

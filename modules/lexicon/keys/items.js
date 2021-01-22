@@ -19,6 +19,9 @@ module.exports = {
     "ITEMS_LIST_TARGET_DROP_CHANCE": {
         "en": "Drop Chance"
     },
+    "ITEMS_LIST_TARGET_DROP_CD": {
+        "en": "Drop Cooldown"
+    },
     "ITEMS_LIST_TARGET_CH_WIN": {
         "en": "Ch. WinExp"
     },
@@ -270,7 +273,7 @@ module.exports = {
         "en": "Woodoo doll"
     },
     "ITEMS_DESCRIPTION_WOODOODOLL": {
-        "en": "A little worn and smelly, the kind old lady who gave it to you said to use it with care."
+        "en": "A little worn and smelly, the kind old lady who gave it to you winked and said to use it with caution."
     },
     "ITEMS_TITLE_PEPPERSPRAY": {
         "en": "Pepper spray"
@@ -288,7 +291,7 @@ module.exports = {
         "en": "Long scythe"
     },
     "ITEMS_DESCRIPTION_SCYTHE": {
-        "en": "Rustic but sharp AF. It causes terror to your enemies just by holding it."
+        "en": "Sharp and scary. It causes terror to your enemies just by holding it."
     },
     "ITEMS_TITLE_KATANA": {
         "en": "Katana"

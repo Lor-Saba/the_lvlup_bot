@@ -351,7 +351,59 @@ function initSchedulerEvents(){
                     onAlreadyExplored: onAlreadyExplored
                 }), counter += 75);
             });
-        })
+        });
+
+        scheduler.on('xmas', function(){
+
+            var item1 = items.get('XMAS_1');
+            var item2 = items.get('XMAS_2');
+            var item3 = items.get('XMAS_3');
+
+            var buffText = [
+                Lexicon.get('SPECIAL_ITEM_BONUS', { value: items.getItemBuffText(item1), target: Lexicon.get('ITEMS_LIST_TARGET_' + item1.target.toUpperCase())}),
+                Lexicon.get('SPECIAL_ITEM_BONUS', { value: items.getItemBuffText(item2), target: Lexicon.get('ITEMS_LIST_TARGET_' + item2.target.toUpperCase())}),
+                Lexicon.get('SPECIAL_ITEM_BONUS', { value: items.getItemBuffText(item3), target: Lexicon.get('ITEMS_LIST_TARGET_' + item3.target.toUpperCase())})
+            ].join('\n');
+            
+            // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
+            var counter = 75;
+            utils.each(storage.getChats(), (chatId, chat) => {
+                items.insertItemTo(chat.items, item1);
+                items.insertItemTo(chat.items, item2);
+                items.insertItemTo(chat.items, item3);
+
+                setTimeout(() => bot.telegram.sendMessage(chat.id, Lexicon.get('SPECIAL_XMAS', { buff: buffText }), { parse_mode: 'markdown' }), counter += 75);
+            });
+        });
+
+        scheduler.on('halloween', function(){
+
+            var item1 = items.get('HALLOWEEN_1');
+            var item2 = items.get('HALLOWEEN_2');
+
+            var buffText = [
+                Lexicon.get('SPECIAL_ITEM_BONUS', { value: items.getItemBuffText(item1), target: Lexicon.get('ITEMS_LIST_TARGET_' + item1.target.toUpperCase())}),
+                Lexicon.get('SPECIAL_ITEM_BONUS', { value: items.getItemBuffText(item2), target: Lexicon.get('ITEMS_LIST_TARGET_' + item2.target.toUpperCase())})
+            ].join('\n');
+            
+            // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
+            var counter = 75;
+            utils.each(storage.getChats(), (chatId, chat) => {
+                items.insertItemTo(chat.items, item1);
+                items.insertItemTo(chat.items, item2);
+
+                setTimeout(() => bot.telegram.sendMessage(chat.id, Lexicon.get('SPECIAL_HALLOWEEN', { buff: buffText }), { parse_mode: 'markdown' }), counter += 75);
+            });
+        });
+
+        scheduler.on('aprilfool', function(){
+            
+            // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
+            var counter = 75;
+            utils.each(storage.getChats(), (chatId, chat) => {
+                setTimeout(() => bot.telegram.sendMessage(chat.id, Lexicon.get('SPECIAL_APRILFOOL')), counter += 75);
+            });
+        });
 
         console.log("> Cron events initialized");
 
@@ -811,7 +863,6 @@ function setBotCommands(){
 
             utils.each(itemsBuff, function(target, value){
                 var buff = value - 1;
-
 
                 if (buff === 0) return;
 
@@ -1480,7 +1531,7 @@ function dropItemChance(ctx, user){
                 dropText += '\n\n\n' + lexicon.get('ITEMS_CRAFT_FULL', {
                     username: user.username,
                     recipe: newItem.recipe.map(i => i.quantity + 'x ' + lexicon.get('ITEMS_TITLE_' + i.name)).join(', '),
-                    itemcard: getItemCardText(newItem, 'en')
+                    itemcard: getItemCardText(newItem, mexData.lang)
                 });
 
                 checkForCraftableItem();
@@ -1493,7 +1544,7 @@ function dropItemChance(ctx, user){
         // aggiunge il testo del drop
         dropText += lexicon.get('ITEMS_PICKUP_FULL', {
             username: user.username,
-            itemcard: getItemCardText(item, 'en')
+            itemcard: getItemCardText(item, mexData.lang)
         });
 
         checkForCraftableItem();
@@ -1644,7 +1695,7 @@ function init(){
 init();
 
 // setTimeout(() => {
-//     scheduler.trigger('dungeon');
+//     scheduler.trigger('halloween');
 // }, 5000);
 
 // setInterval(() => {
