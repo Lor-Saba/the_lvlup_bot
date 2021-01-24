@@ -1,5 +1,7 @@
 // modulo con vari metodi di utilità
 const utils = require('../../utils');
+// modulo per gestire i numeri
+const BigNumber = require('bignumber.js');
 
 module.exports = {
     'NONE': {
@@ -26,6 +28,24 @@ module.exports = {
                     userStats.challengeWon = 0;
                     userStats.challengeLost = 0;
                     userStats.challengers = {};
+
+                    // riallinea l'exp con la nuova scalabilità del prestigio
+                    var curPrestige = parseInt(userStats.prestige);
+                    var curTotalExp = BigNumber(userStats.exp)
+
+                    while(curPrestige-- > 0) curTotalExp = curTotalExp.plus(utils.calcExpGain(curPrestige).multipliedBy(1500));
+
+                    var newPrestige = 0;
+
+                    while(curTotalExp.isGreaterThanOrEqualTo(utils.calcNextPrestigeLevel(newPrestige))){
+                        curTotalExp = curTotalExp.minus(utils.calcNextPrestigeLevel(newPrestige));
+                        newPrestige += 1;
+                    }
+
+                    // assegna i nuovi valori
+                    userStats.exp = curTotalExp.valueOf();
+                    userStats.level = utils.calcLevelFromExp(curTotalExp).valueOf();
+                    userStats.prestige = String(newPrestige);
                 });
             
                 // rimozione delle proprietà spostate
@@ -44,9 +64,6 @@ module.exports = {
                 // proprietà di statistica per il mostro che appare nel fine settimana
                 chat.monsterDefeated = 0;
                 chat.monsterEscaped = 0;
-
-                // oggetto per il dungeon
-                chat.isDungeonActive = false;
             });
 
             return cache;

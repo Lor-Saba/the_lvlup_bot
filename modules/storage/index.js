@@ -11,12 +11,12 @@ const structs = require('../structs');
 const cacheVersion = require('./cacheManager');
 // modulo per la gestione di backup
 const backup = require('./backup');
-// Istanza del DB
+// istanza del DB
 var db = null;
 // cache della lista di utenti e chat
 var cache = { users: {}, chats: {}, config: {} };
 // liste coda da sincronizzare sul db
-var queue = { users: {}, chats: {}, config: false, id: null };
+var queue = { users: {}, chats: {}, config: false, force: false };
 
 /**
  * 
@@ -61,7 +61,7 @@ function connectMongoDB(uri) {
         cache = cacheVersion.check(cache);
 
         if (oldCacheVersion != cache.config.cacheVersion) {
-            queue.config = true;
+            setForcedSync(true);
         }
     })
     .then(function(){
@@ -264,6 +264,15 @@ function addChatToQueue(chatId){
 }
 
 /**
+ * imposta se al prossimo sync deve essere forzato il salvataggio di tutta la cache
+ * 
+ * @param {boolean} value stato (true|false)
+ */
+function setForcedSync(value) {
+    queue.force = !!value;
+}
+
+/**
  * aggiorna il DB con i dati in cache
  * 
  * @param {boolean} force force to save all
@@ -274,7 +283,7 @@ function syncDatabase(force){
     var chatsIdList = Object.keys(queue.chats);
     var saveConfig  = queue.config;
 
-    if (force === true){
+    if (force === true || queue.force === true){
         usersIdList = Object.keys(cache.users);
         chatsIdList = Object.keys(cache.chats);
         saveConfig  = true;
@@ -283,6 +292,7 @@ function syncDatabase(force){
     queue.users = {};
     queue.chats = {};
     queue.config = false;
+    queue.force = false;
 
     // se in coda ci sono modifiche da applicare per gli utenti..
     if (usersIdList.length > 0) {
@@ -302,7 +312,7 @@ function syncDatabase(force){
 
         db.collection("lvlup_users").bulkWrite(operations)
         .catch(err => {
-            utils.errorlog('syncDatabase | lvlup_users', operations, err);
+            utils.errorlog('syncDatabase | lvlup_users', JSON.stringify(operations), JSON.stringify(err));
         })
         .then(() => {
             usersIdList.length = 0;
@@ -328,7 +338,7 @@ function syncDatabase(force){
 
         db.collection("lvlup_chats").bulkWrite(operations)
         .catch(err => {
-            utils.errorlog('syncDatabase | lvlup_chats', operations, err);
+            utils.errorlog('syncDatabase | lvlup_chats', JSON.stringify(operations), JSON.stringify(err));
         })
         .then(() => {
             chatsIdList.length = 0;
@@ -348,10 +358,9 @@ function syncDatabase(force){
 
         db.collection("lvlup_config").bulkWrite(operations)
         .catch(err => {
-            utils.errorlog('syncDatabase | lvlup_config', operations, err);
+            utils.errorlog('syncDatabase | lvlup_config', JSON.stringify(operations), JSON.stringify(err));
         })
         .then(() => {
-            chatsIdList.length = 0;
             operations.length = 0;
         });
     }
@@ -493,5 +502,6 @@ module.exports = {
     listBackup,
     getBackup,
     getVersion,
-    setVersion
+    setVersion,
+    setForcedSync
 };

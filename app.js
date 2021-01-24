@@ -423,13 +423,16 @@ function checkIfUpdated(){
     if (currentVersion !== lastVersion){
         storage.setVersion(currentVersion);
         
+        var counter = 75;
         utils.each(storage.getChats(), function(chatId) {
-            bot.telegram.sendMessage(chatId, lexicon.get('UPDATED_LABEL', { version: currentVersion }), Markup.inlineKeyboard([
-                Markup.urlButton(
-                    lexicon.get('UPDATED_BUTTON'), 
-                    'https://raw.githubusercontent.com/Lor-Saba/the_lvlup_bot/master/changelog/' + currentVersion + '.md'
-                )
-            ]).extra({ parse_mode: 'markdown' })).catch(()=>{});
+            setTimeout(function(){
+                bot.telegram.sendMessage(chatId, lexicon.get('UPDATED_LABEL', { version: currentVersion }), Markup.inlineKeyboard([
+                    Markup.urlButton(
+                        lexicon.get('UPDATED_BUTTON'), 
+                        'https://raw.githubusercontent.com/Lor-Saba/the_lvlup_bot/master/changelog/' + currentVersion + '.md'
+                    )
+                ]).extra({ parse_mode: 'markdown' })).catch(()=>{})
+            }, counter += 75);
         });
     }
 }
@@ -1761,8 +1764,3 @@ init();
 // setTimeout(() => {
 //     scheduler.trigger('halloween');
 // }, 5000);
-
-// setInterval(() => {
-//     var item = items.pickMonster();
-//     console.log(Lexicon.get('ITEMS_TITLE_' + item.name));
-// }, 300);

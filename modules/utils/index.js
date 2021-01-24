@@ -11,7 +11,7 @@ BigNumber.config({ EXPONENTIAL_AT: 6, ROUNDING_MODE: 1 });
  */
 function calcLevelFromExp(exp) {
     // Math.sqrt(exp) * 0.44272 + 1;
-    return BigNumber(exp).sqrt().multipliedBy(0.44272).plus('1');  
+    return BigNumber(exp).sqrt().multipliedBy(0.44272).plus(1);  
 }
 
 /**
@@ -113,7 +113,8 @@ function calcPenality(userStats, dateNow, dateDiff = 1){
  * @param {number} prestige 
  */
 function calcNextPrestigeLevel(prestige){
-    return calcExpGain(prestige).multipliedBy(1500);
+    var epm = calcExpGain(prestige);
+    return epm.multipliedBy(1500).plus(epm.multipliedBy(100).multipliedBy(prestige));
 }
 
 /**
