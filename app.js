@@ -724,19 +724,23 @@ function setBotCommands(){
                     timeout: timeout
                 });
             });
+
+            // aggiunge il titolo 
+            text = lexicon.get('ITEMS_LIST_TITLE', { username: user.username });
+
+            // aggiunge gli items che modificano l'exp per primi
+            if (itemsText['exp']) {
+                text += itemsText['exp'];
+                delete itemsText['exp'];
+            }
+
+            // aggiunge il resto degli items in lista 
+            utils.each(itemsText, (key, value) => text += value);
+        } else {
+
+            // aggiunge il titolo 
+            text = lexicon.get('ITEMS_LIST_NOITEMS', { username: user.username })
         }
-
-        // aggiunge il titolo 
-        text = lexicon.get('ITEMS_LIST_TITLE', { username: user.username });
-
-        // aggiunge gli items che modificano l'exp per primi
-        if (itemsText['exp']) {
-            text += itemsText['exp'];
-            delete itemsText['exp'];
-        }
-
-        // aggiunge il resto degli items in lista 
-        utils.each(itemsText, (key, value) => text += value);
 
         // invia il testo completo di risposta
         ctx.replyWithMarkdown(text).catch(()=>{});
@@ -919,6 +923,48 @@ function setBotCommands(){
             for(var ind = 0; ind < maxBarsLength; ind++){
                 text += (ind / maxBarsLength < prestigeDiff) ? '🟦' : '⬜️';
             }            
+        }
+
+        ctx.replyWithMarkdown(text).catch(()=>{});
+    });
+
+    bot.command('chatstats', function(ctx){
+        var lexicon = ctx.state.lexicon;
+        var mexData = ctx.state.mexData;
+        var text = '';
+
+        // ottiene il riferimento all'utente
+        var chat = ctx.state.chat;
+
+        // aggiunge il nome e titolo
+        text += lexicon.get('CHATSTATS_INFO');
+        text += '\n';
+
+        // aggiunge il numero di utenti
+        text += '\n' + lexicon.get('CHATSTATS_USERS', { userscount: storage.getChatUsers(mexData.chatId).length });
+
+        // aggiunge la statistica dei mostri
+        text += '\n' + lexicon.get('CHATSTATS_MONSTERS_DEFEATED', { value: chat.monsterDefeated });
+        text += '\n' + lexicon.get('CHATSTATS_MONSTERS_ESCAPED', { value: chat.monsterEscaped });
+        text += '\n';
+
+        // aggiunge il bonus degli oggetti raccattati
+        if (Object.keys(chat.items).length){
+            
+            var itemsBuff = items.getItemsBuff(chat.items);
+
+            text += '\n' + lexicon.get('CHATSTATS_ITEMS');
+
+            utils.each(itemsBuff, function(target, value){
+                var buff = value - 1;
+
+                if (buff === 0) return;
+
+                text += '\n' + lexicon.get('CHATSTATS_ITEM_TARGET', { 
+                    target: lexicon.get('ITEMS_LIST_TARGET_' + target.toUpperCase()),
+                    value: (buff >= 0 ? '+' : '') + (buff * 100).toFixed(2) + '%'
+                });
+            });
         }
 
         ctx.replyWithMarkdown(text).catch(()=>{});

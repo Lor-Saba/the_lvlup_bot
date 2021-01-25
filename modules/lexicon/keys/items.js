@@ -42,7 +42,7 @@ module.exports = {
         "en": "TOTAL:  "
     },
     "ITEMS_LIST_NOITEMS": {
-        "en": "*$(username)* you have no items or active bonuses yet.\nKeep texting, sooner or later you will find something!"
+        "en": "*$(username)* you have no items yet.\nKeep texting, sooner or later you will find something!"
     },
     "ITEMS_CARD_FULL": {
         "en": "$(itemicon)  _$(itemname)_\n$(itemdescription)\n\nBonus: `$(itembonus)`\nType: `$(itemtype)`\nChance: `$(itemchance)`"
