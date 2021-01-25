@@ -1100,7 +1100,7 @@ function setBotEvents(){
             return false;
         }
 
-        calcUserExpGain(ctx, user, 0.2);
+        calcUserExpGain(ctx, user, 0.4);
     });
 
     bot.on('callback_query', function(ctx){ 
@@ -1286,6 +1286,7 @@ function setBotEvents(){
                     return ctx.replyWithDice()
                     .then(function(ctxMasg){
                         messageIdDice = ctxMasg.message_id;
+                        return ctxMasg;
                     });
                 })
                 .then(utils.promiseTimeout(5000))
@@ -1623,9 +1624,13 @@ function getLeaderboardByType(chatId, user, type){
     if (type == 'exp') {
         var leaderboard = storage.getChatUsers(chatId);
         var sortFunction = function(a, b){
-            var c = BigNumber(b.exp).minus(a.exp).isGreaterThanOrEqualTo(0);
+            var c = BigNumber(b.exp).minus(a.exp);
 
-            return c ? 1 : -1;
+            if (c.isGreaterThan(0)) c = 1;
+            else if (c.isLessThan(0)) c = -1;
+            else c = 0;
+
+            return c;
         }
 
         text += lexicon.get('LEADERBOARD_OPTION_EXP_TITLE') + '\n';
@@ -1644,10 +1649,18 @@ function getLeaderboardByType(chatId, user, type){
     } else if (type == 'absexp') {
         var leaderboard = storage.getChatUsers(chatId);
         var sortFunction = function(a, b){
-            var c1 = BigNumber(b.prestige).minus(a.prestige).isGreaterThanOrEqualTo(0);
-            var c2 = BigNumber(b.exp).minus(a.exp).isGreaterThanOrEqualTo(0);
+            var c1 = BigNumber(b.prestige).minus(a.prestige);
+            var c2 = BigNumber(b.exp).minus(a.exp);
 
-            return (c1 ? 1 : -1) || (c2 ? 1 : -1);
+            if (c1.isGreaterThan(0)) c1 = 1;
+            else if (c1.isLessThan(0)) c1 = -1;
+            else c1 = 0;
+
+            if (c2.isGreaterThan(0)) c2 = 1;
+            else if (c2.isLessThan(0)) c2 = -1;
+            else c2 = 0;
+
+            return c1 || c2;
         }
 
         text += lexicon.get('LEADERBOARD_OPTION_ABSEXP_TITLE') + '\n';
@@ -1666,9 +1679,13 @@ function getLeaderboardByType(chatId, user, type){
     } else if (type === 'chratio'){
         var leaderboard = storage.getChatUsers(chatId);
         var sortFunction = function(a, b){
-            var c = BigNumber(b.chratio).minus(a.chratio).isGreaterThanOrEqualTo(0);
+            var c = BigNumber(b.chratio).minus(a.chratio);
 
-            return c ? 1 : -1;
+            if (c.isGreaterThan(0)) c = 1;
+            else if (c.isLessThan(0)) c = -1;
+            else c = 0;
+
+            return c;
         }
 
         text += lexicon.get('LEADERBOARD_OPTION_CHRATIO_TITLE') + '\n';
@@ -1691,9 +1708,13 @@ function getLeaderboardByType(chatId, user, type){
         var leaderboard = [];
         var userStats = user.chats[chatId];
         var sortFunction = function(a, b){
-            var c = BigNumber(b.chratio).minus(a.chratio).isGreaterThanOrEqualTo(0);
+            var c = BigNumber(b.chratio).minus(a.chratio);
 
-            return c ? 1 : -1;
+            if (c.isGreaterThan(0)) c = 1;
+            else if (c.isLessThan(0)) c = -1;
+            else c = 0;
+
+            return c;
         }
 
         if (!userStats) return '';
