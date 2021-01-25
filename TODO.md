@@ -2,7 +2,7 @@
 // ############################################################
 // update in lavorazione
 
-- nuovo comando: "chatstats" per mostrare le eventuali stats della chat
+***
 
 // ############################################################
 // futuri update
