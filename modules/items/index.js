@@ -4,8 +4,8 @@ const utils = require('../utils');
 var items = {};
 var itemsMap = {};
 var itemTypes = [
-    'drop', 
     'challenge', 
+    'drop', 
     'dungeon', 
     'monster', 
     'special'

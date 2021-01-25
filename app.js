@@ -569,8 +569,9 @@ function setBotCommands(){
         leaderboard - Check who's the boss of the chat.
         stats - Check your stats in the current chat.
         items - List your picked items.
-        prestige - Give up all your exp and levels to gain a prestige! This will let you grow faster.
         challengeme - Drop the glove! challenge others users for more Exp.
+        chatstats - Check the chat stats.
+        prestige - Give up all your exp and levels to gain a prestige! This will let you grow faster.
         settings - Configure the bot. (Admins only)
 
     */
@@ -1122,13 +1123,12 @@ function setBotEvents(){
         switch(queryData.action){
 
             case 'SETTINGS_START': 
-                markup.deleteData(query);
-
                 var markupData = markup.get(queryData.action, mexData.message, { 
                     chatTitle: queryData.chatTitle, 
                     chatId: queryData.chatId 
                 });
-                
+
+                markup.deleteData(query);
                 ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
                 break;
 
@@ -1141,14 +1141,13 @@ function setBotEvents(){
                     chat.settings.notifyPenality = queryData.value;
                 }
 
-                markup.deleteData(query);
-
                 var markupData = markup.get(queryData.action, mexData.message, { 
                     chatTitle: chat.title, 
                     chatId: chat.id, 
                     value: chat.settings.notifyPenality 
                 });
                 
+                markup.deleteData(query);
                 ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
                 storage.addChatToQueue(chat.id);
                 break;
@@ -1162,14 +1161,13 @@ function setBotEvents(){
                     chat.settings.notifyUserLevelup = queryData.value;
                 }
 
-                markup.deleteData(query);
-
                 var markupData = markup.get(queryData.action, mexData.message, { 
                     chatTitle: chat.title, 
                     chatId: chat.id, 
                     value: chat.settings.notifyUserLevelup 
                 });
 
+                markup.deleteData(query);
                 ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
                 storage.addChatToQueue(chat.id);
                 break;
@@ -1183,14 +1181,13 @@ function setBotEvents(){
                     chat.settings.notifyUserPrestige = queryData.value;
                 }
 
-                markup.deleteData(query);
-
                 var markupData = markup.get(queryData.action, mexData.message, { 
                     chatTitle: chat.title, 
                     chatId: chat.id, 
                     value: chat.settings.notifyUserPrestige 
                 });
 
+                markup.deleteData(query);
                 ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
                 storage.addChatToQueue(chat.id);
                 break;
@@ -1204,14 +1201,13 @@ function setBotEvents(){
                     chat.settings.notifyUserPickupItem = queryData.value;
                 }
 
-                markup.deleteData(query);
-
                 var markupData = markup.get(queryData.action, mexData.message, { 
                     chatTitle: chat.title, 
                     chatId: chat.id, 
                     value: chat.settings.notifyUserPickupItem 
                 });
 
+                markup.deleteData(query);
                 ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
                 storage.addChatToQueue(chat.id);
                 break;
@@ -1283,16 +1279,14 @@ function setBotEvents(){
                     return ctx.replyWithMarkdown(lexicon.get('CHALLENGE_ACCEPTED', { usernameA: userA.username , usernameB: userB.username }))
                     .then(function(ctxMasg){
                         messageIdAccepted = ctxMasg.message_id;
-                    })
-                    .catch(()=>{});
+                    });
                 })
                 .then(utils.promiseTimeout(1000))
                 .then(() => {
                     return ctx.replyWithDice()
                     .then(function(ctxMasg){
                         messageIdDice = ctxMasg.message_id;
-                    })
-                    .catch(()=>{});
+                    });
                 })
                 .then(utils.promiseTimeout(5000))
                 .then(ctxDice => {
@@ -1330,10 +1324,10 @@ function setBotEvents(){
 
                     // aggiunge la statistiche dello sfidante
                     if (!userStatsW.challengers[userL.username]) {
-                        userStatsW.challengers[userL.username] = { won: 0, lost: 0};
+                        userStatsW.challengers[userL.username] = { won: 0, lost: 0 };
                     }
                     if (!userStatsL.challengers[userW.username]) {
-                        userStatsL.challengers[userW.username] = { won: 0, lost: 0};
+                        userStatsL.challengers[userW.username] = { won: 0, lost: 0 };
                     }
 
                     // aggiorna la statistiche dello sfidante
@@ -1370,11 +1364,7 @@ function setBotEvents(){
                                 });
 
                                 // inserimento dell'oggetto in lista items dell'user
-                                if (us.items[iX.name]) {
-                                    us.items[iX.name] ++;
-                                } else {
-                                    us.items[iX.name] = 1;
-                                }
+                                items.insertItemTo(us.items, iX);
                             }
                             if (iT) {
                                 var valueText = '-';
@@ -1388,11 +1378,7 @@ function setBotEvents(){
                                 });
 
                                 // inserimento dell'oggetto in lista items dell'user
-                                if (us.items[iT.name]) {
-                                    us.items[iT.name] ++;
-                                } else {
-                                    us.items[iT.name] = 1;
-                                }
+                                items.insertItemTo(us.items, iT);
                             }
 
                             // aggiunge il footer relativo a quali items sono stati droppati
