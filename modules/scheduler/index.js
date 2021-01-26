@@ -9,8 +9,8 @@ var eventsList = {};
 var scheduleMap = [
     // “At 10:00 on Sunday.” 
     { rule: '0 10 * * 0', type: 'monster' },
-    // “At 10:00 on Tuesday and Thursday.” 
-    { rule: '0 10 * * 2,4', type: 'dungeon' },
+    // “At 13:00 on Tuesday and Thursday.” 
+    { rule: '0 13 * * 2,4', type: 'dungeon' },
     // “At 00:00 on day-of-month 25 in December.” 
     { rule: '0 0 25 12 *', type: 'xmas' },
     // “At 10:00 on day-of-month 1 in April.” 
@@ -47,6 +47,9 @@ function on(type, callback){
  * @param {string} type tipo di evento da eseguire
  */
 function trigger(type){
+
+    utils.log('SCHEDULER EXEC:', type);
+
     if (!eventsList[type]) return;
     if (!global.botRunning) return; 
     

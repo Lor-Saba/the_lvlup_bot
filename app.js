@@ -295,7 +295,9 @@ function initSchedulerEvents(){
                 .then(ctxSpawn => {
                     data.dungeon.extra.messageId = ctxSpawn.message_id;
                 })
-                .catch(()=>{});
+                .catch(err => {
+                    utils.errorlog('DUNGEON_SPAWN:', JSON.stringify(err))
+                });
             };
 
             var onExpire = function(data){
@@ -1241,6 +1243,30 @@ function setBotEvents(){
 
                 break;
 
+            case 'CHALLENGE_START':  
+
+                // interrompe se non è stato cliccato da chi ha richiesto la challenge
+                /*
+                if (queryData.userId !== mexData.userId) {
+                    return ctx.answerCbQuery(lexicon.get('LEADERBOARD_CANNOT_ACCEPT'), true).catch(()=>{});
+                }
+
+                if (queryData.value !== undefined) {
+                    chat.settings.notifyUserPickupItem = queryData.value;
+                }
+
+                var markupData = markup.get('CHALLENGE_END', mexData.message, { 
+                    userId: queryData.userId, 
+                    challengedId: queryData.challengedId,
+                    pickA: queryData.pick
+                });
+
+                markup.deleteData(query);
+                ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
+                storage.addChatToQueue(chat.id);*/
+
+                break;
+
             case 'CHALLENGE_BUTTON': 
                 var chat  = storage.getChat(mexData.chatId);
                 var userA = storage.getUser(queryData.userId);
@@ -1277,16 +1303,16 @@ function setBotEvents(){
                 .then(utils.promiseTimeout(500))
                 .then(() => {
                     return ctx.replyWithMarkdown(lexicon.get('CHALLENGE_ACCEPTED', { usernameA: userA.username , usernameB: userB.username }))
-                    .then(function(ctxMasg){
-                        messageIdAccepted = ctxMasg.message_id;
+                    .then(function(ctxMsg){
+                        messageIdAccepted = ctxMsg.message_id;
                     });
                 })
                 .then(utils.promiseTimeout(1000))
                 .then(() => {
                     return ctx.replyWithDice()
-                    .then(function(ctxMasg){
-                        messageIdDice = ctxMasg.message_id;
-                        return ctxMasg;
+                    .then(function(ctxMsg){
+                        messageIdDice = ctxMsg.message_id;
+                        return ctxMsg;
                     });
                 })
                 .then(utils.promiseTimeout(5000))
