@@ -10,7 +10,7 @@ var scheduleMap = [
     // “At 10:00 on Sunday.” 
     { rule: '0 9 * * 0', type: 'monster' },
     // “At 13:00 on Tuesday and Thursday.” 
-    { rule: '30 20 * * 2,4', type: 'dungeon' },
+    { rule: '40 20 * * 2,4', type: 'dungeon' },
     // “At 00:00 on day-of-month 25 in December.” 
     { rule: '0 0 25 12 *', type: 'xmas' },
     // “At 10:00 on day-of-month 1 in April.” 
@@ -50,7 +50,11 @@ function on(type, callback){
  */
 function trigger(type){
 
-    utils.log('SCHEDULER EXEC:', type);
+    utils.log('SCHEDULER EXEC:', JSON.stringify({ 
+        type: type, 
+        fn_count: eventsList[type] ? eventsList[type].fn.length : 0,
+        bot_running: global.botRunning
+    }));
 
     if (!eventsList[type]) return;
     if (!global.botRunning) return; 
