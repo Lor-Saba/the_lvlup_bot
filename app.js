@@ -258,8 +258,10 @@ function initSchedulerEvents(){
                 .catch(()=>{});
             };
 
+            var chatsList = storage.getChats();
+
             // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
-            utils.eachTimeout(storage.getChats(), (chatId, chat) => {
+            utils.eachTimeout(chatsList, (chatId, chat) => {
                 monsters.spawn(chat, {
                     onSpawn: onSpawn,
                     onExpire: onExpire,
@@ -345,8 +347,12 @@ function initSchedulerEvents(){
                 bot.telegram.answerCbQuery(data.ctx.update.callback_query.id, lexicon.get('DUNGEON_CANNOT_EXPLORE'), true).catch(()=>{});
             };
 
+            var chatsList = storage.getChats();
+            
+            utils.debug('dungeon', 'Chats list:', Object.keys(chatsList).length);
+
             // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
-            utils.eachTimeout(storage.getChats(), (chatId, chat) => {
+            utils.eachTimeout(chatsList, (chatId, chat) => {
                 utils.debug('dungeon', 'Spawn loop:', chat.id, chat.title);
                 dungeons.spawn(chat, {
                     onSpawn: onSpawn,
@@ -693,7 +699,7 @@ function setBotCommands(){
             case 'debuglog': 
                 var type = commandArgs.shift();
 
-                ctx.reply(utils.debugGet(type));
+                ctx.reply(utils.debugGet(type) || '-- EMPTY --');
                 break;
 
             case 'debugclear': 
@@ -1319,6 +1325,9 @@ function setBotEvents(){
                 }
 
                 if (!userW) {
+                    var userStatsA = userA.chats[mexData.chatId];
+
+                    userStatsA.lastChallengeDate = 0;
                     chat.isChallengeActive = false;
 
                     return bot.telegram.editMessageText(
