@@ -68,6 +68,38 @@ module.exports = {
 
             return cache;
         },
+        next: '2'
+    },
+    '2': {
+        update: function(cache){
+
+            cache.config.cacheVersion = '2';
+
+            utils.each(cache.users, function(userId, user){
+                utils.each(user.chats, function(chatId, userStats){
+
+                    // resetta le statistiche delle challenge
+                    userStats.challengeWon = 0;
+                    userStats.challengeLost = 0;
+                    userStats.challengers = {};
+
+                    // rimuove tutti i drop delle challenge
+                    utils.each(userStats.items, function(itemName, itemValue){
+                        if (/CHW_|CHL_|CHT_/g.test(itemName)) {
+                            delete userStats.items[itemName];
+                        }
+                    });
+                });
+            });
+
+            utils.each(cache.chats, function(chatId, chat){
+                
+                // nuova proprietà "lastMessageDate" per segnare la data dell'utlimo messaggio
+                chat.lastMessageDate = 0;
+            });
+
+            return cache;
+        },
         next: null
     }
 }

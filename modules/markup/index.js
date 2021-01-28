@@ -103,15 +103,32 @@ var markup = {
     'CHALLENGE_START': function(message, data, lexicon){
         var result = {};
 
+        result.text = lexicon.get('CHALLENGE_START', { username: data.username });
+        result.buttons = markupWrap([
+            [ 
+                markupButton(message, lexicon.get('CHALLENGE_OPTION_R') , Object.assign(data, { action: 'CHALLENGE_START', pick: 'R' }) ),
+                markupButton(message, lexicon.get('CHALLENGE_OPTION_S') , Object.assign(data, { action: 'CHALLENGE_START', pick: 'S' }) ),
+                markupButton(message, lexicon.get('CHALLENGE_OPTION_P') , Object.assign(data, { action: 'CHALLENGE_START', pick: 'P' }) )
+            ]
+        ]);
+        
+        return result;
+    },
+
+    'CHALLENGE_END': function(message, data, lexicon){
+        var result = {};
+
         if (data.challengedUsername) {
-            result.text = lexicon.get('CHALLENGE_START_DIRECT', { username: data.username, challengedUsername: data.challengedUsername });
+            result.text = lexicon.get('CHALLENGE_END_DIRECT', { username: data.username, challengedUsername: data.challengedUsername });
         } else {
-            result.text = lexicon.get('CHALLENGE_START', { username: data.username });
+            result.text = lexicon.get('CHALLENGE_END', { username: data.username });
         }
         
         result.buttons = markupWrap([
             [ 
-                markupButton(message, lexicon.get('CHALLENGE_BUTTON') , Object.assign(data, { action: 'CHALLENGE_BUTTON' }) )
+                markupButton(message, lexicon.get('CHALLENGE_OPTION_R') , Object.assign(data, { action: 'CHALLENGE_END', pick: 'R' }) ),
+                markupButton(message, lexicon.get('CHALLENGE_OPTION_S') , Object.assign(data, { action: 'CHALLENGE_END', pick: 'S' }) ),
+                markupButton(message, lexicon.get('CHALLENGE_OPTION_P') , Object.assign(data, { action: 'CHALLENGE_END', pick: 'P' }) )
             ]
         ]);
         

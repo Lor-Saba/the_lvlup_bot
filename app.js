@@ -259,9 +259,8 @@ function initSchedulerEvents(){
             };
 
             // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
-            var counter = 75;
-            utils.each(storage.getChats(), (chatId, chat) => {
-                setTimeout(() => monsters.spawn(chat, {
+            utils.eachTimeout(storage.getChats(), (chatId, chat) => {
+                monsters.spawn(chat, {
                     onSpawn: onSpawn,
                     onExpire: onExpire,
                     onFirstAttack: onFirstAttack,
@@ -269,7 +268,7 @@ function initSchedulerEvents(){
                     onUpdate: onUpdate,
                     onDefeated: onDefeated,
                     onEscaped: onEscaped
-                }), counter += 75);
+                });
             });
         });
 
@@ -285,6 +284,8 @@ function initSchedulerEvents(){
             ).extra({ parse_mode: 'markdown' });
 
             var onSpawn = function(data){
+                
+                utils.debug('dungeon', 'Spawn callback', data.chat.id, data.chat.title);
 
                 // crea il messaggio di spawn del mostro e salva l'id
                 bot.telegram.sendMessage(
@@ -296,7 +297,8 @@ function initSchedulerEvents(){
                     data.dungeon.extra.messageId = ctxSpawn.message_id;
                 })
                 .catch(err => {
-                    utils.errorlog('DUNGEON_SPAWN:', JSON.stringify(err))
+                    utils.errorlog('DUNGEON_SPAWN:', JSON.stringify(err));
+                    utils.debug('dungeon', 'Spawn callback FAIL', data.chat.id, data.chat.title);
                 });
             };
 
@@ -329,7 +331,7 @@ function initSchedulerEvents(){
                         
                     text += lexicon.get('DUNGEON_EXPLORE_SUCCESS_TITLE', { 
                         username: data.user.username, 
-                        itemcard: getItemCardText(item, 'en')
+                        itemcard: getItemCardText(item, 'en', false, data)
                     });                    
                 }
 
@@ -344,14 +346,14 @@ function initSchedulerEvents(){
             };
 
             // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
-            var counter = 75;
-            utils.each(storage.getChats(), (chatId, chat) => {
-                setTimeout(() => dungeons.spawn(chat, {
+            utils.eachTimeout(storage.getChats(), (chatId, chat) => {
+                utils.debug('dungeon', 'Spawn loop:', chat.id, chat.title);
+                dungeons.spawn(chat, {
                     onSpawn: onSpawn,
                     onExpire: onExpire,
                     onExplore: onExplore,
                     onAlreadyExplored: onAlreadyExplored
-                }), counter += 75);
+                });
             });
         });
 
@@ -368,13 +370,13 @@ function initSchedulerEvents(){
             ].join('\n');
             
             // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
-            var counter = 75;
-            utils.each(storage.getChats(), (chatId, chat) => {
+
+            utils.eachTimeout(storage.getChats(), (chatId, chat) => {
                 items.insertItemTo(chat.items, item1);
                 items.insertItemTo(chat.items, item2);
                 items.insertItemTo(chat.items, item3);
 
-                setTimeout(() => bot.telegram.sendMessage(chat.id, Lexicon.get('SPECIAL_XMAS', { buff: buffText }), { parse_mode: 'markdown' }), counter += 75);
+                bot.telegram.sendMessage(chat.id, Lexicon.get('SPECIAL_XMAS', { buff: buffText }), { parse_mode: 'markdown' });
             });
         });
 
@@ -389,21 +391,19 @@ function initSchedulerEvents(){
             ].join('\n');
             
             // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
-            var counter = 75;
-            utils.each(storage.getChats(), (chatId, chat) => {
+            utils.eachTimeout(storage.getChats(), (chatId, chat) => {
                 items.insertItemTo(chat.items, item1);
                 items.insertItemTo(chat.items, item2);
 
-                setTimeout(() => bot.telegram.sendMessage(chat.id, Lexicon.get('SPECIAL_HALLOWEEN', { buff: buffText }), { parse_mode: 'markdown' }), counter += 75);
+                bot.telegram.sendMessage(chat.id, Lexicon.get('SPECIAL_HALLOWEEN', { buff: buffText }), { parse_mode: 'markdown' });
             });
         });
 
         scheduler.on('aprilfool', function(){
             
             // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
-            var counter = 75;
-            utils.each(storage.getChats(), (chatId, chat) => {
-                setTimeout(() => bot.telegram.sendMessage(chat.id, Lexicon.get('SPECIAL_APRILFOOL')), counter += 75);
+            utils.eachTimeout(storage.getChats(), (chatId, chat) => {
+                bot.telegram.sendMessage(chat.id, Lexicon.get('SPECIAL_APRILFOOL'));
             });
         });
 
@@ -424,17 +424,20 @@ function checkIfUpdated(){
 
     if (currentVersion !== lastVersion){
         storage.setVersion(currentVersion);
+
+        var button = Markup.inlineKeyboard([
+            Markup.urlButton(
+                lexicon.get('UPDATED_BUTTON'), 
+                'https://raw.githubusercontent.com/Lor-Saba/the_lvlup_bot/master/CHANGELOG.md'
+            )
+        ]).extra({ parse_mode: 'markdown' });
         
-        var counter = 75;
-        utils.each(storage.getChats(), function(chatId) {
-            setTimeout(function(){
-                bot.telegram.sendMessage(chatId, lexicon.get('UPDATED_LABEL', { version: currentVersion }), Markup.inlineKeyboard([
-                    Markup.urlButton(
-                        lexicon.get('UPDATED_BUTTON'), 
-                        'https://raw.githubusercontent.com/Lor-Saba/the_lvlup_bot/master/changelog/' + currentVersion + '.md'
-                    )
-                ]).extra({ parse_mode: 'markdown' })).catch(()=>{})
-            }, counter += 75);
+        utils.eachTimeout(storage.getChats(), function(chatId) {
+            bot.telegram.sendMessage(
+                chatId, 
+                lexicon.get('UPDATED_LABEL', { version: currentVersion }), 
+                button
+            ).catch(()=>{})
         });
     }
 }
@@ -545,6 +548,8 @@ function setBotMiddlewares(){
         user.username = mexData.username;
         // aggiorna la data dell'ultimo messaggio
         userStats.lastMessageDate = mexData.date;
+        // aggiorna la data dell'ultimo messaggio
+        chat.lastMessageDate = mexData.date;
         // aggiunge la chat in queue
         storage.addChatToQueue(chat.id);
         // aggiunge l'utente in queue
@@ -641,13 +646,9 @@ function setBotCommands(){
                 break;
 
             case 'messageall': 
-                var counter = 75;
 
-                utils.each(storage.getChats(), function(chatId) {
-                    setTimeout(
-                        () => ctx.telegram.sendMessage(chatId, commandArgs.join(' '), { parse_mode: 'markdown' }).catch(()=>{}), 
-                        counter += 75
-                    );
+                utils.eachTimeout(storage.getChats(), function(chatId) {
+                    ctx.telegram.sendMessage(chatId, commandArgs.join(' '), { parse_mode: 'markdown' }).catch(()=>{});
                 });
                 break;
 
@@ -687,6 +688,18 @@ function setBotCommands(){
                     source: fs.readFileSync(filePath), 
                     filename: fileName + '.dbtxt'
                 }).catch(() => {});
+                break;
+
+            case 'debuglog': 
+                var type = commandArgs.shift();
+
+                ctx.reply(utils.debugGet(type));
+                break;
+
+            case 'debugclear': 
+                var type = commandArgs.shift() || '';
+
+                utils.debugClear(type)
                 break;
         }
     })
@@ -1246,81 +1259,86 @@ function setBotEvents(){
             case 'CHALLENGE_START':  
 
                 // interrompe se non è stato cliccato da chi ha richiesto la challenge
-                /*
                 if (queryData.userId !== mexData.userId) {
                     return ctx.answerCbQuery(lexicon.get('LEADERBOARD_CANNOT_ACCEPT'), true).catch(()=>{});
                 }
 
-                if (queryData.value !== undefined) {
-                    chat.settings.notifyUserPickupItem = queryData.value;
-                }
+                queryData.pickA = queryData.pick;
 
-                var markupData = markup.get('CHALLENGE_END', mexData.message, { 
-                    userId: queryData.userId, 
-                    challengedId: queryData.challengedId,
-                    pickA: queryData.pick
-                });
+                var markupData = markup.get('CHALLENGE_END', mexData.message, queryData);
 
                 markup.deleteData(query);
                 ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
-                storage.addChatToQueue(chat.id);*/
-
                 break;
 
-            case 'CHALLENGE_BUTTON': 
+            case 'CHALLENGE_END': 
                 var chat  = storage.getChat(mexData.chatId);
                 var userA = storage.getUser(queryData.userId);
                 var userB = storage.getUser(mexData.userId);
+                var pickA = queryData.pickA;
+                var pickB = queryData.pick;
+                var userW = null;
+                var userL = null;
+                var winner = null;
+
+                // interrompe se è già in corso un challenge
+                if (chat.isChallengeActive) return false;
 
                 // interrompe se non sono entrambi degli utenti registrati
                 if (!userA || !userB) return false;
 
                 // interrompe se è lo stesso utente che ha lanciato la sfida
-                if (userA.id === userB.id) return false;
-
-                // interrompe se è già in corso un challenge
-                if (chat.isChallengeActive) return false;
+                if (userA.id === userB.id) {
+                    return ctx.answerCbQuery(lexicon.get('CHALLENGE_CANNOT_ACCEPTED'), true).catch(()=>{});
+                }
 
                 // interrompe se non è l'utente a cui è stato richiesto il challenge 
                 if (queryData.challengedId && mexData.userId !== queryData.challengedId) {
                     return ctx.answerCbQuery(lexicon.get('CHALLENGE_CANNOT_ACCEPTED'), true).catch(()=>{});
                 }
                 
-                markup.deleteData(query);
-                ctx.deleteMessage().catch(err => {
-                    utils.errorlog('CHALLENGE_BUTTON: unable to delete message', JSON.stringify(ctx.state));
-                });
-                
+                // elimina i dati del markup
+                markup.deleteData(query);                
                 // assegna lo stato di challenge in corso
                 chat.isChallengeActive = true;
 
-                // id dei messaggi
-                var messageIdAccepted = null;
-                var messageIdDice = null;
+                // verifica chi ha vinto 
+                if ((pickA == 'R' && pickB == 'S')
+                 || (pickA == 'P' && pickB == 'R')
+                 || (pickA == 'S' && pickB == 'P')) {
+                    userW = userA;
+                    userL = userB;
+                    winner = 'A';
+                }
+                if ((pickB == 'R' && pickA == 'S')
+                 || (pickB == 'P' && pickA == 'R')
+                 || (pickB == 'S' && pickA == 'P')) {
+                    userW = userB;
+                    userL = userA;
+                    winner = 'B';
+                }
+
+                if (!userW) {
+                    chat.isChallengeActive = false;
+
+                    return bot.telegram.editMessageText(
+                        mexData.chatId, 
+                        mexData.messageId, 
+                        null, 
+                        lexicon.get('CHALLENGE_RESULT_DRAW', { 
+                            pickA: lexicon.get('CHALLENGE_OPTION_' + pickA),
+                            pickB: lexicon.get('CHALLENGE_OPTION_' + pickB),
+                            usernameA: userA.username, 
+                            usernameB: userB.username,
+                        }), 
+                        { parse_mode: 'markdown' }
+                    ).catch(()=>{});
+                }
 
                 // inizio catena del challenge
                 Promise.resolve()
                 .then(utils.promiseTimeout(500))
                 .then(() => {
-                    return ctx.replyWithMarkdown(lexicon.get('CHALLENGE_ACCEPTED', { usernameA: userA.username , usernameB: userB.username }))
-                    .then(function(ctxMsg){
-                        messageIdAccepted = ctxMsg.message_id;
-                    });
-                })
-                .then(utils.promiseTimeout(1000))
-                .then(() => {
-                    return ctx.replyWithDice()
-                    .then(function(ctxMsg){
-                        messageIdDice = ctxMsg.message_id;
-                        return ctxMsg;
-                    });
-                })
-                .then(utils.promiseTimeout(5000))
-                .then(ctxDice => {
-                    var diceValue = ctxDice ? ctxDice.dice.value : 1;
-
-                    var userW = diceValue % 2 ? userB : userA;
-                    var userL = diceValue % 2 ? userA : userB;
                     var userStatsW = userW.chats[mexData.chatId];
                     var userStatsL = userL.chats[mexData.chatId];
                     var itemsBuffW = items.getItemsBuff(userStatsW.items);
@@ -1328,13 +1346,13 @@ function setBotEvents(){
                     var expGainW = calcUserExpGain(ctx, userW, ( 3 * itemsBuffW.ch_win ).toFixed(2));
                     var expGainL = calcUserExpGain(ctx, userL, (-3 * itemsBuffL.ch_lose).toFixed(2));
 
-                    bot.telegram.deleteMessage(mexData.chatId, messageIdDice).catch(()=>{});
                     bot.telegram.editMessageText(
                         mexData.chatId, 
-                        messageIdAccepted, 
+                        mexData.messageId, 
                         null, 
                         lexicon.get('CHALLENGE_RESULT', { 
-                            result: diceValue,
+                            pickA: lexicon.get('CHALLENGE_OPTION_' + pickA) + (winner == 'A' ? '   🏆' : ''),
+                            pickB: lexicon.get('CHALLENGE_OPTION_' + pickB) + (winner == 'B' ? '   🏆' : ''),
                             usernameA: userA.username, 
                             usernameB: userB.username,
                             usernameW: userW.username, 
@@ -1705,7 +1723,7 @@ function getLeaderboardByType(chatId, user, type){
     } else if (type === 'chratio'){
         var leaderboard = storage.getChatUsers(chatId);
         var sortFunction = function(a, b){
-            var c = BigNumber(b.chratio).minus(a.chratio);
+            var c = BigNumber(b.chpoints).minus(a.chpoints);
 
             if (c.isGreaterThan(0)) c = 1;
             else if (c.isLessThan(0)) c = -1;
@@ -1716,15 +1734,22 @@ function getLeaderboardByType(chatId, user, type){
 
         text += lexicon.get('LEADERBOARD_OPTION_CHRATIO_TITLE') + '\n';
 
+        // calcola il punteggio in base alle challenge vinte e perse
+        utils.each(leaderboard, function(index, stats){
+            stats.chpoints = (stats.challengeWon * 2) - (stats.challengeLost * 1);
+        })
+
         // (a, b) => b.chratio - a.chratio
         utils.each(leaderboard.sort(sortFunction), function(index, stats){
+            if (stats.challengeWon + stats.challengeLost === 0) return;
+
             text += '\n' + lexicon.get('LEADERBOARD_OPTION_CHRATIO_ENTRY', {
                 icon: getIcon(index),
                 position: index + 1,
                 username: stats.username,
                 won: stats.challengeWon,
                 lost: stats.challengeLost,
-                ratio: stats.chratio.toFixed(2)
+                chpoints: stats.chpoints.toFixed(2)
             });
         });
     } else if (type === 'chsummary'){
@@ -1775,7 +1800,7 @@ function getLeaderboardByType(chatId, user, type){
  * @param {object} item oggetto dell'item
  * @param {string} lang lingua da usare nel lexicon
  */
-function getItemCardText(item, lang = 'en', instPassive = false){
+function getItemCardText(item, lang = 'en', instPassive = false, data = {}){
     var lexicon = Lexicon.lang(lang);
     var itemBonusText = '';
 
@@ -1841,5 +1866,5 @@ function init(){
 init();
 
 // setTimeout(() => {
-//     scheduler.trigger('halloween');
+//     scheduler.trigger('dungeon');
 // }, 5000);

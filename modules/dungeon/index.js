@@ -94,10 +94,10 @@ function spawn(chat, config){
         messageId: 0,
         explorers: {},
         extra: {},
-        onSpawn: () => {},
-        onExpire: () => {},
-        onExplore: () => {},
-        onAlreadyExplored: () => {}
+        onSpawn: null,
+        onExpire: null,
+        onExplore: null,
+        onAlreadyExplored: null
     }, config);
 
     dungeon.chatId = chat.id;
@@ -108,6 +108,7 @@ function spawn(chat, config){
         removeDungeon(chat.id);
     }, spawnTimeout);
 
+    utils.debug('dungeon', 'callEvent onSpawn', !!dungeon.onSpawn, chat.id, chat.title);
     // chiama l'evento per confermare la creazione del mostro
     callEvent(dungeon.onSpawn, { dungeon: dungeon, chat: chat });
 

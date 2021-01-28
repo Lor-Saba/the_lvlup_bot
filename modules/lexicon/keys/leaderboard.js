@@ -34,10 +34,10 @@ module.exports = {
         "en": "Challenge W/L"
     },
     "LEADERBOARD_OPTION_CHRATIO_TITLE": {
-        "en": "🏆 Leaderboard by *Challenge ratio*."
+        "en": "🏆 Leaderboard by *Challenge ratio points*."
     },
     "LEADERBOARD_OPTION_CHRATIO_ENTRY": {
-        "en": "#$(position) *$(username)*  $(icon)\n       _ratio: $(ratio)_    ( W: $(won) / L: $(lost) )"
+        "en": "#$(position) *$(username)*  $(icon)\n       _points: $(chpoints)_    ( W: $(won) / L: $(lost) )"
     },
 
 

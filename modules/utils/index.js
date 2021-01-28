@@ -5,6 +5,52 @@ const BigNumber = require('bignumber.js');
 // configurazione del BigNumber
 BigNumber.config({ EXPONENTIAL_AT: 6, ROUNDING_MODE: 1 });
 
+// log cumulativo di debug
+var debugLog = {};
+
+/**
+ * Accumulo di log di debug  per i comandi /su debug 
+ */
+function debug(type) {
+
+    // compone il messaggio
+    var logText = [(new Date()).toLocaleTimeString(), '|'].concat([].slice.call(arguments)).join(' ');
+
+    // crea la sezione del tipo di debug
+    if (!debugLog[type]) {
+        debugLog[type] = [];
+    }
+
+    // aggiunge il testo appena creato
+    debugLog[type].push(logText);
+
+    // elimina eventuali testi di debug vecchi
+    while (debugLog[type].length > 100) {
+        debugLog[type].shift();
+    }
+}
+
+/**
+ * 
+ * @param {string} type tipo di log da svuotare (lasciare vuoto per eliminarli tutti)
+ */
+function debugClear(type = ''){
+
+    each(debugLog, key => {
+        if (type === '' || type === key) {
+            debugLog[key].length = 0;
+        }
+    });
+}
+
+/**
+ * 
+ * @param {strng} type tipo di log da ritornare
+ */
+function debugGet(type = '') {
+    return (debugLog[type] || []).join('\n');
+}
+
 /**
  * 
  * @param {number} exp Calcola il livello in base al valore dell'esperienza passata
@@ -58,6 +104,20 @@ function each(obj, fn){
         for (var ind = 0, keys = Object.keys(obj), key = keys[ind], ln = keys.length; ind < ln; ind++, key = keys[ind] )
             if (fn.call(obj[key], key, obj[key]) === false) break;
     }
+}
+
+/**
+ * 
+ * @param {object|array} obj Lista da iterare
+ * @param {function} fn callback
+ * @param {number} timeout attesa per ogni
+ */
+function eachTimeout(obj, fn, timeout = 75){
+    var counter = Math.max(1, timeout);
+
+    each(obj, (key, value) => {
+        setTimeout(() => fn(key, value), counter += timeout);
+    });
 }
 
 /**
@@ -196,6 +256,7 @@ function getMessageData(ctx){
     
     const messageData = {
         message:    message,
+        messageId:  message.message_id,
         date:       message.date,
         isMarkup:   message.reply_markup !== undefined,
         isPrivate:  ctx.chat.type === 'private',
@@ -308,7 +369,11 @@ function promiseTimeout(timeout) {
 module.exports = {
     log,
     errorlog,
+    debug,
+    debugClear,
+    debugGet,
     each,
+    eachTimeout,
     calcExpFromLevel,
     calcLevelFromExp,
     calcExpGain,

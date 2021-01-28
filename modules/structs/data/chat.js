@@ -5,6 +5,7 @@ module.exports = {
     items: {},
     monsterDefeated: 0,
     monsterEscaped: 0,
+    lastMessageDate: 0,
     settings: {
         notifyPenality: true,
         notifyUserLevelup: true,

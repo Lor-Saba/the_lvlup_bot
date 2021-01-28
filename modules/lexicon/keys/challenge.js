@@ -1,10 +1,22 @@
 module.exports = {
 
     "CHALLENGE_START": {
+        "en": "*$(username)* choose your move to continue."
+    },
+    "CHALLENGE_END": {
         "en": "*$(username)* asks to be challenged!\nAnyone brave enough to accept?"
     },
-    "CHALLENGE_START_DIRECT": {
+    "CHALLENGE_END_DIRECT": {
         "en": "*$(username)* challenged *$(challengedUsername)*!\nwill he/she be brave enough to accept?"
+    },
+    "CHALLENGE_OPTION_R": {
+        "en": "✊"
+    },
+    "CHALLENGE_OPTION_P": {
+        "en": "✋"
+    },
+    "CHALLENGE_OPTION_S": {
+        "en": "✌️"
     },
     "CHALLENGE_BUTTON": {
         "en": "Challenge!"
@@ -16,7 +28,10 @@ module.exports = {
         "en": "Challenge avaliable! Type /challengeme to drop the glove."
     },
     "CHALLENGE_RESULT": {
-        "en": "*$(usernameB)* accepted *$(usernameA)*'s challenge!\n\nIt's a `$(result)`\nCongratulations *$(usernameW)*, you won!\n\n*$(usernameW)*:  `+$(expGainW) Exp`\n*$(usernameL)*:  `$(expGainL) Exp`."
+        "en": "*$(usernameB)* accepted *$(usernameA)*'s challenge!\n\n*$(usernameA)*: $(pickA)\n*$(usernameB)*: $(pickB)\n\n*$(usernameW)*:  `+$(expGainW) Exp`\n*$(usernameL)*:  `$(expGainL) Exp`."
+    },
+    "CHALLENGE_RESULT_DRAW": {
+        "en": "*$(usernameB)* accepted *$(usernameA)*'s challenge!\n\n*$(usernameA)*: $(pickA)\n*$(usernameB)*: $(pickB)\n\nIt's a draw."
     },
     "CHALLENGE_TIMEOUT": {
         "en": "*$(username)*, you can ask for a new challenge in _$(timeout)_."
