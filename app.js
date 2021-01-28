@@ -275,6 +275,10 @@ function initSchedulerEvents(){
         });
 
         scheduler.on('dungeon', function(){
+            
+            console.log('dungeon init event');
+            utils.debug('dungeon', 'Init event');
+
             var lexicon = Lexicon.lang('en');
             var button = Markup.inlineKeyboard(
                 [
@@ -347,13 +351,17 @@ function initSchedulerEvents(){
                 bot.telegram.answerCbQuery(data.ctx.update.callback_query.id, lexicon.get('DUNGEON_CANNOT_EXPLORE'), true).catch(()=>{});
             };
 
+            console.log('dungeon get chats');
             var chatsList = storage.getChats();
             
+            console.log('dungeon start chats loop');
             utils.debug('dungeon', 'Chats list:', Object.keys(chatsList).length);
 
             // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
             utils.eachTimeout(chatsList, (chatId, chat) => {
+                console.log('dungeon chats loop', chat.id, chat.title);
                 utils.debug('dungeon', 'Spawn loop:', chat.id, chat.title);
+                
                 dungeons.spawn(chat, {
                     onSpawn: onSpawn,
                     onExpire: onExpire,
