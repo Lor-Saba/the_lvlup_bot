@@ -108,7 +108,6 @@ function spawn(chat, config){
         removeDungeon(chat.id);
     }, spawnTimeout);
 
-    utils.debug('dungeon', 'callEvent onSpawn', !!dungeon.onSpawn, chat.id, chat.title);
     // chiama l'evento per confermare la creazione del mostro
     callEvent(dungeon.onSpawn, { dungeon: dungeon, chat: chat });
 

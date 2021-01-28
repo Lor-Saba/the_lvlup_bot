@@ -258,10 +258,8 @@ function initSchedulerEvents(){
                 .catch(()=>{});
             };
 
-            var chatsList = storage.getChats();
-
             // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
-            utils.eachTimeout(chatsList, (chatId, chat) => {
+            utils.eachTimeout(storage.getChats(), (chatId, chat) => {
                 monsters.spawn(chat, {
                     onSpawn: onSpawn,
                     onExpire: onExpire,
@@ -275,10 +273,6 @@ function initSchedulerEvents(){
         });
 
         scheduler.on('dungeon', function(){
-            
-            console.log('dungeon init event');
-            utils.debug('dungeon', 'Init event');
-
             var lexicon = Lexicon.lang('en');
             var button = Markup.inlineKeyboard(
                 [
@@ -290,8 +284,6 @@ function initSchedulerEvents(){
             ).extra({ parse_mode: 'markdown' });
 
             var onSpawn = function(data){
-                
-                utils.debug('dungeon', 'Spawn callback', data.chat.id, data.chat.title);
 
                 // crea il messaggio di spawn del mostro e salva l'id
                 bot.telegram.sendMessage(
@@ -304,7 +296,6 @@ function initSchedulerEvents(){
                 })
                 .catch(err => {
                     utils.errorlog('DUNGEON_SPAWN:', JSON.stringify(err));
-                    utils.debug('dungeon', 'Spawn callback FAIL', data.chat.id, data.chat.title);
                 });
             };
 
@@ -350,18 +341,9 @@ function initSchedulerEvents(){
                 // invia un messaggio per notificare quanto manca prima di poter nuovamente attaccare
                 bot.telegram.answerCbQuery(data.ctx.update.callback_query.id, lexicon.get('DUNGEON_CANNOT_EXPLORE'), true).catch(()=>{});
             };
-
-            console.log('dungeon get chats');
-            var chatsList = storage.getChats();
             
-            console.log('dungeon start chats loop');
-            utils.debug('dungeon', 'Chats list:', Object.keys(chatsList).length);
-
             // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
-            utils.eachTimeout(chatsList, (chatId, chat) => {
-                console.log('dungeon chats loop', chat.id, chat.title);
-                utils.debug('dungeon', 'Spawn loop:', chat.id, chat.title);
-                
+            utils.eachTimeout(storage.getChats(), (chatId, chat) => {
                 dungeons.spawn(chat, {
                     onSpawn: onSpawn,
                     onExpire: onExpire,
@@ -1140,9 +1122,9 @@ function setBotEvents(){
 
         var modalError = function(){
 
-            setTimeout(function(){
-                ctx.deleteMessage().catch(()=>{});
-            }, 1000 * 5); 
+            //setTimeout(function(){
+            //    ctx.deleteMessage().catch(()=>{});
+            //}, 1000 * 5); 
 
             return ctx.editMessageText(lexicon.get('ERROR_MARKUP_NOTFOUND'), { parse_mode: 'markdown' }).catch(()=>{});
         }
@@ -1310,11 +1292,9 @@ function setBotEvents(){
                 if (queryData.challengedId && mexData.userId !== queryData.challengedId) {
                     return ctx.answerCbQuery(lexicon.get('CHALLENGE_CANNOT_ACCEPTED'), true).catch(()=>{});
                 }
-                
-                // elimina i dati del markup
-                markup.deleteData(query);                
+                      
                 // assegna lo stato di challenge in corso
-                chat.isChallengeActive = true;
+                chat.isChallengeActive = true;        
 
                 // verifica chi ha vinto 
                 if ((pickA == 'R' && pickB == 'S')
@@ -1379,6 +1359,9 @@ function setBotEvents(){
                         }), 
                         { parse_mode: 'markdown' }
                     ).catch(()=>{});
+
+                    // elimina i dati del markup
+                    markup.deleteData(query);  
 
                     // aggiorna le statistiche personali delle challenge
                     userStatsW.challengeWon  += 1;

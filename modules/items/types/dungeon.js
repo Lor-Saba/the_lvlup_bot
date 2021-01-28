@@ -3,24 +3,24 @@ module.exports = [
 
     // DAMAGE - permanenti
 
-    { target: 'attack_damage', type: 'perm', name: 'BALOON',      weight: 100, power: 0.008, powermode: '+' }, 
-    { target: 'attack_damage', type: 'perm', name: 'BUTTERKNIFE', weight: 90,  power: 0.010, powermode: '+' },
-    { target: 'attack_damage', type: 'perm', name: 'WOODENSWORD', weight: 80,  power: 0.012, powermode: '+' },
-    { target: 'attack_damage', type: 'perm', name: 'PILLOW',      weight: 60,  power: 0.015, powermode: '+' },
-    { target: 'attack_damage', type: 'perm', name: 'WOODOODOLL',  weight: 40,  power: 0.020, powermode: '+' },
-    { target: 'attack_damage', type: 'perm', name: 'PEPPERSPRAY', weight: 35,  power: 0.040, powermode: '+' },
-    { target: 'attack_damage', type: 'perm', name: 'PICKAXE',     weight: 20,  power: 0.075, powermode: '+' },
-    { target: 'attack_damage', type: 'perm', name: 'SCYTHE',      weight: 15,  power: 0.080, powermode: '+' },
-    { target: 'attack_damage', type: 'perm', name: 'KATANA',      weight: 9,   power: 0.100, powermode: '+' },
-    { target: 'attack_damage', type: 'perm', name: 'PISTOL',      weight: 7,   power: 0.110, powermode: '+' },
-    { target: 'attack_damage', type: 'perm', name: 'BAZOOKA',     weight: 3,   power: 0.155, powermode: '+' },
+    { target: 'attack_damage', type: 'perm', name: 'BALOON',      weight: 110, power: 0.008, powermode: '+' }, 
+    { target: 'attack_damage', type: 'perm', name: 'BUTTERKNIFE', weight: 100, power: 0.010, powermode: '+' },
+    { target: 'attack_damage', type: 'perm', name: 'WOODENSWORD', weight: 90,  power: 0.012, powermode: '+' },
+    { target: 'attack_damage', type: 'perm', name: 'PILLOW',      weight: 70,  power: 0.015, powermode: '+' },
+    { target: 'attack_damage', type: 'perm', name: 'WOODOODOLL',  weight: 50,  power: 0.018, powermode: '+' },
+    { target: 'attack_damage', type: 'perm', name: 'PEPPERSPRAY', weight: 35,  power: 0.030, powermode: '+' },
+    { target: 'attack_damage', type: 'perm', name: 'PICKAXE',     weight: 12,  power: 0.055, powermode: '+' },
+    { target: 'attack_damage', type: 'perm', name: 'SCYTHE',      weight: 10,  power: 0.065, powermode: '+' },
+    { target: 'attack_damage', type: 'perm', name: 'KATANA',      weight: 7,   power: 0.080, powermode: '+' },
+    { target: 'attack_damage', type: 'perm', name: 'PISTOL',      weight: 3,   power: 0.100, powermode: '+' },
+    { target: 'attack_damage', type: 'perm', name: 'BAZOOKA',     weight: 1,   power: 0.125, powermode: '+' },
 
 
     // EXP - instantanei
 
-    { target: 'exp', type: 'inst', name: 'BAG',      weight: 165, messages: 5  },
+    { target: 'exp', type: 'inst', name: 'BAG',      weight: 170, messages: 5  },
     { target: 'exp', type: 'inst', name: 'CHEST',    weight: 70,  messages: 12 },
-    { target: 'exp', type: 'inst', name: 'TREASURE', weight: 35,  messages: 25 },
+    { target: 'exp', type: 'inst', name: 'TREASURE', weight: 39,  messages: 25 },
 
 
     // EXP - temporanei
