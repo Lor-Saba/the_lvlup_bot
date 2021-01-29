@@ -24,7 +24,7 @@ var scheduleMap = [
     // “At minute 0.” 
     { rule: '0 * * * *', type: 'dbsync' },
     // “At minute 0 on Monday.” 
-    { rule: '0 * * * 1', type: 'checkoldchat' }
+    { rule: '0 0 * * 1', type: 'checkchatvitality' }
 ];
 
 

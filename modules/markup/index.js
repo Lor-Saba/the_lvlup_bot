@@ -9,22 +9,22 @@ var dataMap = {}
 // lista dei markup disponibili
 var markup = {
 
-    'SETTINGS_START': function(message, data, lexicon){
+    'SETTINGS_START': function(mexData, data, lexicon){
         var result = {};
 
         result.text  = lexicon.get('SETTINGS_TITLE', { chatTitle: data.chatTitle });
         result.text += lexicon.get('SETTINGS_START');
         result.buttons = markupWrap([
-            [ markupButton(message, lexicon.get('SETTINGS_NOTIFY_PENALITY')           , Object.assign(data, { action: 'SETTINGS_NOTIFY_PENALITY' }))           ],
-            [ markupButton(message, lexicon.get('SETTINGS_NOTIFY_LEVELUP')            , Object.assign(data, { action: 'SETTINGS_NOTIFY_LEVELUP' }))            ],
-            [ markupButton(message, lexicon.get('SETTINGS_NOTIFY_PRESTIGE_AVAILABLE') , Object.assign(data, { action: 'SETTINGS_NOTIFY_PRESTIGE_AVAILABLE' })) ],
-            [ markupButton(message, lexicon.get('SETTINGS_NOTIFY_ITEM_PICKUP')        , Object.assign(data, { action: 'SETTINGS_NOTIFY_ITEM_PICKUP' }))        ]
+            [ markupButton(mexData, lexicon.get('SETTINGS_NOTIFY_PENALITY')           , Object.assign(data, { action: 'SETTINGS_NOTIFY_PENALITY' }))           ],
+            [ markupButton(mexData, lexicon.get('SETTINGS_NOTIFY_LEVELUP')            , Object.assign(data, { action: 'SETTINGS_NOTIFY_LEVELUP' }))            ],
+            [ markupButton(mexData, lexicon.get('SETTINGS_NOTIFY_PRESTIGE_AVAILABLE') , Object.assign(data, { action: 'SETTINGS_NOTIFY_PRESTIGE_AVAILABLE' })) ],
+            [ markupButton(mexData, lexicon.get('SETTINGS_NOTIFY_ITEM_PICKUP')        , Object.assign(data, { action: 'SETTINGS_NOTIFY_ITEM_PICKUP' }))        ]
         ]);
 
         return result;
     },
 
-    'SETTINGS_NOTIFY_PENALITY': function(message, data, lexicon){
+    'SETTINGS_NOTIFY_PENALITY': function(mexData, data, lexicon){
         var result = {};
         var value = data.value;
 
@@ -32,18 +32,18 @@ var markup = {
         result.text += lexicon.get('SETTINGS_NOTIFY_PENALITY');
         result.buttons = markupWrap([
             [ 
-                markupButton(message, (value === true  ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_ON') , Object.assign(data, { action: 'SETTINGS_NOTIFY_PENALITY', value: true  })),
-                markupButton(message, (value === false ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_OFF'), Object.assign(data, { action: 'SETTINGS_NOTIFY_PENALITY', value: false })) 
+                markupButton(mexData, (value === true  ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_ON') , Object.assign(data, { action: 'SETTINGS_NOTIFY_PENALITY', value: true  })),
+                markupButton(mexData, (value === false ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_OFF'), Object.assign(data, { action: 'SETTINGS_NOTIFY_PENALITY', value: false })) 
             ],
             [ 
-                markupButton(message, lexicon.get('SETTINGS_BACK') , Object.assign(data, { action: 'SETTINGS_START' })) 
+                markupButton(mexData, lexicon.get('SETTINGS_BACK') , Object.assign(data, { action: 'SETTINGS_START' })) 
             ]
         ]);
 
         return result;
     },
 
-    'SETTINGS_NOTIFY_LEVELUP': function(message, data, lexicon){
+    'SETTINGS_NOTIFY_LEVELUP': function(mexData, data, lexicon){
         var result = {};
         var value = data.value;
 
@@ -51,18 +51,18 @@ var markup = {
         result.text += lexicon.get('SETTINGS_NOTIFY_LEVELUP');
         result.buttons = markupWrap([
             [ 
-                markupButton(message, (value === true  ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_ON') , Object.assign(data, { action: 'SETTINGS_NOTIFY_LEVELUP', value: true  })),
-                markupButton(message, (value === false ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_OFF'), Object.assign(data, { action: 'SETTINGS_NOTIFY_LEVELUP', value: false })) 
+                markupButton(mexData, (value === true  ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_ON') , Object.assign(data, { action: 'SETTINGS_NOTIFY_LEVELUP', value: true  })),
+                markupButton(mexData, (value === false ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_OFF'), Object.assign(data, { action: 'SETTINGS_NOTIFY_LEVELUP', value: false })) 
             ],
             [ 
-                markupButton(message, lexicon.get('SETTINGS_BACK') , Object.assign(data, { action: 'SETTINGS_START' })) 
+                markupButton(mexData, lexicon.get('SETTINGS_BACK') , Object.assign(data, { action: 'SETTINGS_START' })) 
             ]
         ]);
 
         return result;
     },
 
-    'SETTINGS_NOTIFY_PRESTIGE_AVAILABLE': function(message, data, lexicon){
+    'SETTINGS_NOTIFY_PRESTIGE_AVAILABLE': function(mexData, data, lexicon){
         var result = {};
         var value = data.value;
 
@@ -70,18 +70,18 @@ var markup = {
         result.text += lexicon.get('SETTINGS_NOTIFY_PRESTIGE_AVAILABLE');
         result.buttons = markupWrap([
             [ 
-                markupButton(message, (value === true  ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_ON') , Object.assign(data, { action: 'SETTINGS_NOTIFY_PRESTIGE_AVAILABLE', value: true  })),
-                markupButton(message, (value === false ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_OFF'), Object.assign(data, { action: 'SETTINGS_NOTIFY_PRESTIGE_AVAILABLE', value: false })) 
+                markupButton(mexData, (value === true  ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_ON') , Object.assign(data, { action: 'SETTINGS_NOTIFY_PRESTIGE_AVAILABLE', value: true  })),
+                markupButton(mexData, (value === false ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_OFF'), Object.assign(data, { action: 'SETTINGS_NOTIFY_PRESTIGE_AVAILABLE', value: false })) 
             ],
             [ 
-                markupButton(message, lexicon.get('SETTINGS_BACK') , Object.assign(data, { action: 'SETTINGS_START' }) )
+                markupButton(mexData, lexicon.get('SETTINGS_BACK') , Object.assign(data, { action: 'SETTINGS_START' }) )
             ]
         ]);
 
         return result;
     },
 
-    'SETTINGS_NOTIFY_ITEM_PICKUP': function(message, data, lexicon){
+    'SETTINGS_NOTIFY_ITEM_PICKUP': function(mexData, data, lexicon){
         var result = {};
         var value = data.value;
 
@@ -89,33 +89,33 @@ var markup = {
         result.text += lexicon.get('SETTINGS_NOTIFY_ITEM_PICKUP');
         result.buttons = markupWrap([
             [ 
-                markupButton(message, (value === 'full'    ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_FULL')   , Object.assign(data, { action: 'SETTINGS_NOTIFY_ITEM_PICKUP', value: 'full'    })),
-                markupButton(message, (value === false     ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_OFF')    , Object.assign(data, { action: 'SETTINGS_NOTIFY_ITEM_PICKUP', value: false     })) 
+                markupButton(mexData, (value === 'full'    ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_FULL')   , Object.assign(data, { action: 'SETTINGS_NOTIFY_ITEM_PICKUP', value: 'full'    })),
+                markupButton(mexData, (value === false     ? '✅ ' : '') + lexicon.get('SETTINGS_REPLY_OFF')    , Object.assign(data, { action: 'SETTINGS_NOTIFY_ITEM_PICKUP', value: false     })) 
             ],
             [ 
-                markupButton(message, lexicon.get('SETTINGS_BACK') , Object.assign(data, { action: 'SETTINGS_START' }) )
+                markupButton(mexData, lexicon.get('SETTINGS_BACK') , Object.assign(data, { action: 'SETTINGS_START' }) )
             ]
         ]);
 
         return result;
     },
 
-    'CHALLENGE_START': function(message, data, lexicon){
+    'CHALLENGE_START': function(mexData, data, lexicon){
         var result = {};
 
         result.text = lexicon.get('CHALLENGE_START', { username: data.username });
         result.buttons = markupWrap([
             [ 
-                markupButton(message, lexicon.get('CHALLENGE_OPTION_R') , Object.assign(data, { action: 'CHALLENGE_START', pick: 'R' }) ),
-                markupButton(message, lexicon.get('CHALLENGE_OPTION_S') , Object.assign(data, { action: 'CHALLENGE_START', pick: 'S' }) ),
-                markupButton(message, lexicon.get('CHALLENGE_OPTION_P') , Object.assign(data, { action: 'CHALLENGE_START', pick: 'P' }) )
+                markupButton(mexData, lexicon.get('CHALLENGE_OPTION_R') , Object.assign(data, { action: 'CHALLENGE_START', pick: 'R' }) ),
+                markupButton(mexData, lexicon.get('CHALLENGE_OPTION_S') , Object.assign(data, { action: 'CHALLENGE_START', pick: 'S' }) ),
+                markupButton(mexData, lexicon.get('CHALLENGE_OPTION_P') , Object.assign(data, { action: 'CHALLENGE_START', pick: 'P' }) )
             ]
         ]);
         
         return result;
     },
 
-    'CHALLENGE_END': function(message, data, lexicon){
+    'CHALLENGE_END': function(mexData, data, lexicon){
         var result = {};
 
         if (data.challengedUsername) {
@@ -126,27 +126,27 @@ var markup = {
         
         result.buttons = markupWrap([
             [ 
-                markupButton(message, lexicon.get('CHALLENGE_OPTION_R') , Object.assign(data, { action: 'CHALLENGE_END', pick: 'R' }) ),
-                markupButton(message, lexicon.get('CHALLENGE_OPTION_S') , Object.assign(data, { action: 'CHALLENGE_END', pick: 'S' }) ),
-                markupButton(message, lexicon.get('CHALLENGE_OPTION_P') , Object.assign(data, { action: 'CHALLENGE_END', pick: 'P' }) )
+                markupButton(mexData, lexicon.get('CHALLENGE_OPTION_R') , Object.assign(data, { action: 'CHALLENGE_END', pick: 'R' }) ),
+                markupButton(mexData, lexicon.get('CHALLENGE_OPTION_S') , Object.assign(data, { action: 'CHALLENGE_END', pick: 'S' }) ),
+                markupButton(mexData, lexicon.get('CHALLENGE_OPTION_P') , Object.assign(data, { action: 'CHALLENGE_END', pick: 'P' }) )
             ]
         ]);
         
         return result;
     },
 
-    'LEADERBOARD': function(message, data, lexicon){
+    'LEADERBOARD': function(mexData, data, lexicon){
         var result = {};
 
         result.text = lexicon.get('LEADERBOARD_TITLE');
         result.buttons = markupWrap([
             [ 
-                markupButton(message, lexicon.get('LEADERBOARD_OPTION_EXP')       , Object.assign(data, { action: 'LEADERBOARD', type: 'exp'       }) ),
-                markupButton(message, lexicon.get('LEADERBOARD_OPTION_ABSEXP')    , Object.assign(data, { action: 'LEADERBOARD', type: 'absexp'    }) )
+                markupButton(mexData, lexicon.get('LEADERBOARD_OPTION_EXP')       , Object.assign(data, { action: 'LEADERBOARD', type: 'exp'       }) ),
+                markupButton(mexData, lexicon.get('LEADERBOARD_OPTION_ABSEXP')    , Object.assign(data, { action: 'LEADERBOARD', type: 'absexp'    }) )
             ],
             [
-                markupButton(message, lexicon.get('LEADERBOARD_OPTION_CHRATIO')   , Object.assign(data, { action: 'LEADERBOARD', type: 'chratio'   }) ),
-                markupButton(message, lexicon.get('LEADERBOARD_OPTION_CHSUMMARY') , Object.assign(data, { action: 'LEADERBOARD', type: 'chsummary' }) )
+                markupButton(mexData, lexicon.get('LEADERBOARD_OPTION_CHRATIO')   , Object.assign(data, { action: 'LEADERBOARD', type: 'chratio'   }) ),
+                markupButton(mexData, lexicon.get('LEADERBOARD_OPTION_CHSUMMARY') , Object.assign(data, { action: 'LEADERBOARD', type: 'chsummary' }) )
             ]
         ]);
         
@@ -157,33 +157,33 @@ var markup = {
 
 /**
  * 
- * @param {object} message oggetto del messaggio ritornato da telegram
+ * @param {object} mexData oggetto del messaggio ritornato da telegram
  */
-function getKeyFromMessage(message){
-    return md5('' + message.chat.id + message.from.id);
-    //return md5('' + message.chat.id + message.from.id + message.date);
+function getKeyFromMessage(mexData){
+    return md5('' + mexData.chatId + mexData.userId + mexData.messageId);
+    //return md5('' + mexData.chat.id + mexData.from.id);
 }
 
 /**
  * 
- * @param {object} message oggetto del messaggio ritornato da telegram
+ * @param {object} mexData oggetto del messaggio ritornato da telegram
  */
-function removePreviousMap(message){
-    var key = getKeyFromMessage(message);
+function removePreviousMap(mexData){
+    var key = getKeyFromMessage(mexData);
 
     delete dataMap[key];
 }
 
 /**
  * 
- * @param {object} message oggetto del messaggio ritornato da telegram
+ * @param {object} mexData oggetto del messaggio ritornato da telegram
  * @param {string} text il testo da mostrare nel messaggio
  * @param {object} data i dati da collegare all'azione del messaggio
  */
-function markupButton(message, text, data) {
+function markupButton(mexData, text, data) {
 
-    var dateNow = Date.now();
-    var key = getKeyFromMessage(message);
+    var dateNow = Date.now() / 1000;
+    var key = getKeyFromMessage(mexData);
 
     if (!dataMap[key]) {
         dataMap[key] = { date: dateNow, data: [] };
@@ -206,15 +206,15 @@ function markupWrap(buttons){
 /**
  * 
  * @param {string} type chiave del markup da utilizzare
- * @param {object} message oggetto del messaggio ritornato da telegram
+ * @param {object} mexData oggetto del messaggio ritornato da telegram
  * @param {object} data oggetto di dati da salvare nella sessione del messaggio
  */
-function get(type, message, data){
-    var lexicon = Lexicon.lang(message.from.language_code);
+function get(type, mexData, data){
+    var lexicon = Lexicon.lang(mexData.lang);
 
-    removePreviousMap(message);
+    removePreviousMap(mexData);
 
-    return markup[type](message, data, lexicon);
+    return markup[type](mexData, data, lexicon);
 }
 
 /**
@@ -254,10 +254,10 @@ function deleteData(mapKey) {
 setInterval(function(){
 
     var keys = Object.keys(dataMap);
-    var dateNow = Date.now();
+    var dateNow = Date.now() / 1000;
 
     for(var ind = 0, ln = keys.length; ind < ln; ind++){
-        if (dateNow - dataMap[keys[ind]].date > 1000 * 60 * 60 * 24){
+        if (dateNow - dataMap[keys[ind]].date > 60 * 60 * 24){
             delete dataMap[keys[ind]];
         }
     }
@@ -274,11 +274,11 @@ module.exports = {
 
 
 
-// ctx.reply(JSON.stringify(ctx.update.message));
+// ctx.reply(JSON.stringify(ctx.update.mexData));
 
 //console.log(ctx);
 
-//ctx.getChatAdministrators(ctx.update.message.chat.id).then(function(res){
+//ctx.getChatAdministrators(ctx.update.mexData.chat.id).then(function(res){
 //    ctx.reply(res);
 //})
 
@@ -301,7 +301,7 @@ module.exports = {
 
 
 //Markup.inlineKeyboard([
-//    Markup.callbackButton('Send a message', 'message-add'),
-//    Markup.callbackButton('Message list', 'message-list')
+//    Markup.callbackButton('Send a mexData', 'mexData-add'),
+//    Markup.callbackButton('Message list', 'mexData-list')
 //]).extra();
 //bot.telegram.sendMessage(userid, 'Settings for group "' + chatTitle + '"', Extra.markdown().markup(m => m.inlineKeyboard(menu)));

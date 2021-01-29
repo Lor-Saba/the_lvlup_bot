@@ -69,6 +69,19 @@ function connectMongoDB(){
 function initSchedulerEvents(){
     return new Promise(ok => {
 
+        scheduler.on('checkchatvitality', function(){
+            storage.checkChatsVitality(function(chat, type){
+                switch (type) {
+                    case 'INACTIVE': 
+                        bot.telegram.sendMessage(chat.id, Lexicon.get('WARNING_CHAT_TOBEREMOVED'), { parse_mode: 'markdown' });
+                        break;
+                    case 'TOBEREMOVED': 
+                        utils.log('WARNING! TOBEREMOVED:', chat.id, chat.title);
+                        break;
+                }
+            });
+        });
+
         scheduler.on('backup', function(){
             storage.saveBackup();
         });
@@ -545,7 +558,7 @@ function setBotMiddlewares(){
         // aggiorna la data dell'ultimo messaggio
         userStats.lastMessageDate = mexData.date;
         // aggiorna la data dell'ultimo messaggio
-        chat.lastMessageDate = mexData.date;
+        chat.lastMessageDate = Date.now() / 1000;
         // aggiunge la chat in queue
         storage.addChatToQueue(chat.id);
         // aggiunge l'utente in queue
@@ -778,7 +791,7 @@ function setBotCommands(){
 
             if (permission) {
 
-                var markupData = markup.get('SETTINGS_START', ctx.update.message, { chatTitle: mexData.chatTitle, chatId: mexData.chatId });
+                var markupData = markup.get('SETTINGS_START', mexData, { chatTitle: mexData.chatTitle, chatId: mexData.chatId });
 
                 bot.telegram.sendMessage(mexData.userId, markupData.text, markupData.buttons).catch(() => {});
 
@@ -817,7 +830,7 @@ function setBotCommands(){
     
     bot.command('leaderboard', function(ctx){
         var mexData = ctx.state.mexData;
-        var markupData = markup.get('LEADERBOARD', ctx.update.message, {
+        var markupData = markup.get('LEADERBOARD', mexData, {
             userId: mexData.userId, 
             chatId: mexData.chatId
         });
@@ -1023,7 +1036,7 @@ function setBotCommands(){
         }
 
         if (challengedUser) {
-            markupData = markup.get('CHALLENGE_START', ctx.update.message, { 
+            markupData = markup.get('CHALLENGE_START', mexData, { 
                 username: mexData.username, 
                 userId: mexData.userId, 
                 chatId: mexData.chatId,
@@ -1031,7 +1044,7 @@ function setBotCommands(){
                 challengedUsername: challengedUser.username
             });            
         } else {
-            markupData = markup.get('CHALLENGE_START', ctx.update.message, { 
+            markupData = markup.get('CHALLENGE_START', mexData, { 
                 username: mexData.username, 
                 userId: mexData.userId, 
                 chatId: mexData.chatId
@@ -1134,12 +1147,11 @@ function setBotEvents(){
         switch(queryData.action){
 
             case 'SETTINGS_START': 
-                var markupData = markup.get(queryData.action, mexData.message, { 
+                var markupData = markup.get(queryData.action, mexData, { 
                     chatTitle: queryData.chatTitle, 
                     chatId: queryData.chatId 
                 });
 
-                markup.deleteData(query);
                 ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
                 break;
 
@@ -1152,13 +1164,12 @@ function setBotEvents(){
                     chat.settings.notifyPenality = queryData.value;
                 }
 
-                var markupData = markup.get(queryData.action, mexData.message, { 
+                var markupData = markup.get(queryData.action, mexData, { 
                     chatTitle: chat.title, 
                     chatId: chat.id, 
                     value: chat.settings.notifyPenality 
                 });
                 
-                markup.deleteData(query);
                 ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
                 storage.addChatToQueue(chat.id);
                 break;
@@ -1172,13 +1183,12 @@ function setBotEvents(){
                     chat.settings.notifyUserLevelup = queryData.value;
                 }
 
-                var markupData = markup.get(queryData.action, mexData.message, { 
+                var markupData = markup.get(queryData.action, mexData, { 
                     chatTitle: chat.title, 
                     chatId: chat.id, 
                     value: chat.settings.notifyUserLevelup 
                 });
 
-                markup.deleteData(query);
                 ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
                 storage.addChatToQueue(chat.id);
                 break;
@@ -1192,13 +1202,12 @@ function setBotEvents(){
                     chat.settings.notifyUserPrestige = queryData.value;
                 }
 
-                var markupData = markup.get(queryData.action, mexData.message, { 
+                var markupData = markup.get(queryData.action, mexData, { 
                     chatTitle: chat.title, 
                     chatId: chat.id, 
                     value: chat.settings.notifyUserPrestige 
                 });
 
-                markup.deleteData(query);
                 ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
                 storage.addChatToQueue(chat.id);
                 break;
@@ -1212,13 +1221,12 @@ function setBotEvents(){
                     chat.settings.notifyUserPickupItem = queryData.value;
                 }
 
-                var markupData = markup.get(queryData.action, mexData.message, { 
+                var markupData = markup.get(queryData.action, mexData, { 
                     chatTitle: chat.title, 
                     chatId: chat.id, 
                     value: chat.settings.notifyUserPickupItem 
                 });
 
-                markup.deleteData(query);
                 ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
                 storage.addChatToQueue(chat.id);
                 break;
@@ -1236,9 +1244,6 @@ function setBotEvents(){
                 // ottiene il testo della leaderboard da mostrare a seconda del tipo
                 var text = getLeaderboardByType(mexData.chatId, user, queryData.type);
                 
-                // rimuove i dati markup
-                markup.deleteData(query);
-                
                 // modifica il messaggio con il risultato della leaderboard
                 bot.telegram.editMessageText(
                     mexData.chatId, 
@@ -1247,9 +1252,12 @@ function setBotEvents(){
                     text,
                     { parse_mode: 'markdown' }
                 )
-                .then(()=>{})
+                .then(()=>{
+                    // rimuove i dati markup
+                    markup.deleteData(query);
+                })
                 .catch(()=>{});
-
+                
                 break;
 
             case 'CHALLENGE_START':  
@@ -1261,10 +1269,11 @@ function setBotEvents(){
 
                 queryData.pickA = queryData.pick;
 
-                var markupData = markup.get('CHALLENGE_END', mexData.message, queryData);
+                var markupData = markup.get('CHALLENGE_END', mexData, queryData);
 
-                markup.deleteData(query);
-                ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
+                // ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
+                ctx.deleteMessage();
+                ctx.telegram.sendMessage(mexData.chatId, markupData.text, markupData.buttons).catch(() => {});
                 break;
 
             case 'CHALLENGE_END': 
@@ -1359,9 +1368,6 @@ function setBotEvents(){
                         }), 
                         { parse_mode: 'markdown' }
                     ).catch(()=>{});
-
-                    // elimina i dati del markup
-                    markup.deleteData(query);  
 
                     // aggiorna le statistiche personali delle challenge
                     userStatsW.challengeWon  += 1;
@@ -1460,12 +1466,20 @@ function setBotEvents(){
 
                     }
 
+                })
+                .then(utils.promiseTimeout(500))
+                .then(() => {
+
+                    // elimina i dati del markup
+                    markup.deleteData(query);  
+
                     // aggiunge gli utenti in coda per aggiornare il db
                     storage.addUserToQueue(userA.id);
                     storage.addUserToQueue(userB.id);
 
                     chat.isChallengeActive = false;
-                }).catch(err => {
+                })
+                .catch(err => {
                     utils.errorlog('CHALLENGE_BUTTON', JSON.stringify(err));
 
                     chat.isChallengeActive = false;
@@ -1866,5 +1880,5 @@ function init(){
 init();
 
 // setTimeout(() => {
-//     scheduler.trigger('dungeon');
+//     scheduler.trigger('checkoldchat');
 // }, 5000);

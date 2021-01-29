@@ -196,6 +196,56 @@ function resetChatStats(chatId){
 
     return result;
 }
+
+/**
+ * 
+ * @param {number} chatId 
+ */
+function deleteChat(chatId){
+
+    if (!chatId) return null;
+    if (!cache.chats[chatId]) return null;
+
+    delete cache.chats[chatId];
+    delete queue.chats[chatId];
+
+    var keys = Object.keys(cache.users);
+    var operations = [];
+
+    for(var ind = 0, ln = keys.length; ind < ln; ind++){
+        var userId = keys[ind];
+
+        // elimina l'oggetto relativo alla chat
+        delete cache.users[userId].chats[chatId];
+
+        // aggiunge in queue l'user se contiene le statistiche di altre chat,
+        if (Object.keys(cache.users[userId].chats).length) {
+            queue.users[userId] = true;
+        } else {
+
+            // elimina l'oggetto dell'user
+            delete cache.users[userId];
+
+            // aggiunge l'user in coda per l'eliminazione dal db
+            operations.push({
+                deleteOne: { filter: { id: Number(userId) } } 
+            });
+        }
+        
+    }
+
+    // elimina la chat
+    db.collection("lvlup_chats").deleteOne({ id: Number(chatId) })
+    .catch(err => {
+        utils.errorlog('deleteChat | lvlup_chats', JSON.stringify(err));
+    });
+
+    // elimina gli user vuoti
+    db.collection("lvlup_users").bulkWrite(operations)
+    .catch(err => {
+        utils.errorlog('deleteChat | lvlup_users', JSON.stringify(operations), JSON.stringify(err));
+    });
+}
  
 /**
  * elimina tutte le chat dell'utente indicato
@@ -259,7 +309,7 @@ function addUserToQueue(userId){
 function addChatToQueue(chatId){
 
     queue.chats[chatId] = true;
-    
+
     return Promise.resolve();
 }
 
@@ -381,8 +431,7 @@ function getChatUsers(chatId){
             level: user.chats[chatId].level,
             prestige: user.chats[chatId].prestige,
             challengeWon: user.chats[chatId].challengeWon,
-            challengeLost: user.chats[chatId].challengeLost,
-            chratio: user.chats[chatId].challengeWon / (user.chats[chatId].challengeLost || 1)
+            challengeLost: user.chats[chatId].challengeLost
         }
     };
 
@@ -479,6 +528,27 @@ function setVersion(version){
     queue.config = true;
 }
 
+/**
+ * 
+ * @param {function} callback 
+ */
+function checkChatsVitality(callback){
+    var now = Date.now() / 1000;
+    var timeNotify = 60 * 60 * 24 * 23; // 23 giorni
+    var timeRemove = 60 * 60 * 24 * 31; // 31 giorni
+
+    utils.eachTimeout(cache.chats, (chatId, chat) => {
+        var diffTime = now - chat.lastMessageDate;
+
+        if (diffTime > timeNotify && diffTime < timeRemove) {
+            callback(chat, 'INACTIVE');
+        } else if (diffTime > timeRemove) {
+            callback(chat, 'TOBEREMOVED');
+            // deleteChat(chatId);
+        }
+    }, 100);
+}
+
 module.exports = {
     connectMongoDB,
     getUser,
@@ -503,5 +573,6 @@ module.exports = {
     getBackup,
     getVersion,
     setVersion,
-    setForcedSync
+    setForcedSync,
+    checkChatsVitality
 };
