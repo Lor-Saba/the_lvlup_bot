@@ -73,10 +73,11 @@ function initSchedulerEvents(){
             storage.checkChatsVitality(function(chat, type){
                 switch (type) {
                     case 'INACTIVE': 
+                        utils.log('CHATVITALITY_INACTIVE:', chat.id, chat.title);
                         bot.telegram.sendMessage(chat.id, Lexicon.get('WARNING_CHAT_TOBEREMOVED'), { parse_mode: 'markdown' });
                         break;
                     case 'TOBEREMOVED': 
-                        utils.log('WARNING! TOBEREMOVED:', chat.id, chat.title);
+                        utils.log('CHATVITALITY_TOBEREMOVED:', chat.id, chat.title);
                         break;
                 }
             });
