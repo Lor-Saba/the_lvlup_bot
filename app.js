@@ -1331,14 +1331,20 @@ function setBotEvents(){
                         mexData.chatId, 
                         mexData.messageId, 
                         null, 
-                        lexicon.get('CHALLENGE_RESULT_DRAW', { 
+                        lexicon.get('CHALLENGE_RESULT_DRAW_COMPACT', { 
                             pickA: lexicon.get('CHALLENGE_OPTION_' + pickA),
                             pickB: lexicon.get('CHALLENGE_OPTION_' + pickB),
                             usernameA: userA.username, 
                             usernameB: userB.username,
                         }), 
                         { parse_mode: 'markdown' }
-                    ).catch(()=>{});
+                    )
+                    .catch(()=>{})
+                    .then(() => {
+
+                        // elimina i dati del markup
+                        markup.deleteData(query);  
+                    });
                 }
 
                 // inizio catena del challenge

@@ -1,4 +1,12 @@
 
+# 1.1.3
+
+    - change dungeon time to 20:00
+    - rebalance of dungeon's items
+    - fixes on markup module (manager of messages with actions)
+    - new output for /challengeme draw case (more compact)
+    - add "chat vitality check" to delete cache data of inactive chats (30 days inactivity)
+
 # 1.1.2 
 
     - changelog moved to root as single file

@@ -31,7 +31,10 @@ module.exports = {
         "en": "*$(usernameB)* accepted *$(usernameA)*'s challenge!\n\n*$(usernameA)*: $(pickA)\n*$(usernameB)*: $(pickB)\n\n*$(usernameW)*:  `+$(expGainW) Exp`\n*$(usernameL)*:  `$(expGainL) Exp`."
     },
     "CHALLENGE_RESULT_DRAW": {
-        "en": "*$(usernameB)* accepted *$(usernameA)*'s challenge!\n\n*$(usernameA)*: $(pickA)\n*$(usernameB)*: $(pickB)\n\nIt's a draw."
+        "en": "*$(usernameB)* accepted *$(usernameA)*'s challenge!\n\n*$(usernameA)*: $(pickA)\n*$(usernameB)*: $(pickB)\n\nIt's a draw.\nYou can still ask for another challenge."
+    },
+    "CHALLENGE_RESULT_DRAW_COMPACT": {
+        "en": "*$(usernameB)* accepted *$(usernameA)*'s challenge!\n_It's a draw._    $(pickA) - $(pickB)\nYou can still ask for another challenge."
     },
     "CHALLENGE_TIMEOUT": {
         "en": "*$(username)*, you can ask for a new challenge in _$(timeout)_."
