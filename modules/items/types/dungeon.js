@@ -13,7 +13,7 @@ module.exports = [
     { target: 'attack_damage', type: 'perm', name: 'SCYTHE',      weight: 10,  power: 0.065, powermode: '+' },
     { target: 'attack_damage', type: 'perm', name: 'KATANA',      weight: 7,   power: 0.080, powermode: '+' },
     { target: 'attack_damage', type: 'perm', name: 'PISTOL',      weight: 3,   power: 0.100, powermode: '+' },
-    { target: 'attack_damage', type: 'perm', name: 'BAZOOKA',     weight: 1,   power: 0.125, powermode: '+' },
+    { target: 'attack_damage', type: 'perm', name: 'BAZOOKA',     weight: 2,   power: 0.125, powermode: '+' },
 
 
     // EXP - instantanei
