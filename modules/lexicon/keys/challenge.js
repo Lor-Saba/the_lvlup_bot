@@ -18,6 +18,9 @@ module.exports = {
     "CHALLENGE_OPTION_S": {
         "en": "✌️"
     },
+    "CHALLENGE_OPTION_RAND": {
+        "en": "🤞 Random"
+    },
     "CHALLENGE_BUTTON": {
         "en": "Challenge!"
     },

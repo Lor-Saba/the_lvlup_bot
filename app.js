@@ -1268,7 +1268,7 @@ function setBotEvents(){
                     return ctx.answerCbQuery(lexicon.get('LEADERBOARD_CANNOT_ACCEPT'), true).catch(()=>{});
                 }
 
-                queryData.pickA = queryData.pick;
+                queryData.pickA = queryData.pick == 'RAND' ? ['R', 'S', 'P'][Math.random()*3|0] : queryData.pick;
 
                 var markupData = markup.get('CHALLENGE_END', mexData, queryData);
 
@@ -1282,7 +1282,7 @@ function setBotEvents(){
                 var userA = storage.getUser(queryData.userId);
                 var userB = storage.getUser(mexData.userId);
                 var pickA = queryData.pickA;
-                var pickB = queryData.pick;
+                var pickB = queryData.pick == 'RAND' ? ['R', 'S', 'P'][Math.random()*3|0] : queryData.pick;
                 var userW = null;
                 var userL = null;
                 var winner = null;
