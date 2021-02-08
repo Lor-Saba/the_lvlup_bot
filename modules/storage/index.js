@@ -544,7 +544,7 @@ function checkChatsVitality(callback){
             callback(chat, 'INACTIVE');
         } else if (diffTime > timeRemove) {
             callback(chat, 'TOBEREMOVED');
-            // deleteChat(chatId);
+            deleteChat(chatId);
         }
     }, 100);
 }

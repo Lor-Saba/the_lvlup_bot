@@ -13,14 +13,14 @@ module.exports = [
     { target: 'attack_damage', type: 'perm', name: 'SCYTHE',      weight: 10,  power: 0.065, powermode: '+' },
     { target: 'attack_damage', type: 'perm', name: 'KATANA',      weight: 7,   power: 0.080, powermode: '+' },
     { target: 'attack_damage', type: 'perm', name: 'PISTOL',      weight: 3,   power: 0.100, powermode: '+' },
-    { target: 'attack_damage', type: 'perm', name: 'BAZOOKA',     weight: 2,   power: 0.125, powermode: '+' },
+    { target: 'attack_damage', type: 'perm', name: 'BAZOOKA',     weight: 1,   power: 0.125, powermode: '+' },
 
 
     // EXP - instantanei
 
     { target: 'exp', type: 'inst', name: 'BAG',      weight: 170, messages: 5  },
-    { target: 'exp', type: 'inst', name: 'CHEST',    weight: 70,  messages: 12 },
-    { target: 'exp', type: 'inst', name: 'TREASURE', weight: 39,  messages: 25 },
+    { target: 'exp', type: 'inst', name: 'CHEST',    weight: 80,  messages: 12 },
+    { target: 'exp', type: 'inst', name: 'TREASURE', weight: 45,  messages: 25 },
 
 
     // EXP - temporanei

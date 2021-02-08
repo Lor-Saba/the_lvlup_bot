@@ -8,7 +8,7 @@ var eventsList = {};
 // lista di eventi da schedulare
 var scheduleMap = [
     // “At 10:00 on Sunday.” 
-    { rule: '0 9 * * 0', type: 'monster' },
+    { rule: '0 12 * * 0', type: 'monster' },
     // “At 13:00 on Tuesday and Thursday.” 
     { rule: '0 20 * * 2,4', type: 'dungeon' },
     // “At 00:00 on day-of-month 25 in December.” 

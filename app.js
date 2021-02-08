@@ -30,6 +30,8 @@ const scheduler = require('./modules/scheduler');
 const monsters = require('./modules/monsters');
 // modulo per gestire l'evento del dungeon
 const dungeons = require('./modules/dungeon');
+// modulo per gestire i messaggi
+const messages = require('./modules/messages');
 // istanza del bot 
 var bot = null;
 // timestamp dell'avvio del bot
@@ -1268,7 +1270,7 @@ function setBotEvents(){
                     return ctx.answerCbQuery(lexicon.get('LEADERBOARD_CANNOT_ACCEPT'), true).catch(()=>{});
                 }
 
-                queryData.pickA = queryData.pick == 'RAND' ? ['R', 'S', 'P'][Math.random()*3|0] : queryData.pick;
+                queryData.pickA = queryData.pick;
 
                 var markupData = markup.get('CHALLENGE_END', mexData, queryData);
 
@@ -1281,8 +1283,10 @@ function setBotEvents(){
                 var chat  = storage.getChat(mexData.chatId);
                 var userA = storage.getUser(queryData.userId);
                 var userB = storage.getUser(mexData.userId);
-                var pickA = queryData.pickA;
-                var pickB = queryData.pick == 'RAND' ? ['R', 'S', 'P'][Math.random()*3|0] : queryData.pick;
+                var isARand = queryData.pickA == 'RAND';
+                var isBRand = queryData.pick == 'RAND';
+                var pickA = isARand ? ['R', 'S', 'P'][Math.random()*3|0] : queryData.pickA;
+                var pickB = isBRand ? ['R', 'S', 'P'][Math.random()*3|0] : queryData.pick;
                 var userW = null;
                 var userL = null;
                 var winner = null;
@@ -1770,7 +1774,7 @@ function getLeaderboardByType(chatId, user, type){
                 username: stats.username,
                 won: stats.challengeWon,
                 lost: stats.challengeLost,
-                chpoints: stats.chpoints.toFixed(2)
+                chpoints: stats.chpoints.toFixed(0)
             });
         });
     } else if (type === 'chsummary'){
@@ -1889,3 +1893,7 @@ init();
 // setTimeout(() => {
 //     scheduler.trigger('checkoldchat');
 // }, 5000);
+
+// messages.q('sendMessage', {
+//     userId: 13112141
+// })
