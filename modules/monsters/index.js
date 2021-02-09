@@ -21,8 +21,8 @@ var monsters = {};
  * @param {number} monsterLevel livello del mostro a cui calcolare la vita
  */
 function calcMonsterHealth(monsterLevel){
-    // return Math.floor(Math.sqrt(Math.pow(1.85, monsterLevel - 1)) * 25);
-    return BigNumber.maximum(0, BigNumber(1.85).pow(BigNumber(monsterLevel)).sqrt().multipliedBy(25)).toFixed(0).valueOf();
+    // return Math.floor(Math.sqrt(Math.pow(1.5, monsterLevel - 1)) * 25);
+    return BigNumber.maximum(0, BigNumber(1.5).pow(BigNumber(monsterLevel)).sqrt().multipliedBy(25)).toFixed(0).valueOf();
 }
 
 /**
