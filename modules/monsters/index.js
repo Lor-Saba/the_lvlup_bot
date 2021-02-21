@@ -8,7 +8,7 @@ const BigNumber = require('bignumber.js');
 // tempo limite per poter attaccare il mostro appena spawnato
 var spawnAttackTimeout = 1000 * 60 * 60 * 1;
 // tempo di cooldown per attacco
-var userAttackCooldown = 1000 * 60 * 60;
+var userAttackCooldown = 1000 * 60 * 30;
 // tempo limite per poter abbattere il mostro
 var monsterTimeLimit = 1000 * 60 * 60 * 8;
 
@@ -55,6 +55,7 @@ function callEvent(callback, data){
         return callback(data);
     } catch(err) {
         utils.errorlog('MONSTER Event: ', JSON.stringify(err));
+        return Promise.reject();
     }
 }
 
@@ -227,7 +228,11 @@ function spawn(chat, config){
     }, spawnAttackTimeout);
 
     // chiama l'evento per confermare la creazione del mostro
-    callEvent(monster.onSpawn, { monster: monster, chat: chat });
+    callEvent(monster.onSpawn, { monster: monster, chat: chat })
+    .catch(() => {
+        utils.errorlog('MONSTER.SPAWN', chat.id, chat.title);
+        removeMonster(chat.id);
+    });
 
     // inserisce il mostro nella mappa globale
     monsters[chat.id] = monster;

@@ -188,7 +188,7 @@ function initSchedulerEvents(){
                 utils.each(data.monster.attackers, function(attUserId, attUser){
     
                     // calcola il guadagno in base a quanti attacchi sono stati fatti
-                    var expReward = calcUserExpGain(data.ctx, storage.getUser(attUserId), attUser.count * 5);
+                    var expReward = calcUserExpGain(data.ctx, storage.getUser(attUserId), attUser.count * 7);
     
                     attUsersLabels.push(lexicon.get('MONSTER_DEFEATED_ATTACKER', { 
                         username: attUser.username,
@@ -263,7 +263,7 @@ function initSchedulerEvents(){
             var onSpawn = function(data){
 
                 // crea il messaggio di spawn del mostro e salva l'id
-                bot.telegram.sendMessage(
+                return bot.telegram.sendMessage(
                     data.chat.id, 
                     lexicon.get('MONSTER_SPAWN'), 
                     button
@@ -271,7 +271,6 @@ function initSchedulerEvents(){
                 .then(ctxSpawn => {
                     data.monster.extra.messageId = ctxSpawn.message_id;
                 })
-                .catch(()=>{});
             };
 
             // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
@@ -1105,12 +1104,7 @@ function setBotEvents(){
     bot.on('text', function(ctx){
         var user = ctx.state.user;
 
-        if (!user) {
-            console.log('---');
-            utils.errorlog('bot.on "text"', JSON.stringify({ state: ctx.state, from: ctx.from, chat: ctx.chat }));
-            
-            return false;
-        }
+        if (!user) return false;        
 
         dropItemChance(ctx, user);
         calcUserExpGain(ctx, user, 1);
@@ -1120,12 +1114,7 @@ function setBotEvents(){
     bot.on(['sticker', 'photo'], function(ctx){
         var user = ctx.state.user;
 
-        if (!user) {
-            console.log('---');
-            utils.errorlog('bot.on "sticker|photo"', JSON.stringify({ state: ctx.state, from: ctx.from, chat: ctx.chat }));
-            
-            return false;
-        }
+        if (!user) return false;
 
         calcUserExpGain(ctx, user, 0.4);
     });
@@ -1891,7 +1880,7 @@ function init(){
 init();
 
 // setTimeout(() => {
-//     scheduler.trigger('checkoldchat');
+//     scheduler.trigger('monster');
 // }, 5000);
 
 // messages.q('sendMessage', {

@@ -241,10 +241,12 @@ function deleteChat(chatId){
     });
 
     // elimina gli user vuoti
-    db.collection("lvlup_users").bulkWrite(operations)
-    .catch(err => {
-        utils.errorlog('deleteChat | lvlup_users', JSON.stringify(operations), JSON.stringify(err));
-    });
+    if (operations.length) {
+        db.collection("lvlup_users").bulkWrite(operations)
+        .catch(err => {
+            utils.errorlog('deleteChat | lvlup_users', JSON.stringify(operations), JSON.stringify(err));
+        });
+    }
 }
  
 /**
