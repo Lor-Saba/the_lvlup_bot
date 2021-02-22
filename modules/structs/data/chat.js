@@ -10,6 +10,9 @@ module.exports = {
         notifyPenality: true,
         notifyUserLevelup: true,
         notifyUserPrestige: true,
-        notifyUserPickupItem: "full"
+        notifyUserPickupItem: true,
+        monsterEvent: true,
+        dungeonEvent: true,
+        riddlesEvent: true
     }
 }

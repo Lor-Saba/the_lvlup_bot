@@ -23,8 +23,8 @@ var scheduleMap = [
     { rule: '0 8 * * 1-5', type: 'daily' },
     // “At minute 0.” 
     { rule: '0 * * * *', type: 'dbsync' },
-    // “At minute 0 on Monday.” 
-    { rule: '0 0 * * 1', type: 'checkchatvitality' }
+    // “At 00:30 on Monday.” 
+    { rule: '30 0 * * 1', type: 'checkchatvitality' }
 ];
 
 

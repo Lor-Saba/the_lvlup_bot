@@ -799,11 +799,18 @@ function setBotCommands(){
 
             if (permission) {
 
-                var markupData = markup.get('SETTINGS_START', mexData, { chatTitle: mexData.chatTitle, chatId: mexData.chatId });
+                var chat = storage.getChat(mexData.chatId);
+                var markupData = markup.get('SETTINGS_START', mexData, { 
+                    chatTitle: mexData.chatTitle, 
+                    chatId: mexData.chatId,
+                    userId: mexData.userId,
+                    settings: chat.settings
+                });
 
-                bot.telegram.sendMessage(mexData.userId, markupData.text, markupData.buttons).catch(() => {});
+                //bot.telegram.sendMessage(mexData.userId, markupData.text, markupData.buttons).catch(() => {});
+                //return ctx.replyWithMarkdown(lexicon.get('SETTINGS_PRIVATE_MESSAGE_SENT', { username: mexData.username })).catch(()=>{});
 
-                return ctx.replyWithMarkdown(lexicon.get('SETTINGS_PRIVATE_MESSAGE_SENT', { username: mexData.username })).catch(()=>{});
+                return ctx.reply(markupData.text, markupData.buttons).catch(() => {});
             } else {
 
                 return ctx.replyWithMarkdown(lexicon.get('SETTINGS_NOPERMISSION', { username: mexData.username })).catch(()=>{});
@@ -1125,6 +1132,7 @@ function setBotEvents(){
         calcUserExpGain(ctx, user, 0.4);
     });
 
+    // gestisce il caso in cui la chat migra ad un nuovo id
     bot.on('migrate_to_chat_id', function(ctx){
         var message = ctx.update.message;
         var oldChatId = message.chat.id;
@@ -1155,86 +1163,66 @@ function setBotEvents(){
         switch(queryData.action){
 
             case 'SETTINGS_START': 
+
+                // interrompe se non è stato cliccato da chi ha richiesto le impostazioni
+                if (queryData.userId !== mexData.userId) {
+                    return ctx.answerCbQuery(lexicon.get('SETTINGS_CANNOT_ACCEPT'), true).catch(()=>{});
+                }
+
+                var chat = storage.getChat(queryData.chatId);
                 var markupData = markup.get(queryData.action, mexData, { 
                     chatTitle: queryData.chatTitle, 
-                    chatId: queryData.chatId 
+                    chatId: queryData.chatId, 
+                    userId: queryData.userId,
+                    settings: chat.settings
                 });
 
                 ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
+                break;
+
+            case 'SETTINGS_STOP': 
+
+                // interrompe se non è stato cliccato da chi ha richiesto le impostazioni
+                if (queryData.userId !== mexData.userId) {
+                    return ctx.answerCbQuery(lexicon.get('SETTINGS_CANNOT_ACCEPT'), true).catch(()=>{});
+                }
+
+                setTimeout(function(){
+                    ctx.deleteMessage().catch(()=>{});
+                }, 1000 * 5); 
+
+                ctx.editMessageText(lexicon.get('SETTINGS_STOP'), { parse_mode: 'markdown' }).catch(()=>{});
                 break;
 
             case 'SETTINGS_NOTIFY_PENALITY':
-                var chat = storage.getChat(queryData.chatId);
-                
-                if (!chat) return modalError();
-
-                if (queryData.value !== undefined) {
-                    chat.settings.notifyPenality = queryData.value;
-                }
-
-                var markupData = markup.get(queryData.action, mexData, { 
-                    chatTitle: chat.title, 
-                    chatId: chat.id, 
-                    value: chat.settings.notifyPenality 
-                });
-                
-                ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
-                storage.addChatToQueue(chat.id);
-                break;
-
             case 'SETTINGS_NOTIFY_LEVELUP': 
-                var chat = storage.getChat(queryData.chatId);
-                
-                if (!chat) return modalError();
-
-                if (queryData.value !== undefined) {
-                    chat.settings.notifyUserLevelup = queryData.value;
-                }
-
-                var markupData = markup.get(queryData.action, mexData, { 
-                    chatTitle: chat.title, 
-                    chatId: chat.id, 
-                    value: chat.settings.notifyUserLevelup 
-                });
-
-                ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
-                storage.addChatToQueue(chat.id);
-                break;
-
             case 'SETTINGS_NOTIFY_PRESTIGE_AVAILABLE':
-                var chat = storage.getChat(queryData.chatId);
-                
-                if (!chat) return modalError();
-
-                if (queryData.value !== undefined) {
-                    chat.settings.notifyUserPrestige = queryData.value;
-                }
-
-                var markupData = markup.get(queryData.action, mexData, { 
-                    chatTitle: chat.title, 
-                    chatId: chat.id, 
-                    value: chat.settings.notifyUserPrestige 
-                });
-
-                ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
-                storage.addChatToQueue(chat.id);
-                break;
-
             case 'SETTINGS_NOTIFY_ITEM_PICKUP':
+            case 'SETTINGS_EVENT_MONSTER': 
+            case 'SETTINGS_EVENT_DUNGEON':
+            case 'SETTINGS_EVENT_RIDDLES': 
+
+                // interrompe se non è stato cliccato da chi ha richiesto le impostazioni
+                if (queryData.userId !== mexData.userId) {
+                    return ctx.answerCbQuery(lexicon.get('SETTINGS_CANNOT_ACCEPT'), true).catch(()=>{});
+                }
+
                 var chat = storage.getChat(queryData.chatId);
                 
                 if (!chat) return modalError();
 
                 if (queryData.value !== undefined) {
-                    chat.settings.notifyUserPickupItem = queryData.value;
+                    chat.settings[queryData.key] = queryData.value;
                 }
 
                 var markupData = markup.get(queryData.action, mexData, { 
                     chatTitle: chat.title, 
                     chatId: chat.id, 
-                    value: chat.settings.notifyUserPickupItem 
+                    userId: queryData.userId,
+                    value: chat.settings[queryData.key],
+                    key: queryData.key
                 });
-
+                
                 ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
                 storage.addChatToQueue(chat.id);
                 break;

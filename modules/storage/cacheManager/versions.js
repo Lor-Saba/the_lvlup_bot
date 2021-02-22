@@ -100,6 +100,23 @@ module.exports = {
 
             return cache;
         },
+        next: '3'
+    },
+    '3': {
+        update: function(cache){
+
+            cache.config.cacheVersion = '3';
+            
+            utils.each(cache.chats, function(chatId, chat){
+                
+                // nuove proprietà di settings 
+                chat.settings.monsterEvent = true;
+                chat.settings.dungeonEvent = true;
+                chat.settings.riddlesEvent = true;
+            });
+
+            return cache;
+        },
         next: null
     }
 }
