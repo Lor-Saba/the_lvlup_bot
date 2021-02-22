@@ -13,8 +13,8 @@ var scheduleMap = [
     { rule: '0 20 * * 2,4', type: 'dungeon' },
     // “At 00:00 on day-of-month 25 in December.” 
     { rule: '0 0 25 12 *', type: 'xmas' },
-    // “At 10:00 on day-of-month 1 in April.” 
-    { rule: '0 10 1 4 *', type: 'aprilfool' },
+    // “At 10:17 on day-of-month 1 in April.” 
+    { rule: '17 10 1 4 *', type: 'aprilfool' },
     // “At 10:00 on day-of-month 31 in October.” 
     { rule: '0 10 31 10 *', type: 'halloween' },
     // “At 01:00.” 

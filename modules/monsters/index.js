@@ -102,7 +102,7 @@ function attack(chat, user, ctx){
         monster.attackers[user.id] = { username: user.username, count: 0, damage: 0, lastAttackDate: 0 };
     }
     
-    // interrompe se l'utente ha già attaccato meno di mezz'ora fa
+    // interrompe se l'utente ha già attaccato e non è passato il cooldown
     if (monster.attackers[user.id].lastAttackDate + userAttackCooldown > Date.now()){
         monster.attackable = true;
 
@@ -122,7 +122,7 @@ function attack(chat, user, ctx){
         // chiama l'evento per il primo attacco
         callEvent(monster.onFirstAttack, eventData);
 
-        // timeout di 8 ore per abbattere il mostro
+        // timeout per abbattere il mostro
         monster.attackableTimeoutId = setTimeout(function(){
             var triesCounter = 60;
             var expireMonster = function(){
@@ -229,8 +229,8 @@ function spawn(chat, config){
 
     // chiama l'evento per confermare la creazione del mostro
     callEvent(monster.onSpawn, { monster: monster, chat: chat })
-    .catch(() => {
-        utils.errorlog('MONSTER.SPAWN', chat.id, chat.title);
+    .catch(err => {
+        utils.errorlog('MONSTER.SPAWN', chat.id, chat.title, JSON.stringify(err));
         removeMonster(chat.id);
     });
 
