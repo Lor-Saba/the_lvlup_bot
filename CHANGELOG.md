@@ -5,6 +5,8 @@
     - add RANDOM pick to challenges 
         - you'll get 1/3 of the exp if you win a challenge using the random option (same if you lose)
     - fix of stats lost in case of group migration to supergroup
+    - add monster / dungeon / riddles to chat settings
+    - settings are now displayed inside the group chat
     
 # 1.1.3
 
