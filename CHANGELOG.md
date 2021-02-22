@@ -1,4 +1,11 @@
 
+# 1.1.4
+    - change monster attack cooldown from 60m to 30m
+    - change monster defeat exp gain from 5epm to 7epm
+    - add RANDOM pick to challenges 
+        - you'll get 1/3 of the exp if you win a challenge using the random option (same if you lose)
+    - fix of stats lost in case of group migration to supergroup
+    
 # 1.1.3
 
     - change dungeon time to 20:00
