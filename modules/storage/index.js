@@ -551,6 +551,39 @@ function checkChatsVitality(callback){
     }, 100);
 }
 
+/**
+ * 
+ * @param {Number} oldChatId 
+ * @param {Number} newChatId 
+ */
+function updateChatId(oldChatId, newChatId){
+
+    // aggiorna i riferimenti per la chat in cache
+    cache.chats[newChatId] = cache.chats[oldChatId];
+    cache.chats[newChatId].id = newChatId;
+
+    // aggiorna i riferimenti per la chat in queue
+    queue.chats[newChatId] = queue.chats[oldChatId];
+
+    // per ogni utente
+    utils.each(cache.users, (userId, user) => {
+
+        // interrompe se non ha la chat
+        if (!user.chats[oldChatId]) return;
+            
+        // aggiorna il riferimento della chat per l'utente
+        user.chats[newChatId] = user.chats[oldChatId];
+        delete user.chats[oldChatId];
+    });
+
+    // aggiorna il db
+    setForcedSync(true);
+    syncDatabase();
+
+    // rimuove dal db il documento con la vecchia chat 
+    deleteChat(oldChatId);
+}
+
 module.exports = {
     connectMongoDB,
     getUser,
@@ -576,5 +609,6 @@ module.exports = {
     getVersion,
     setVersion,
     setForcedSync,
-    checkChatsVitality
+    checkChatsVitality,
+    updateChatId
 };

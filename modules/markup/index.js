@@ -111,7 +111,7 @@ var markup = {
                 markupButton(mexData, lexicon.get('CHALLENGE_OPTION_P') , Object.assign(data, { action: 'CHALLENGE_START', pick: 'P' }) )
             ],
             [
-                // markupButton(mexData, lexicon.get('CHALLENGE_OPTION_RAND') , Object.assign(data, { action: 'CHALLENGE_START', pick: 'RAND' }) )
+                markupButton(mexData, lexicon.get('CHALLENGE_OPTION_RAND') , Object.assign(data, { action: 'CHALLENGE_START', pick: 'RAND' }) )
             ]
         ]);
         
@@ -134,7 +134,7 @@ var markup = {
                 markupButton(mexData, lexicon.get('CHALLENGE_OPTION_P') , Object.assign(data, { action: 'CHALLENGE_END', pick: 'P' }) )
             ],
             [
-                // markupButton(mexData, lexicon.get('CHALLENGE_OPTION_RAND') , Object.assign(data, { action: 'CHALLENGE_END', pick: 'RAND' }) )
+                markupButton(mexData, lexicon.get('CHALLENGE_OPTION_RAND') , Object.assign(data, { action: 'CHALLENGE_END', pick: 'RAND' }) )
             ]
         ]);
         

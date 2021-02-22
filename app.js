@@ -108,6 +108,9 @@ function initSchedulerEvents(){
 
                 // messaggio per notificare chi è stato ad attaccare per primo
                 bot.telegram.sendMessage(data.chat.id, lexicon.get('MONSTER_START', { username: data.user.username }), { parse_mode: 'markdown' }).catch(()=>{});
+            
+                // pinna il messaggio del mostro per avvertire che è iniziato l'attacco
+                bot.telegram.pinChatMessage(data.chat.id, data.monster.extra.messageId).catch(()=>{}); 
             };
 
             var onAttackCooldown = function(data){
@@ -160,24 +163,16 @@ function initSchedulerEvents(){
                             'monster_attack'
                         )
                     ]
-                ).extra({ parse_mode: 'markdown' });
-
-                // rimuove il vecchio messaggio
-                bot.telegram.deleteMessage(
+                ).extra({ parse_mode: 'markdown' });        
+                
+                // invia il messaggio aggiornato del mostro 
+                bot.telegram.editMessageText(
                     data.chat.id, 
-                    data.monster.extra.messageId
-                )
-                .catch(()=>{});
-        
-                // invia il messaggio del mostro
-                bot.telegram.sendMessage(
-                    data.chat.id, 
+                    data.monster.extra.messageId, 
+                    null, 
                     messageText, 
                     button
                 )
-                .then(function(mstCtx){
-                    data.monster.extra.messageId = mstCtx.message_id;
-                })
                 .catch(()=>{});
             };
 
@@ -212,7 +207,10 @@ function initSchedulerEvents(){
                     messageText, 
                     { parse_mode: 'markdown' }
                 )
-                .catch(()=>{}); 
+                .catch(()=>{});
+
+                // rimuove il pin dal messaggio del mostro
+                bot.telegram.unpinChatMessage(data.chat.id, data.monster.extra.messageId).catch(()=>{}); 
             };
 
             var onEscaped = function(data){
@@ -227,11 +225,16 @@ function initSchedulerEvents(){
                     valueText = utils.formatNumber((monsterItem.power - 1) * 100, 0) + '% ' + lexicon.get('LABEL_DROPCHANCE');
                 }
 
-                // invio messaggio per notificare che il mostro è scappato e l'attacco è fallito
-                bot.telegram.editMessageText(
+                // rimuove il vecchio messaggio
+                bot.telegram.deleteMessage(
                     data.chat.id, 
-                    data.monster.extra.messageId, 
-                    null, 
+                    data.monster.extra.messageId
+                )
+                .catch(()=>{});
+
+                // invio messaggio per notificare che il mostro è scappato e l'attacco è fallito
+                bot.telegram.sendMessage(
+                    data.chat.id, 
                     lexicon.get('MONSTER_ESCAPED', {
                         itemname: lexicon.get('ITEMS_TITLE_' + monsterItem.name),
                         value: valueText,
@@ -239,7 +242,10 @@ function initSchedulerEvents(){
                     }), 
                     { parse_mode: 'markdown' }
                 )
-                .catch(()=>{});
+                .catch(()=>{}); 
+
+                // rimuove il pin dal messaggio del mostro
+                bot.telegram.unpinChatMessage(data.chat.id, data.monster.extra.messageId).catch(()=>{}); 
 
                 // aggiunge l'item droppato alla chat
                 items.insertItemTo(data.chat.items, monsterItem);
@@ -1119,6 +1125,16 @@ function setBotEvents(){
         calcUserExpGain(ctx, user, 0.4);
     });
 
+    bot.on('migrate_to_chat_id', function(ctx){
+        var message = ctx.update.message;
+        var oldChatId = message.chat.id;
+        var newChatId = message.migrate_to_chat_id;
+
+        utils.log('migrate_to_chat_id "' + message.chat.title + '" | From:', oldChatId, 'To:', newChatId);
+
+        storage.updateChatId(oldChatId, newChatId);
+    });
+
     bot.on('callback_query', function(ctx){ 
         var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
@@ -1278,6 +1294,8 @@ function setBotEvents(){
                 var pickB = isBRand ? ['R', 'S', 'P'][Math.random()*3|0] : queryData.pick;
                 var userW = null;
                 var userL = null;
+                var isWRand = null;
+                var isLRand = null;
                 var winner = null;
 
                 // interrompe se è già in corso un challenge
@@ -1303,16 +1321,20 @@ function setBotEvents(){
                 if ((pickA == 'R' && pickB == 'S')
                  || (pickA == 'P' && pickB == 'R')
                  || (pickA == 'S' && pickB == 'P')) {
+                    winner = 'A';
                     userW = userA;
                     userL = userB;
-                    winner = 'A';
+                    isWRand = isARand;
+                    isLRand = isBRand;
                 }
                 if ((pickB == 'R' && pickA == 'S')
                  || (pickB == 'P' && pickA == 'R')
                  || (pickB == 'S' && pickA == 'P')) {
+                    winner = 'B';
                     userW = userB;
                     userL = userA;
-                    winner = 'B';
+                    isWRand = isBRand;
+                    isLRand = isARand;
                 }
 
                 if (!userW) {
@@ -1349,8 +1371,8 @@ function setBotEvents(){
                     var userStatsL = userL.chats[mexData.chatId];
                     var itemsBuffW = items.getItemsBuff(userStatsW.items);
                     var itemsBuffL = items.getItemsBuff(userStatsL.items);
-                    var expGainW = calcUserExpGain(ctx, userW, ( 3 * itemsBuffW.ch_win ).toFixed(2));
-                    var expGainL = calcUserExpGain(ctx, userL, (-3 * itemsBuffL.ch_lose).toFixed(2));
+                    var expGainW = calcUserExpGain(ctx, userW, ((isWRand ?  1 :  3) * itemsBuffW.ch_win ).toFixed(2));
+                    var expGainL = calcUserExpGain(ctx, userL, ((isLRand ? -1 : -3) * itemsBuffL.ch_lose).toFixed(2));
 
                     bot.telegram.editMessageText(
                         mexData.chatId, 
