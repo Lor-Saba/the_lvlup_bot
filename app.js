@@ -1113,23 +1113,19 @@ function setBotActions(){
  */
 function setBotEvents(){
 
-    // gestisce i messaggi semplici di testo
-    bot.on('text', function(ctx){
+    // handler che gestisce i messaggi 
+    bot.on(['text', 'sticker', 'photo'], function(ctx){
         var user = ctx.state.user;
-
-        if (!user) return false;        
-
-        dropItemChance(ctx, user);
-        calcUserExpGain(ctx, user, 1);
-    });
-
-    // gestisce i messaggi con sticker e immagini
-    bot.on(['sticker', 'photo'], function(ctx){
-        var user = ctx.state.user;
+        var isText = ctx.updateSubTypes[0] == 'text';
 
         if (!user) return false;
 
-        calcUserExpGain(ctx, user, 0.4);
+        if (isText) {
+            dropItemChance(ctx, user);
+            calcUserExpGain(ctx, user, 1);
+        } else {
+            calcUserExpGain(ctx, user, 0.4);
+        }
     });
 
     // gestisce il caso in cui la chat migra ad un nuovo id
@@ -1603,12 +1599,6 @@ function calcUserExpGain(ctx, user, messagesPower = 1, passive = false) {
  * @param {object} user Oggetto con i dati di un utente
  */
 function dropItemChance(ctx, user){
-
-    if (!user) {
-        console.log('---');
-        utils.errorlog('dropItemChance', JSON.stringify({ state: ctx.state }));
-    }
-
     var lexicon = ctx.state.lexicon;
     var mexData = ctx.state.mexData;
     
@@ -1621,12 +1611,16 @@ function dropItemChance(ctx, user){
     // tempo di cooldown prima di poter droppare un altro oggetto
     var cooldownTime = (60 * 60 * 8) * chatItemsBuff.drop_cd;
     // chance di drop 
-    var dropchance = (0.015) * chatItemsBuff.drop_chance;
+    var dropchance = (0.015 + userStats.itemsDropGrow) * chatItemsBuff.drop_chance;
+    // determina se è in cooldown
+    var notCoolingDown = userStats.lastItemDate + cooldownTime < mexData.date;
+    // determina se puo' droppare
+    var canDrop = Math.random() < dropchance;
 
     // probabilità di ottenere un oggetto 
-    if (userStats.lastItemDate + cooldownTime < mexData.date
-    &&  Math.random() < dropchance) { 
+    if (notCoolingDown && canDrop) { 
 
+        userStats.itemsDropGrow = 0;
         userStats.lastItemDate = mexData.date;
 
         var dropText = '';
@@ -1660,6 +1654,8 @@ function dropItemChance(ctx, user){
         if (chat.settings.notifyUserPickupItem) {
             ctx.replyWithMarkdown(dropText).catch(()=>{});
         }
+    } else if (notCoolingDown) {
+        userStats.itemsDropGrow += 0.00015;
     }
 }
 

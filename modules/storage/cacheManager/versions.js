@@ -106,6 +106,14 @@ module.exports = {
         update: function(cache){
 
             cache.config.cacheVersion = '3';
+
+            utils.each(cache.users, function(userId, user){
+                utils.each(user.chats, function(chatId, userStats){
+
+                    // imposta la proprietà di incremento chance drop passivo
+                    userStats.itemsDropGrow = 0;
+                });
+            });
             
             utils.each(cache.chats, function(chatId, chat){
                 
