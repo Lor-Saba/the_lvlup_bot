@@ -7,6 +7,7 @@
     - fix of stats lost in case of group migration to supergroup
     - add monster / dungeon / riddles to chat settings
     - settings are now displayed inside the group chat
+    - add mechanic to gradually increase the drop chanche each message by 0.00015% 
     
 # 1.1.3
 
