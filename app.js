@@ -283,7 +283,7 @@ function initSchedulerEvents(){
             utils.eachTimeout(storage.getChats(), (chatId, chat) => {
 
                 // interrompe in base alle preferenze impostate nella chat 
-                if (chat.settings.monsterEvent != true) return;
+                if (chat.settings.monsterEvent == false) return;
 
                 monsters.spawn(chat, {
                     onSpawn: onSpawn,
@@ -371,7 +371,7 @@ function initSchedulerEvents(){
             utils.eachTimeout(storage.getChats(), (chatId, chat) => {
 
                 // interrompe in base alle preferenze impostate nella chat 
-                if (chat.settings.dungeonEvent != true) return;
+                if (chat.settings.dungeonEvent == false) return;
 
                 dungeons.spawn(chat, {
                     onSpawn: onSpawn,
