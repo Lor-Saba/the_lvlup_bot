@@ -8,6 +8,10 @@
     - add monster / dungeon / riddles to chat settings
     - settings are now displayed inside the group chat
     - add mechanic to gradually increase the drop chanche each message by 0.00015% 
+    - change dungeon spawn from 21:00 to 13:00
+    - add seasons to challenges
+        - the first to reach 100 points wins the season
+        - completing the season resets che current challenges stats (W/L)
     
 # 1.1.3
 
