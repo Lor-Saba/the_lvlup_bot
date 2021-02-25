@@ -281,6 +281,10 @@ function initSchedulerEvents(){
 
             // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
             utils.eachTimeout(storage.getChats(), (chatId, chat) => {
+
+                // interrompe in base alle preferenze impostate nella chat 
+                if (chat.settings.monsterEvent != true) return;
+
                 monsters.spawn(chat, {
                     onSpawn: onSpawn,
                     onExpire: onExpire,
@@ -365,6 +369,10 @@ function initSchedulerEvents(){
             
             // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
             utils.eachTimeout(storage.getChats(), (chatId, chat) => {
+
+                // interrompe in base alle preferenze impostate nella chat 
+                if (chat.settings.dungeonEvent != true) return;
+
                 dungeons.spawn(chat, {
                     onSpawn: onSpawn,
                     onExpire: onExpire,
