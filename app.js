@@ -921,8 +921,8 @@ function setBotCommands(){
         }
 
         // aggiunge il conteggio del numero di challenges vinte e perse
-        if (userStats.challengeWon || userStats.challengeLost) {
-            text += '\n' + lexicon.get('STATS_CHALLENGE_LUCK', { valueW: userStats.challengeWon, valueL: userStats.challengeLost });
+        if (userStats.challengeWonTotal || userStats.challengeLostTotal) {
+            text += '\n' + lexicon.get('STATS_CHALLENGE_LUCK', { valueW: userStats.challengeWonTotal, valueL: userStats.challengeLostTotal });
         }
 
         // aggiunge il livello di penalità attivo
@@ -1139,6 +1139,7 @@ function setBotEvents(){
         storage.updateChatId(oldChatId, newChatId);
     });
 
+    // gestisce tutte le chiamate alla pressione di un bottone non mappato
     bot.on('callback_query', function(ctx){ 
         var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
@@ -1321,6 +1322,7 @@ function setBotEvents(){
                     isLRand = isARand;
                 }
 
+                // se non è stato assegnato un userW ci troviamo in un caso di pareggio
                 if (!userW) {
                     var userStatsA = userA.chats[mexData.chatId];
 
@@ -1376,8 +1378,10 @@ function setBotEvents(){
                     ).catch(()=>{});
 
                     // aggiorna le statistiche personali delle challenge
-                    userStatsW.challengeWon  += 1;
+                    userStatsW.challengeWon += 1;
+                    userStatsW.challengeWonTotal += 1;
                     userStatsL.challengeLost += 1;
+                    userStatsL.challengeLostTotal += 1;
 
                     // aggiunge la statistiche dello sfidante
                     if (!userStatsW.challengers[userL.username]) {
@@ -1392,10 +1396,10 @@ function setBotEvents(){
                     userStatsL.challengers[userW.username].lost ++;
 
                     // drop di eventuali items per le challenge
-                    var newItemWW = items.pickCHFor('ch_win', userStatsW.challengeWon);
-                    var newItemLL = items.pickCHFor('ch_lose', userStatsL.challengeLost);
-                    var newItemWT = items.pickCHFor('ch_cd', userStatsW.challengeWon + userStatsW.challengeLost);
-                    var newItemLT = items.pickCHFor('ch_cd', userStatsL.challengeWon + userStatsL.challengeLost);
+                    var newItemWW = items.pickCHFor('ch_win', userStatsW.challengeWonTotal);
+                    var newItemLL = items.pickCHFor('ch_lose', userStatsL.challengeLostTotal);
+                    var newItemWT = items.pickCHFor('ch_cd', userStatsW.challengeWonTotal + userStatsW.challengeLostTotal);
+                    var newItemLT = items.pickCHFor('ch_cd', userStatsL.challengeWonTotal + userStatsL.challengeLostTotal);
 
                     // invia un messaggio di
                     if (newItemWW || newItemWT || newItemLL || newItemLT) {
@@ -1441,16 +1445,16 @@ function setBotEvents(){
                             // aggiunge il footer relativo a quali items sono stati droppati
                             if (iX && !iT) {
                                 newItemsText += '\n' + lexicon.get('CHALLENGE_DROP_FOOTER_' + type, { 
-                                    value: type === 'W' ? us.challengeWon : us.challengeLost
+                                    value: type === 'W' ? us.challengeWonTotal : us.challengeLostTotal
                                 });
                             } else if (iX && iT) {
                                 newItemsText += '\n' + lexicon.get('CHALLENGE_DROP_FOOTER_' + type + 'T', { 
-                                    value: type === 'W' ? us.challengeWon : us.challengeLost,
-                                    total: us.challengeWon + us.challengeLost,
+                                    value: type === 'W' ? us.challengeWonTotal : us.challengeLostTotal,
+                                    total: us.challengeWonTotal + us.challengeLostTotal,
                                 });
                             } else if (!iX && iT) {
                                 newItemsText += '\n' + lexicon.get('CHALLENGE_DROP_FOOTER_T', { 
-                                    total: us.challengeWon + us.challengeLost 
+                                    total: us.challengeWonTotal + us.challengeLostTotal 
                                 });
                             } 
                         }
@@ -1472,6 +1476,48 @@ function setBotEvents(){
 
                     }
 
+                })
+                .then(utils.promiseTimeout(500))
+                .then(() => {
+
+                    // ottiene i dati degli utenti della chat
+                    var leaderboard = storage.getChatUsers(mexData.chatId);
+
+                    // ordinamento decrescente
+                    leaderboard = leaderboard.sort((a, b) => b.challengePoints - a.challengePoints);
+
+                    // controlla se sono stati raggiunti 100 punti per concludere e resettare le challenge della chat 
+                    if (leaderboard[0].challengePoints >= 100) {
+
+                        // ottiene gli utenti e ne calcola l'exp (se esistono)
+                        var user1 = storage.getUser((leaderboard[0] || {}).id);
+                        var user2 = storage.getUser((leaderboard[1] || {}).id);
+                        var user3 = storage.getUser((leaderboard[2] || {}).id);
+                        var exp1 = user1 ? calcUserExpGain(ctx, user1, 100) : 0;
+                        var exp2 = user2 ? calcUserExpGain(ctx, user2, 80)  : 0;
+                        var exp3 = user3 ? calcUserExpGain(ctx, user3, 60)  : 0;
+                        
+                        // invia il messaggio di notifica che sono stati raggiunti i 100 punti
+                        ctx.replyWithMarkdown(lexicon.get('CHALLENGE_SEASON_END', {
+                            username1: (user1 || {}).username || '...',
+                            username2: (user2 || {}).username || '...',
+                            username3: (user3 || {}).username || '...',
+                            exp1: utils.formatNumber(exp1),
+                            exp2: utils.formatNumber(exp2),
+                            exp3: utils.formatNumber(exp3),
+                        })).catch(()=>{});
+
+                        // resetta a 0 le statistiche base delle challenge
+                        utils.each(leaderboard, function(index, stats){
+                            var user = storage.getUser(stats.id);
+
+                            if (!user) return;
+                            if (!user.chats[mexData.chatId]) return;
+
+                            user.chats[mexData.chatId].challengeWon = 0;
+                            user.chats[mexData.chatId].challengeLost = 0;
+                        });
+                    }
                 })
                 .then(utils.promiseTimeout(500))
                 .then(() => {
@@ -1743,7 +1789,7 @@ function getLeaderboardByType(chatId, user, type){
     } else if (type === 'chratio'){
         var leaderboard = storage.getChatUsers(chatId);
         var sortFunction = function(a, b){
-            var c = BigNumber(b.chpoints).minus(a.chpoints);
+            var c = BigNumber(b.challengePoints).minus(a.challengePoints);
 
             if (c.isGreaterThan(0)) c = 1;
             else if (c.isLessThan(0)) c = -1;
@@ -1753,11 +1799,6 @@ function getLeaderboardByType(chatId, user, type){
         }
 
         text += lexicon.get('LEADERBOARD_OPTION_CHRATIO_TITLE') + '\n';
-
-        // calcola il punteggio in base alle challenge vinte e perse
-        utils.each(leaderboard, function(index, stats){
-            stats.chpoints = (stats.challengeWon * 2) - (stats.challengeLost * 1);
-        })
 
         // (a, b) => b.chratio - a.chratio
         utils.each(leaderboard.sort(sortFunction), function(index, stats){
@@ -1769,7 +1810,7 @@ function getLeaderboardByType(chatId, user, type){
                 username: stats.username,
                 won: stats.challengeWon,
                 lost: stats.challengeLost,
-                chpoints: stats.chpoints.toFixed(0)
+                challengePoints: stats.challengePoints.toFixed(0)
             });
         });
     } else if (type === 'chsummary'){

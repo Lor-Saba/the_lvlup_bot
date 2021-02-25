@@ -71,5 +71,8 @@ module.exports = {
     },
     "CHALLENGE_DROP_FOOTER_T": {
         "en": "for achieving `$(total)` total challenges."
+    },
+    "CHALLENGE_SEASON_END": {
+        "en": "🏆 Congratulations *$(username1)*!\nFor reaching 100 challenge points you have won the current season!\n\nTop 3 rewards:\n🥇*$(username1)*    `$(exp1) Exp`\n🥈*$(username2)*    `$(exp2) Exp`\n🥉*$(username3)*    `$(exp3) Exp`"
     }
 };

@@ -37,7 +37,7 @@ module.exports = {
         "en": "🏆 Leaderboard by *Challenge ratio points*."
     },
     "LEADERBOARD_OPTION_CHRATIO_ENTRY": {
-        "en": "#$(position) *$(username)*  $(icon)\n       _points:   $(chpoints)_    ( W: $(won) / L: $(lost) )"
+        "en": "#$(position) *$(username)*  $(icon)\n       _points:   $(challengePoints)_    ( W: $(won) / L: $(lost) )"
     },
 
 

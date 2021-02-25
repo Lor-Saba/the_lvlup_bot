@@ -7,6 +7,8 @@ module.exports = {
     challengers: {},
     challengeWon: 0,
     challengeLost: 0,
+    challengeWonTotal: 0,
+    challengeLostTotal: 0,
 
     lastMessageDate: 0,
     lastCommandDate: 0,

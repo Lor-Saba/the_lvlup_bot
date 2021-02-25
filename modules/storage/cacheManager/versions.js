@@ -112,6 +112,10 @@ module.exports = {
 
                     // imposta la proprietà di incremento chance drop passivo
                     userStats.itemsDropGrow = 0;
+
+                    // creazione nuove proprietà per tenere il conto del totale delle challenge vinte e perse
+                    userStats.challengeWonTotal = userStats.challengeWon;
+                    userStats.challengeLostTotal = userStats.challengeLost;
                 });
             });
             

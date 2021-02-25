@@ -46,6 +46,6 @@ module.exports = {
         "en": "Equipments bonus:  "
     },
     "STATS_CHALLENGE_LUCK": {
-        "en": "Challenges:  _W_ `$(valueW)` - _L_ `$(valueL)`"
+        "en": "Challenges (total):  _W_ `$(valueW)` - _L_ `$(valueL)`"
     }
 };

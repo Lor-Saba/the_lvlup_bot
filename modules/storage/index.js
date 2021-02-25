@@ -433,7 +433,10 @@ function getChatUsers(chatId){
             level: user.chats[chatId].level,
             prestige: user.chats[chatId].prestige,
             challengeWon: user.chats[chatId].challengeWon,
-            challengeLost: user.chats[chatId].challengeLost
+            challengeLost: user.chats[chatId].challengeLost,
+            challengeWonTotal: user.chats[chatId].challengeWonTotal,
+            challengeLostTotal: user.chats[chatId].challengeLostTotal,
+            challengePoints: (user.chats[chatId].challengeWon * 2) - (user.chats[chatId].challengeLost * 1)
         }
     };
 
