@@ -119,6 +119,9 @@ function attack(chat, user, ctx){
     if (monster.active == false) {
         monster.active = true;
 
+        // blocca il timeout che rimuove il mostro se non attaccato
+        clearTimeout(monster.spawnTimeoutId);
+
         // chiama l'evento per il primo attacco
         callEvent(monster.onFirstAttack, eventData);
 
@@ -238,7 +241,15 @@ function spawn(chat, config){
     monsters[chat.id] = monster;
 }
 
+/**
+ * debug data in cache
+ */
+function getDataString(){
+    return JSON.stringify(monsters);
+}
+
 module.exports = {
     spawn,
-    attack
+    attack,
+    getDataString
 };

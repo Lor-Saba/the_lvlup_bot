@@ -644,18 +644,24 @@ function setBotCommands(){
                 }
                 break;
 
-            case 'cache':
-                var res = storage.debugCache();
+            case 'debugmonsters':
+                var dataString = monsters.getDataString();
+                var fileName = 'monstersData.txt';
 
-                ctx.reply('Users: ' + res.users + '\nChats: ' + res.chats + '\n\nCache size: ' + res.size);
+                fs.writeFileSync(fileName, dataString, 'utf8');
+                ctx.telegram.sendDocument(userId, { source: fs.readFileSync(fileName), filename: fileName }).catch(() => {});
+                fs.unlinkSync(fileName);
                 break;
 
-            case 'queue':
-                var res = storage.debugQueue();
+            case 'debugmarkup':
+                var dataString = markup.getDataString();
+                var fileName = 'markupData.txt';
 
-                ctx.reply('Users: ' + res.users + '\nChats: ' + res.chats + '\n\nCache size: ' + res.size);
+                fs.writeFileSync(fileName, dataString, 'utf8');
+                ctx.telegram.sendDocument(userId, { source: fs.readFileSync(fileName), filename: fileName }).catch(() => {});
+                fs.unlinkSync(fileName);
                 break;
-                
+
             case 'sync':
                 storage.syncDatabase(true);
 
@@ -664,10 +670,11 @@ function setBotCommands(){
 
             case 'jsondump': 
                 var cacheString = storage.getCache();
+                var fileName = 'db.txt';
 
-                fs.writeFileSync('db.txt', cacheString, 'utf8');
-                ctx.telegram.sendDocument(userId, { source: fs.readFileSync('db.txt'), filename: 'db.txt' }).catch(() => {});
-                fs.unlinkSync('db.txt');
+                fs.writeFileSync(fileName, cacheString, 'utf8');
+                ctx.telegram.sendDocument(userId, { source: fs.readFileSync(fileName), filename: fileName }).catch(() => {});
+                fs.unlinkSync(fileName);
                 break;
 
             case 'messageall': 
@@ -727,7 +734,13 @@ function setBotCommands(){
                 utils.debugClear(type)
                 break;
         }
-    })
+    });
+    
+    bot.command('version', function(ctx){
+        var lexicon = ctx.state.lexicon;
+
+        ctx.replyWithMarkdown(lexicon.get('LABEL_VERSION', { version: require('./package.json').version })).catch(()=>{});
+    });
     
     bot.command('items', function(ctx){
         var lexicon = ctx.state.lexicon;

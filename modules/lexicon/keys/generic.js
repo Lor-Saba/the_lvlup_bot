@@ -39,6 +39,9 @@ module.exports = {
     "LABEL_CRAFTED": {
         "en": "Crafted"
     },
+    "LABEL_VERSION": {
+        "en": "Version: `$(version)`"
+    },
     "WARNING_CHAT_TOBEREMOVED": {
         "en": "‼️ *IMPORTANT* ‼️\n_It appears the group has been inactive for almost a month._\n_The saved data and statistics related to the chat and users will be deleted if there is no action within a week._"
     },
