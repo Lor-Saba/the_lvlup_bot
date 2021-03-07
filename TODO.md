@@ -2,8 +2,6 @@
 // ############################################################
 // update in lavorazione
 
-- aggiungere modulo per gestire dei "riddles", piccole domande casuali a cui bisogna rispondere per testo tipo: 4+8-5+2 = ?
-
 // ############################################################
 // futuri update
 
