@@ -1,4 +1,11 @@
 
+# 1.1.5
+    - fix monster self descruct timeout not being cleared after first attack
+    - change dungeon exploration fail from 25% to 20%
+    - add new module for "riddles events"
+        - twice a day there is a 15% chance of  a riddle being displayed
+        - the first to answer correctly will recive some exp as reward
+
 # 1.1.4
     - change monster attack cooldown from 60m to 30m
     - change monster defeat exp gain from 5epm to 7epm
