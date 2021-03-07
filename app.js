@@ -900,9 +900,6 @@ function setBotCommands(){
                     settings: chat.settings
                 });
 
-                //bot.telegram.sendMessage(mexData.userId, markupData.text, markupData.buttons).catch(() => {});
-                //return ctx.replyWithMarkdown(lexicon.get('SETTINGS_PRIVATE_MESSAGE_SENT', { username: mexData.username })).catch(()=>{});
-
                 return ctx.reply(markupData.text, markupData.buttons).catch(() => {});
             } else {
 
@@ -1285,6 +1282,7 @@ function setBotEvents(){
                     ctx.deleteMessage().catch(()=>{});
                 }, 1000 * 5); 
 
+                markup.deleteData(query);
                 ctx.editMessageText(lexicon.get('SETTINGS_STOP'), { parse_mode: 'markdown' }).catch(()=>{});
                 break;
 
@@ -1309,6 +1307,7 @@ function setBotEvents(){
                     chat.settings[queryData.key] = queryData.value;
                 }
 
+                markup.deleteData(query);
                 var markupData = markup.get(queryData.action, mexData, { 
                     chatTitle: chat.title, 
                     chatId: chat.id, 
@@ -1361,7 +1360,7 @@ function setBotEvents(){
 
                 var markupData = markup.get('CHALLENGE_END', mexData, queryData);
 
-                // ctx.editMessageText(markupData.text, markupData.buttons).catch(() => {});
+                markup.deleteData(query);
                 ctx.deleteMessage();
                 ctx.telegram.sendMessage(mexData.chatId, markupData.text, markupData.buttons).catch(() => {});
                 break;
