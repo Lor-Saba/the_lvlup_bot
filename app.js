@@ -30,6 +30,8 @@ const scheduler = require('./modules/scheduler');
 const monsters = require('./modules/monsters');
 // modulo per gestire l'evento del dungeon
 const dungeons = require('./modules/dungeon');
+// modulo per gestire l'evento dei riddles
+const riddles = require('./modules/riddles');
 // modulo per gestire i messaggi
 const messages = require('./modules/messages');
 // istanza del bot 
@@ -340,7 +342,7 @@ function initSchedulerEvents(){
                 var text = '';
                 var lexicon = data.ctx.state.lexicon;
                 
-                if (Math.random() < 0.25) {
+                if (Math.random() < 0.20) {
                     text += lexicon.get('DUNGEON_EXPLORE_FAIL_TITLE', { username: data.user.username });
                 } else {
                     // oggetto droppato dal dungeon
@@ -379,6 +381,76 @@ function initSchedulerEvents(){
                     onExplore: onExplore,
                     onAlreadyExplored: onAlreadyExplored
                 });
+            });
+        });
+
+        scheduler.on('riddles', function(){
+            var lexicon = Lexicon.lang('en');
+
+            var onSpawn = function(data){
+
+                // crea il messaggio di spawn del riddle e salva l'id
+                bot.telegram.sendMessage(
+                    data.chat.id, 
+                    lexicon.get('RIDDLES_SPAWN', {
+                        question: lexicon.get('RIDDLES_TYPE_' + data.riddle.type, data.riddle.data)
+                    }), 
+                    { parse_mode: 'markdown' }
+                )
+                .then(ctxSpawn => {
+                    data.riddle.extra.messageId = ctxSpawn.message_id;
+                })
+                .catch(err => {
+                    utils.errorlog('RIDDLES_SPAWN:', JSON.stringify(err));
+                });
+            };
+
+            var onExpire = function(data){
+
+                bot.telegram.editMessageText(
+                    data.chat.id, 
+                    data.riddle.extra.messageId, 
+                    null, 
+                    lexicon.get('RIDDLES_EXPIRED'), 
+                    { parse_mode: 'markdown' }
+                ).catch(()=>{});
+            };
+
+            var onGuess = function(data){
+
+                // calcola il guadagno
+                var expReward = calcUserExpGain(data.ctx, data.user, 5);
+
+                // testo del messaggio
+                var text = lexicon.get('RIDDLES_GUESS', {
+                    username: data.user.username,
+                    reward: utils.formatNumber(expReward)
+                });
+
+                // crea il messaggio di spawn del mostro e salva l'id
+                bot.telegram.sendMessage(data.chat.id, text, { 
+                    parse_mode: 'markdown', 
+                    reply_to_message_id: data.ctx.state.mexData.messageId 
+                }).catch(()=>{});
+            };
+            
+            // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
+            utils.eachTimeout(storage.getChats(), (chatId, chat) => {
+
+                // interrompe in base alle preferenze impostate nella chat 
+                if (chat.settings.riddlesEvent == false) return;
+
+                // probabilità di spawn del riddle
+                if (Math.random() > 0.15) return;
+
+                setTimeout(() => {
+                    riddles.spawn(chat, {
+                        onSpawn: onSpawn,
+                        onExpire: onExpire,
+                        onGuess: onGuess
+                    }); 
+                }, Math.random() * 1000 * 60 * 60 * 3);
+
             });
         });
 
@@ -1137,13 +1209,17 @@ function setBotEvents(){
     // handler che gestisce i messaggi 
     bot.on(['text', 'sticker', 'photo'], function(ctx){
         var user = ctx.state.user;
-        var isText = ctx.updateSubTypes[0] == 'text';
+        var chat = ctx.state.chat;
+        var isText = (ctx.updateSubTypes || [])[0] == 'text';
 
         if (!user) return false;
+        if (!chat) return false;
 
         if (isText) {
             dropItemChance(ctx, user);
             calcUserExpGain(ctx, user, 1);
+
+            riddles.check(ctx.state.mexData.message.text, chat, user, ctx);
         } else {
             calcUserExpGain(ctx, user, 0.4);
         }
@@ -1948,7 +2024,7 @@ function init(){
 init();
 
 // setTimeout(() => {
-//     scheduler.trigger('monster');
+//     scheduler.trigger('riddles');
 // }, 5000);
 
 // messages.q('sendMessage', {

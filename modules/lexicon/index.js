@@ -8,6 +8,7 @@ var keys = Object.assign(
     require('./keys/leaderboard'),
     require('./keys/monster'),
     require('./keys/penality'),
+    require('./keys/riddles'),
     require('./keys/settings'),
     require('./keys/special'),
     require('./keys/stats'),

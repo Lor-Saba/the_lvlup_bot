@@ -338,11 +338,18 @@ setInterval(function(){
 
 }, 1000 * 60 * 60);  // 1h
 
+/**
+ * debug data in cache
+ */
+function getDataString(){
+    return JSON.stringify(dataMap);
+}
 
 module.exports = {
     get,
     getData,
-    deleteData
+    deleteData,
+    getDataString
 };
 
 

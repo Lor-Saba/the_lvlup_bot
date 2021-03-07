@@ -11,6 +11,8 @@ var scheduleMap = [
     { rule: '0 12 * * 0', type: 'monster' },
     // “At 12:00 on Tuesday and Thursday.” 
     { rule: '0 12 * * 2,4', type: 'dungeon' },
+    // “At 08:00 on every day-of-week from Monday through Friday.” 
+    { rule: '0 12,17 * * 1-5', type: 'riddles' },
     // “At 00:00 on day-of-month 25 in December.” 
     { rule: '0 0 25 12 *', type: 'xmas' },
     // “At 10:17 on day-of-month 1 in April.” 
