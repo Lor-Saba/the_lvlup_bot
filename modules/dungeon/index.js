@@ -42,9 +42,9 @@ function callEvent(callback, data){
 
 /**
  * 
- * @param {object} chat oggetto che rappresenta l'utente che sta attaccando il mostro
- * @param {object} user oggetto che rappresente la chat a cui appartiene il mostro
- * @param {object} ctx ctx delmessaggio ricevuto
+ * @param {object} chat oggetto che rappresenta la chat a cui appartiene il mostro
+ * @param {object} user oggetto che rappresente l'utente che sta attaccando il mostro
+ * @param {object} ctx ctx del messaggio ricevuto
  */
 function explore(chat, user, ctx){
     // ottiene il riferimento alle stats dell'utente per la chat corrente
@@ -76,7 +76,7 @@ function explore(chat, user, ctx){
     // aggiunge l'utente nell'elenco di coloro che hanno gia esplorato
     dungeon.explorers[user.id] = true;
 
-    // drichiama l'evento di aggiornamento in segioto all'esplorazione
+    // richiama l'evento di aggiornamento in segioto all'esplorazione
     callEvent(dungeon.onExplore, eventData);
 }
 
