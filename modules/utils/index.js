@@ -379,6 +379,23 @@ function pickFromArray(arr){
     }    
 }
 
+/**
+ * Rimuove l'elemento "item" dall'array se esiste
+ * 
+ * @param {Array} arr 
+ * @param {*} item 
+ */
+function removeFromArray(arr, item){
+
+    if (arr.length === 0) return;
+
+    var removeIndex = arr.indexOf(item);
+
+    if (removeIndex === -1) return;
+                        
+    arr.splice(removeIndex, 1);
+}
+
 module.exports = {
     log,
     errorlog,
@@ -401,5 +418,6 @@ module.exports = {
     secondsToHms,
     calcMonsterHealth,
     promiseTimeout,
-    pickFromArray
+    pickFromArray,
+    removeFromArray
 };

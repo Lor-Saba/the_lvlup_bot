@@ -1387,7 +1387,7 @@ function setBotEvents(){
 
                 // interrompe se è lo stesso utente che ha lanciato la sfida
                 if (userA.id === userB.id) {
-                    return ctx.answerCbQuery(lexicon.get('CHALLENGE_CANNOT_ACCEPTED'), true).catch(()=>{});
+                    //return ctx.answerCbQuery(lexicon.get('CHALLENGE_CANNOT_ACCEPTED'), true).catch(()=>{});
                 }
 
                 // interrompe se non è l'utente a cui è stato richiesto il challenge 
@@ -1404,20 +1404,13 @@ function setBotEvents(){
                     
                     if (isARand && isBRand) {
                         pickA = utils.pickFromArray(picksList); 
-
-                        var removeIndex = picksList.indexOf(pickA);
-                        
-                        picksList.splice(removeIndex, 1);
+                        utils.removeFromArray(picksList, pickA);
                         pickB = utils.pickFromArray(picksList);
                     } else if (isARand) {
-                        var removeIndex = picksList.indexOf(pickB);
-                        
-                        picksList.splice(removeIndex, 1);
+                        utils.removeFromArray(picksList, pickB);
                         pickA = utils.pickFromArray(picksList);
                     } else if (isBRand) {
-                        var removeIndex = picksList.indexOf(pickA);
-                    
-                        picksList.splice(removeIndex, 1);
+                        utils.removeFromArray(picksList, pickA);
                         pickB = utils.pickFromArray(picksList);
                     }                    
                 }
