@@ -366,6 +366,19 @@ function promiseTimeout(timeout) {
     }) };
 };
 
+/**
+ * Ritorna casualmente uno degli elementi contenuti in "arr"
+ * 
+ * @param {Array} arr 
+ */
+function pickFromArray(arr){
+    if (arr.length === 0) {
+        return null;
+    } else {
+        return arr[parseInt(Math.random() * arr.length)];
+    }    
+}
+
 module.exports = {
     log,
     errorlog,
@@ -387,5 +400,6 @@ module.exports = {
     shuffle,
     secondsToHms,
     calcMonsterHealth,
-    promiseTimeout
+    promiseTimeout,
+    pickFromArray
 };

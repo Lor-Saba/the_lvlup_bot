@@ -441,7 +441,7 @@ function initSchedulerEvents(){
                 if (chat.settings.riddlesEvent == false) return;
 
                 // probabilità di spawn del riddle
-                if (Math.random() > 0.15) return;
+                if (Math.random() > 0.20) return;
 
                 setTimeout(() => {
                     riddles.spawn(chat, {
@@ -1371,8 +1371,8 @@ function setBotEvents(){
                 var userB = storage.getUser(mexData.userId);
                 var isARand = queryData.pickA == 'RAND';
                 var isBRand = queryData.pick == 'RAND';
-                var pickA = isARand ? ['R', 'S', 'P'][Math.random()*3|0] : queryData.pickA;
-                var pickB = isBRand ? ['R', 'S', 'P'][Math.random()*3|0] : queryData.pick;
+                var pickA = queryData.pickA;
+                var pickB = queryData.pick;
                 var userW = null;
                 var userL = null;
                 var isWRand = null;
@@ -1396,7 +1396,31 @@ function setBotEvents(){
                 }
                       
                 // assegna lo stato di challenge in corso
-                chat.isChallengeActive = true;        
+                chat.isChallengeActive = true;      
+                
+                // assegna le scelte se ci sono casualità
+                if (isARand || isBRand) {
+                    var picksList = ['R', 'S', 'P'];
+                    
+                    if (isARand && isBRand) {
+                        pickA = utils.pickFromArray(picksList); 
+
+                        var removeIndex = picksList.indexOf(pickA);
+                        
+                        picksList.splice(removeIndex, 1);
+                        pickB = utils.pickFromArray(picksList);
+                    } else if (isARand) {
+                        var removeIndex = picksList.indexOf(pickB);
+                        
+                        picksList.splice(removeIndex, 1);
+                        pickA = utils.pickFromArray(picksList);
+                    } else if (isBRand) {
+                        var removeIndex = picksList.indexOf(pickA);
+                    
+                        picksList.splice(removeIndex, 1);
+                        pickB = utils.pickFromArray(picksList);
+                    }                    
+                }
 
                 // verifica chi ha vinto 
                 if ((pickA == 'R' && pickB == 'S')
@@ -1461,8 +1485,8 @@ function setBotEvents(){
                         mexData.messageId, 
                         null, 
                         lexicon.get('CHALLENGE_RESULT', { 
-                            pickA: lexicon.get('CHALLENGE_OPTION_' + pickA) + (winner == 'A' ? '   🏆' : ''),
-                            pickB: lexicon.get('CHALLENGE_OPTION_' + pickB) + (winner == 'B' ? '   🏆' : ''),
+                            pickA: lexicon.get('CHALLENGE_OPTION_' + pickA) + (isARand ? '?  ' : '    ') + (winner == 'A' ? '🏆' : ''),
+                            pickB: lexicon.get('CHALLENGE_OPTION_' + pickB) + (isBRand ? '?  ' : '    ') + (winner == 'B' ? '🏆' : ''),
                             usernameA: userA.username, 
                             usernameB: userB.username,
                             usernameW: userW.username, 
