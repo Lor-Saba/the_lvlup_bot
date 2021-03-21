@@ -1387,7 +1387,7 @@ function setBotEvents(){
 
                 // interrompe se è lo stesso utente che ha lanciato la sfida
                 if (userA.id === userB.id) {
-                    //return ctx.answerCbQuery(lexicon.get('CHALLENGE_CANNOT_ACCEPTED'), true).catch(()=>{});
+                    return ctx.answerCbQuery(lexicon.get('CHALLENGE_CANNOT_ACCEPTED'), true).catch(()=>{});
                 }
 
                 // interrompe se non è l'utente a cui è stato richiesto il challenge 
