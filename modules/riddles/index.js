@@ -3,8 +3,8 @@ const utils = require('../utils');
 // lista di riddles attivi
 var riddles = {
     'INVERTWORD': function(){
-        var min = 6;
-        var max = 12;
+        var min = 10;
+        var max = 16;
         var chars = 'QWERTYUIOPASDFGHJKLZXCVBNM';
         var ln = parseInt(min + (max - min) * Math.random());
         var text = '';
@@ -19,14 +19,13 @@ var riddles = {
         };
     },
     'OPERATION': function(){
-        var min = 1;
-        var max = 3;
+        var min = 2;
+        var max = 5;
         var operations = parseInt(min + (max - min) * Math.random());
         var text = '';
         var target = 0;
         
-        target = Math.floor(25 * Math.random());
-        text = String(target);
+        text = String(Math.floor(25 * Math.random()));
 
         while (operations-- >= 0) {
             var op = Math.random();
@@ -34,25 +33,22 @@ var riddles = {
             if (op < 1 / 3) {
                 var newNum = Math.floor(25 * Math.random());
                 text += ' + ' + newNum;
-                target += newNum;
             } else if (op < 2 / 3) {
                 var newNum = Math.floor(10 * Math.random());
                 text += ' - ' + newNum;
-                target -= newNum;
             } else {
                 var newNum = Math.floor(10 * Math.random());
                 text += ' * ' + newNum;
-                target *= newNum;
             }
         }
 
         return {
             text: text,
-            target: target
+            target: eval(target)
         };
     },
     'FINDNUMBER': function(){
-        var ln = 5;
+        var ln = 6;
         var values = [];
         var pick = Math.random() > 0.5 ? 'max' : 'min';
 
