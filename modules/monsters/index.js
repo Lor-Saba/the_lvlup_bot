@@ -157,7 +157,7 @@ function attack(chat, user, ctx){
     }
 
     // calcola il danno da applicare
-    var damage = BigNumber(userStats.level).multipliedBy(itemsBuff.attack_damage).decimalPlaces(0, 1);
+    var damage = BigNumber(userStats.levelReached).multipliedBy(itemsBuff.attack_damage).decimalPlaces(0, 1);
 
     // scala la vita del mostro
     monster.health = BigNumber.maximum(0, BigNumber(monster.health).minus(damage)).valueOf();

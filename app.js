@@ -1745,6 +1745,7 @@ function calcUserExpGain(ctx, user, messagesPower = 1, passive = false) {
         // assegna i nuovi dati
         userStats.exp = BigNumber(newExp).valueOf();
         userStats.level = BigNumber(newLevel).valueOf();
+        userStats.levelReached = BigNumber.maximum(userStats.levelReached, userStats.level).valueOf();
     }
 
     // ritorna il guadagno in exp calcolato

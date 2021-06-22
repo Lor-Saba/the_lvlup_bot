@@ -1,6 +1,7 @@
 module.exports = { 
     exp: "0", 
     level: "0", 
+    levelReached: "0",
     prestige: "0",
     prestigeAvailable: false,
 

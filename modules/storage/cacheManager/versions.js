@@ -129,6 +129,23 @@ module.exports = {
 
             return cache;
         },
+        next: '4'
+    },
+    '4': {
+        update: function(cache){
+
+            cache.config.cacheVersion = '4';
+
+            utils.each(cache.users, function(userId, user){
+                utils.each(user.chats, function(chatId, userStats){
+
+                    // assegna il livello
+                    userStats.levelReached = userStats.level;
+                });
+            });
+
+            return cache;
+        },
         next: null
     }
 }
