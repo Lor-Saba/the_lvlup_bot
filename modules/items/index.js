@@ -206,8 +206,10 @@ function getItemRarityIcon(name){
 
     if (item.weight == 0) {
         icon = "🔲";                // 0 == crafted
+    } else if (item.weight <= 1) {
+        icon = "🟥";                // 1  -  0.001   epic
     } else if (item.weight <= 5) {
-        icon = "🟧";                // 5  -  0.001   epic
+        icon = "🟧";                // 5  -  1.001   epic
     } else if (item.weight <= 10) {
         icon = "🟪";                // 10 -  5.001   super rare
     } else if (item.weight <= 40) {

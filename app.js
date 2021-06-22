@@ -342,7 +342,7 @@ function initSchedulerEvents(){
                 var text = '';
                 var lexicon = data.ctx.state.lexicon;
                 
-                if (Math.random() < 0.20) {
+                if (Math.random() < 0.125) {
                     text += lexicon.get('DUNGEON_EXPLORE_FAIL_TITLE', { username: data.user.username });
                 } else {
                     // oggetto droppato dal dungeon

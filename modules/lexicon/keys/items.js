@@ -312,6 +312,127 @@ module.exports = {
         "en": "Very loud and powerful. Can destroy a man in less than a second... but lets stop talking about angry girls now. You got a bazooka uh? nice!"
     },
 
+    "ITEMS_TITLE_CARROT": {
+        "en": "Carrot"
+    },
+    "ITEMS_DESCRIPTION_CARROT": {
+        "en": "A carrot a day... no wait, wrong description."
+    },
+    "ITEMS_TITLE_4LEAFCLOVER": {
+        "en": "4 Leaf Clover"
+    },
+    "ITEMS_DESCRIPTION_4LEAFCLOVER": {
+        "en": "Sheeeeesh, what a luky guy! you've just found a 4 leaf clover!"
+    },
+    "ITEMS_TITLE_MAGNET": {
+        "en": "Strong Magnet"
+    },
+    "ITEMS_DESCRIPTION_MAGNET": {
+        "en": "A super strong magnet, be careful in which pocket you put it tho."
+    },
+    "ITEMS_TITLE_CAKE": {
+        "en": "Cake"
+    },
+    "ITEMS_DESCRIPTION_CAKE": {
+        "en": "Baked with love and care, a recipe handed down for generations with vanilla and banana. Tastes like LIES!!!"
+    },
+    "ITEMS_TITLE_BIRD": {
+        "en": "A bird"
+    },
+    "ITEMS_DESCRIPTION_BIRD": {
+        "en": "Hey look! it's a Bird! It's a plane! ...no i've said it's a bird you dumb pickle."
+    },
+    "ITEMS_TITLE_IRONINGOT": {
+        "en": "Iron ingot"
+    },
+    "ITEMS_DESCRIPTION_IRONINGOT": {
+        "en": "A classic material for crafting."
+    },
+    "ITEMS_TITLE_FORMULA": {
+        "en": "Strange formula"
+    },
+    "ITEMS_DESCRIPTION_FORMULA": {
+        "en": "A strange looking formula, who knows what it can do."
+    },
+    "ITEMS_TITLE_GOLDINGOT": {
+        "en": "Gold ingot"
+    },
+    "ITEMS_DESCRIPTION_GOLDINGOT": {
+        "en": "Incredible! that strange formula allowed you to transmute iron into gold! pity it was for single use only."
+    },
+    "ITEMS_TITLE_CROWN": {
+        "en": "Gold Crown"
+    },
+    "ITEMS_DESCRIPTION_CROWN": {
+        "en": "Show your greatness to everyone with this crown fit for a king."
+    },
+    "ITEMS_TITLE_LUCKYAMULET": {
+        "en": "Lucky amulet"
+    },
+    "ITEMS_DESCRIPTION_LUCKYAMULET": {
+        "en": "after finding so many 4 Leaf Clover you decided to weave them all together in hopes of amplifying their effect."
+    },
+    "ITEMS_TITLE_PELUCHE": {
+        "en": "Baby Yoda"
+    },
+    "ITEMS_DESCRIPTION_PELUCHE": {
+        "en": "You catch a glimpse of a cute peluche in a shop window. The envelope says \"Baby Yoda\", so you decide to take it home."
+    },
+    "ITEMS_TITLE_COSPLAY": {
+        "en": "Vader Cosplay"
+    },
+    "ITEMS_DESCRIPTION_COSPLAY": {
+        "en": "With all the Baby Yodas peluche you brought home, you decided it was time to put yourself in the character and become their father.. \[heavy breathing\]"
+    },
+    "ITEMS_TITLE_DOUBLESWORD": {
+        "en": "Double sword"
+    },
+    "ITEMS_DESCRIPTION_DOUBLESWORD": {
+        "en": "Why use only one sword when you could hold one in each hand! ..or both with in a single one, your choice."
+    },
+    "ITEMS_TITLE_WOODLASER": {
+        "en": "Wood laser"
+    },
+    "ITEMS_DESCRIPTION_WOODLASER": {
+        "en": "An object with an ambiguous shape... made of lasers!"
+    },
+    "ITEMS_TITLE_SLINGSHOT": {
+        "en": "Slingshot"
+    },
+    "ITEMS_DESCRIPTION_SLINGSHOT": {
+        "en": "Useful for throwing stones, pins and fat hamsters."
+    },
+    "ITEMS_TITLE_BCKWATER": {
+        "en": "Bucket of water"
+    },
+    "ITEMS_DESCRIPTION_BCKWATER": {
+        "en": "A bucket full of water, too big to use as a glass, too small to bathe in."
+    },
+    "ITEMS_TITLE_BCKLAVA": {
+        "en": "Bucket of lava"
+    },
+    "ITEMS_DESCRIPTION_BCKLAVA": {
+        "en": "A bucket full of lava!! Warm and bright, it is not recommended to use on plants."
+    },
+    "ITEMS_TITLE_GLASS": {
+        "en": "Broken glass"
+    },
+    "ITEMS_DESCRIPTION_GLASS": {
+        "en": "Sharp and pointed, perhaps it was part of a mirror."
+    },
+    "ITEMS_TITLE_DUCK": {
+        "en": "Rubber Duck"
+    },
+    "ITEMS_DESCRIPTION_DUCK": {
+        "en": "Easy to throw, it makes a loud QUAK on hit."
+    },
+    "ITEMS_TITLE_OUIJA": {
+        "en": "Ouija board "
+    },
+    "ITEMS_DESCRIPTION_OUIJA": {
+        "en": "You could try using it to ask some friendly ghosts to fight alongside you."
+    },
+
 
     // Monster items
 
