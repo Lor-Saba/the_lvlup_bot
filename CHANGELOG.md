@@ -1,4 +1,12 @@
 
+# 1.1.6
+    - change dungeon exploration fail from 20% to 12.5%
+    - changes for monster event
+        - the damage dealt to monsters will be the user's max level reached of all prestiges
+        - increased exp reward based on monster level
+    - fix operations solution in riddles
+    - add new items for dungeon and exp
+
 # 1.1.5
     - fix monster self descruct timeout not being cleared after first attack
     - change dungeon exploration fail from 25% to 20%
