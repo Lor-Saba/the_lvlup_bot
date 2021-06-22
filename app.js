@@ -185,7 +185,7 @@ function initSchedulerEvents(){
                 utils.each(data.monster.attackers, function(attUserId, attUser){
     
                     // calcola il guadagno in base a quanti attacchi sono stati fatti
-                    var expReward = calcUserExpGain(data.ctx, storage.getUser(attUserId), attUser.count * 7);
+                    var expReward = calcUserExpGain(data.ctx, storage.getUser(attUserId), attUser.count * 5 * (1 + data.monster.level/5));
     
                     attUsersLabels.push(lexicon.get('MONSTER_DEFEATED_ATTACKER', { 
                         username: attUser.username,
