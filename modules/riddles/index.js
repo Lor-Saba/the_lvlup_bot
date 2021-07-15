@@ -19,11 +19,10 @@ var riddles = {
         };
     },
     'OPERATION': function(){
-        var min = 2;
-        var max = 5;
+        var min = 3;
+        var max = 6;
         var operations = parseInt(min + (max - min) * Math.random());
         var text = '';
-        var target = 0;
         
         text = String(Math.floor(25 * Math.random()));
 
@@ -44,7 +43,7 @@ var riddles = {
 
         return {
             text: text,
-            target: eval(target)
+            target: eval(text)
         };
     },
     'FINDNUMBER': function(){
