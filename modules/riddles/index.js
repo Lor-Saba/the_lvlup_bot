@@ -67,6 +67,30 @@ var riddles = {
             target: Math[pick](...values)
         };
     },
+    'DIALALPHABET': function(){
+        var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        var position = Math.max(2, parseInt(5 * Math.random()));
+        var direction = Math.random() > 0.5 ? 'after' : 'before';
+        var pick = -1;
+        var target = -1;
+
+        while (!alphabet[target]) {
+            pick = Math.floor(alphabet.length * Math.random());
+
+            if (direction == 'before') {
+                target = pick - position;
+            } else {
+                target = pick + position;
+            }            
+        }
+
+        return {
+            direction: direction,
+            position: position,
+            text: alphabet[pick],
+            target: alphabet[target],
+        };
+    }
 }
 // tipi di indovinelli
 var riddlesTypes = Object.keys(riddles);
