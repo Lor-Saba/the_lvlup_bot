@@ -18,7 +18,7 @@ var riddles = {
             target: text.split("").reverse().join("")
         };
     },
-    'OPERATION': function(){
+    'OPERATION': function(){ 
         var min = 3;
         var max = 6;
         var operations = parseInt(min + (max - min) * Math.random());

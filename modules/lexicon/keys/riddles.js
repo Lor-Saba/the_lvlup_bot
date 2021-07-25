@@ -12,6 +12,9 @@ module.exports = {
     "RIDDLES_TYPE_FINDNUMBER": {
         "en": "“What's the $(pick) number contained in this set?”\n`$(text)`"
     },
+    "RIDDLES_TYPE_DIALALPHABET": {
+        "en": "“I need your help to remember a forgotten letter of the alphabet.”\n`What comes $(position) positions $(direction) the letter $(text) ?`"
+    },
     "RIDDLES_GUESS": {
         "en": "👁 The God of riddles is pleased of your answer *$(username)* and before disappearing he left you a small gift:\n `+$(reward) Exp`"
     },
