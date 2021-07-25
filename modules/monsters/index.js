@@ -248,8 +248,18 @@ function getDataString(){
     return JSON.stringify(monsters);
 }
 
+/**
+ * 
+ * @param {number} chatId 
+ * @returns object
+ */
+function getMonster(chatId) {
+    return monsters[chatId];
+}
+
 module.exports = {
     spawn,
     attack,
+    getMonster,
     getDataString
 };

@@ -765,6 +765,39 @@ function setBotCommands(){
                 }
                 break;
 
+            case 'monster_aa': 
+                var chats = storage.getChats();
+                var chatId = commandArgs.shift();
+
+                if (!chats[chatId]) {
+                    ctx.reply('Invalid Chat ID', chatId);
+                    return;
+                }
+                
+                // ottiene il riferimento all'utente
+                var user = storage.getUser(userId);
+                // ottiene il riferimento alla chat
+                var chat = storage.getChat(chatId);
+                // interval vars
+                var intervalId = null;
+                var intervalDelay = 1000 * 60 * 31;
+                var intervalCall = function(){
+
+                    var res = monsters.attack(chat, user, ctx);
+
+                    if (res == false) {
+                        clearInterval(intervalId);
+                        ctx.reply('MAA - Stopped.');
+                    } else {
+                        ctx.reply('MAA - Attacked.');
+                    }
+                };
+
+                intervalId = setInterval(intervalCall, intervalDelay);
+                intervalCall();
+
+                break;
+
             case 'loadbackup': 
                 var fileName = commandArgs.shift();
 
@@ -844,6 +877,7 @@ function setBotCommands(){
                 }
                 
                 itemsText[item.target] += '\n' + lexicon.get('ITEMS_LIST_ITEM', {
+                    itemicon: items.getItemRarityIcon(key),
                     itemname: lexicon.get('ITEMS_TITLE_' + key),
                     itembuff: items.getItemBuffText(item),
                     quantity: item.timeout ? '' : '(x' + value + ')',
@@ -1013,6 +1047,11 @@ function setBotCommands(){
         // aggiunge il conteggio del numero di challenges vinte e perse
         if (userStats.challengeWonTotal || userStats.challengeLostTotal) {
             text += '\n' + lexicon.get('STATS_CHALLENGE_LUCK', { valueW: userStats.challengeWonTotal, valueL: userStats.challengeLostTotal });
+        }
+
+        // aggiunge il livello massimo raggiunto
+        if (BigNumber(userStats.levelReached).isGreaterThan(0)) {
+            text += '\n' + lexicon.get('STATS_LABEL_LEVELREACHED', { value: utils.formatNumber(utils.toFloor(userStats.levelReached), 0)});
         }
 
         // aggiunge il livello di penalità attivo

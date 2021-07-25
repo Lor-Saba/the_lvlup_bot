@@ -30,6 +30,9 @@ module.exports = {
     "STATS_LABEL_LEVEL": {
         "en": "Level:  `$(value)`"
     },
+    "STATS_LABEL_LEVELREACHED": {
+        "en": "Max level reached:  `$(value)`"
+    },    
     "STATS_LABEL_PRESTIGE": {
         "en": "Prestige:  `$(value)`"
     },

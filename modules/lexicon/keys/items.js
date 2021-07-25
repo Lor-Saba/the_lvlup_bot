@@ -7,7 +7,7 @@ module.exports = {
         "en": "$(target) bonus:   `$(value)`"
     },
     "ITEMS_LIST_ITEM": {
-        "en": "- _$(itemname)_   `$(itembuff)`   $(quantity)  $(timeout)"
+        "en": "$(itemicon) _$(itemname)_   `$(itembuff)`   $(quantity)  $(timeout)"
     },
 
     "ITEMS_LIST_TARGET_EXP": {
