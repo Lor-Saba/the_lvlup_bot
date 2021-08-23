@@ -26,7 +26,7 @@ module.exports = [
 
     // EXP - instantanei
 
-    { target: 'exp', type: 'inst', name: 'BAG',      weight: 125, messages: 7  },
+    //{ target: 'exp', type: 'inst', name: 'BAG',      weight: 125, messages: 7  },
     { target: 'exp', type: 'inst', name: 'CHEST',    weight: 80,  messages: 15 },
     { target: 'exp', type: 'inst', name: 'TREASURE', weight: 45,  messages: 30 },
 
