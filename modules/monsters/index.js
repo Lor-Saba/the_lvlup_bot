@@ -27,6 +27,14 @@ function calcMonsterHealth(monsterLevel){
 
 /**
  * 
+ */
+function getCurrentAttackCode(){
+    var d = new Date();
+    return d.getHours() + '' + (d.getMinutes() < 30 ? '00' : '30');
+}
+
+/**
+ * 
  * @param {number} chatId 
  */
 function removeMonster(chatId){
@@ -99,14 +107,20 @@ function attack(chat, user, ctx){
 
     // aggiunge l'utente se è il suo primo attacco
     if (!monster.attackers[user.id]) {
-        monster.attackers[user.id] = { username: user.username, count: 0, damage: 0, lastAttackDate: 0 };
+        monster.attackers[user.id] = { username: user.username, count: 0, damage: 0, lastAttackCode: '' };
     }
     
-    // interrompe se l'utente ha già attaccato e non è passato il cooldown
-    if (monster.attackers[user.id].lastAttackDate + userAttackCooldown > Date.now()){
+    // ottiene il codice temporale a cui corrisponde l'attacco corrente
+    var currentAttackCode = getCurrentAttackCode();
+
+    // interrompe se l'utente ha già attaccato con lo stesso codice temporale
+    if (monster.attackers[user.id].lastAttackCode == currentAttackCode){
         monster.attackable = true;
 
-        var timeDiff = (monster.attackers[user.id].lastAttackDate + userAttackCooldown) - Date.now();
+        var currMinutes = (new Date()).getMinutes() * 1000 * 60;
+        var currSeconds = (new Date()).getSeconds() * 1000;
+        var cooldownTime = 1000 * 60 * 30;
+        var timeDiff = cooldownTime - (currMinutes + currSeconds) % cooldownTime;
 
         // chiama l'evento 
         callEvent(monster.onAttackCooldown, Object.assign(eventData, { timeDiff: timeDiff }));
@@ -165,7 +179,7 @@ function attack(chat, user, ctx){
     // aggiorna l'attacco dell'utente 
     monster.attackers[user.id].count ++;
     monster.attackers[user.id].damage = BigNumber(monster.attackers[user.id].damage).plus(damage).valueOf();
-    monster.attackers[user.id].lastAttackDate = Date.now();
+    monster.attackers[user.id].lastAttackCode = currentAttackCode;
 
     // dopo un leggero timeout mostra lo stato del boss
     setTimeout(function(){
