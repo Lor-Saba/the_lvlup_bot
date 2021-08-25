@@ -22,6 +22,11 @@ gulp.task('clean', function () {
     .pipe(clean({ force: true }));
 });
 
+gulp.task('cleanbak', function () {
+    return gulp.src('../dist/modules/storage/backup/dump/*')
+    .pipe(clean({ force: true }));
+});
+
 gulp.task('copy', function(){
     return gulp.src([
         './**', 
@@ -33,4 +38,4 @@ gulp.task('copy', function(){
 
 gulp.task('shell', shell.task('cd ../dist/ && git cmp "deploy"'));
 
-gulp.task('default', gulp.series('clean', 'copy', 'shell'));
+gulp.task('default', gulp.series('clean', 'cleanbak', 'copy', 'shell'));
