@@ -2,6 +2,7 @@
     - change monster last attack cooldown logic
     - remove very common item "BAG" from dungeon drop table
     - change monster malus drop chances
+    - change dungeon explore fail chance from 12.5% to 10%
 
 # 1.1.7
     - add rarity icons in items command + related lexicon
