@@ -1,3 +1,13 @@
+# 1.1.8
+    - change monster last attack cooldown logic
+    - remove very common item "BAG" from dungeon drop table
+    - change monster malus drop chances
+
+# 1.1.7
+    - add rarity icons in items command + related lexicon
+    - add max level reached in stats + related lexicon
+    - add new riddle type
+    - fix solution of riddle's "operation" type
 
 # 1.1.6
     - change dungeon exploration fail from 20% to 12.5%
