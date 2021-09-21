@@ -38,4 +38,4 @@ gulp.task('copy', function(){
 
 gulp.task('shell', shell.task('cd ../dist/ && git cmp "deploy"'));
 
-gulp.task('default', gulp.series('clean', 'cleanbak', 'copy', 'shell'));
+gulp.task('default', gulp.series('clean', 'copy', 'cleanbak', 'shell'));

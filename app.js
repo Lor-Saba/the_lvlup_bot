@@ -223,7 +223,7 @@ function initSchedulerEvents(){
                 
                 if (monsterItem.target === 'exp') {
                     valueText = utils.formatNumber((monsterItem.power - 1) * 100, 0) + '% ' + lexicon.get('LABEL_EXPGAIN');
-                } else if (monsterItem.target === 'drop') {
+                } else if (monsterItem.target === 'drop_chance') {
                     valueText = utils.formatNumber((monsterItem.power - 1) * 100, 0) + '% ' + lexicon.get('LABEL_DROPCHANCE');
                 }
 
