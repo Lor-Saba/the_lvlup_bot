@@ -1,3 +1,11 @@
+# 1.1.9
+    - fix a missing label for monster escape drop lexicon
+    - add monster auto attack mode
+    - add new event "randomevent" 
+        - 50% chance to appear on saturdays at 12AM
+        - it gives random buffs to the chat
+    - change dungeon schedule from "Tuesday and Thursday" to "Monday, Wednesday, and Friday"
+
 # 1.1.8
     - change monster last attack cooldown logic
     - remove very common item "BAG" from dungeon drop table
