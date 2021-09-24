@@ -14,6 +14,9 @@ module.exports = {
     },
     "LABEL_DROPCHANCE": {
         "en": "DropChance"
+    },   
+    "LABEL_DROPCOOLDOWN": {
+        "en": "DropCooldown"
     },    
     "LABEL_EXP": {
         "en": "Exp"

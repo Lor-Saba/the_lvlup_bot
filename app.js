@@ -537,6 +537,42 @@ function initSchedulerEvents(){
             });
         });
 
+        scheduler.on('randomevent', function(){
+
+            // probabilità del 50%
+            if (Math.random() < .5) return;
+
+            // droppa un item casuale di debuff
+            var randomItem = items.pickRandomEvent();
+            var bonusText = '';
+            
+            if (randomItem.target === 'exp') {
+                bonusText = '+' + utils.formatNumber((randomItem.power - 1) * 100, 0) + '% ' + Lexicon.get('LABEL_EXPGAIN');
+            } else if (randomItem.target === 'drop_chance') {
+                bonusText = '+' + utils.formatNumber((randomItem.power - 1) * 100, 0) + '% ' + Lexicon.get('LABEL_DROPCHANCE');
+            } else if (randomItem.target === 'drop_cd') {
+                bonusText = utils.formatNumber((randomItem.power - 1) * 100, 0) + '% ' + Lexicon.get('LABEL_DROPCOOLDOWN');
+            }
+            
+            // ciclo di tutte le chat per spawnare il messaggio iniziale del mostro ed iniziare l'attacco 
+            utils.eachTimeout(storage.getChats(), (chatId, chat) => {
+
+                items.insertItemTo(chat.items, randomItem);
+
+                bot.telegram.sendMessage(
+                    chat.id, 
+                    Lexicon.get('SPECIAL_RANDOMEVENT', {
+                        itemname: Lexicon.get('ITEMS_TITLE_' + randomItem.name),
+                        itemdescription: Lexicon.get('ITEMS_DESCRIPTION_' + randomItem.name),
+                        itembonus: bonusText,
+                        timeout: randomItem.timeout
+                    }), 
+                    { parse_mode: 'markdown' }
+                )
+                .catch(()=>{});
+            });
+        });
+
         console.log("> Cron events initialized");
 
         ok();
@@ -2127,8 +2163,8 @@ function init(){
 init();
 
 // setTimeout(() => {
-//     scheduler.trigger('monster');
-// }, 5000);
+//     scheduler.trigger('randomevent');
+// }, 3000);
 
 // messages.q('sendMessage', {
 //     userId: 13112141

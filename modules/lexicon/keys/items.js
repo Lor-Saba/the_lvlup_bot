@@ -486,5 +486,39 @@ module.exports = {
     },
     "ITEMS_TITLE_CHT_4": {
         "en": "Joker card"
-    }
+    },
+
+
+    // Randomevent Items
+
+    "ITEMS_TITLE_RANDOMEVENT_1": {
+        "en": "Bright day"
+    },
+    "ITEMS_DESCRIPTION_RANDOMEVENT_1": {
+        "en": "It's a perfect day, neither too hot nor too cold. Everyone feels refreshed and full of energy."
+    },
+    "ITEMS_TITLE_RANDOMEVENT_2": {
+        "en": "Ice cream festival"
+    },
+    "ITEMS_DESCRIPTION_RANDOMEVENT_2": {
+        "en": "Acclaimed by both the little ones and the adults, the day of ice cream is here! The streets are filled with people ready to taste the most varied types of ice cream flavors. (except pistachio, everyone hates pistachio)"
+    },
+    "ITEMS_TITLE_RANDOMEVENT_3": {
+        "en": "Falling stars"
+    },
+    "ITEMS_DESCRIPTION_RANDOMEVENT_3": {
+        "en": "A swarm of meteors lights up the sky, filling with hope whoever is witnessing the event."
+    },
+    "ITEMS_TITLE_RANDOMEVENT_4": {
+        "en": "Blessing"
+    },
+    "ITEMS_DESCRIPTION_RANDOMEVENT_4": {
+        "en": "an ancient god cast a blessing on the earth as a wish for a bountiful harvest."
+    },
+    "ITEMS_TITLE_RANDOMEVENT_5": {
+        "en": "Quantum Moon"
+    },
+    "ITEMS_DESCRIPTION_RANDOMEVENT_5": {
+        "en": "A quantum moon has been sighted orbiting our planet ... or maybe not? Anyway, the idea thrilled everyone, sparking a positive mood all around the world."
+    },
 };

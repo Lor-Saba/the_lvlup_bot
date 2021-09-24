@@ -9,8 +9,10 @@ var eventsList = {};
 var scheduleMap = [
     // “At 12:00 on Sunday.” 
     { rule: '0 12 * * 0', type: 'monster' },
-    // “At 12:00 on Tuesday and Thursday.” 
-    { rule: '0 12 * * 2,4', type: 'dungeon' },
+    // “At 12:00 on Monday, Wednesday, and Friday.” 
+    { rule: '0 12 * * 1,3,5', type: 'dungeon' },
+    // “At 11:00 on Saturday.” 
+    { rule: '0 11 * * 6', type: 'randomevent' },
     // “At 08:00 on every day-of-week from Monday through Friday.” 
     { rule: '0 12,17 * * 1-5', type: 'riddles' },
     // “At 00:00 on day-of-month 25 in December.” 

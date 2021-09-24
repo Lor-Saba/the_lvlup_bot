@@ -8,6 +8,7 @@ var itemTypes = [
     'drop', 
     'dungeon', 
     'monster', 
+    'randomevent', 
     'special'
 ];
 
@@ -63,6 +64,13 @@ function pickDungeon(){
  */
 function pickMonster(){
     return pick('monster');
+}
+
+/**
+ * Get a random Item
+ */
+function pickRandomEvent(){
+    return pick('randomevent');
 }
 
 /**
@@ -346,6 +354,7 @@ module.exports = {
     pickDrop,
     pickDungeon,
     pickMonster,
+    pickRandomEvent,
     pickCHFor,
     get,
     getItemsBuff,
