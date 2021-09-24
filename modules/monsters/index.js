@@ -11,6 +11,8 @@ var spawnAttackTimeout = 1000 * 60 * 60 * 1;
 var userAttackCooldown = 1000 * 60 * 30;
 // tempo limite per poter abbattere il mostro
 var monsterTimeLimit = 1000 * 60 * 60 * 8;
+// tempo di intervallo tra ogni attacco automatico
+var autoAttackInterval = 1000 * 60 * 10;
 
 // lista dei mostri attivi
 var monsters = {};
@@ -44,9 +46,10 @@ function removeMonster(chatId){
     // interrompe se non è stato trovato il riferimento al mostro richiesto
     if (!monster) return false;
     
-    // interrompe i timeout
+    // interrompe i timeout e interval
     clearTimeout(monster.spawnTimeoutId);
     clearTimeout(monster.attackableTimeoutId);
+    clearInterval(monster.autoAttackIntervalId);
 
     // elimina i dati
     monster = null;
@@ -72,8 +75,9 @@ function callEvent(callback, data){
  * @param {object} chat oggetto che rappresenta l'utente che sta attaccando il mostro
  * @param {object} user oggetto che rappresente la chat a cui appartiene il mostro
  * @param {object} ctx ctx delmessaggio ricevuto
+ * @param {boolean} autoAttack booleano per indicare di automatizzare il seguente attacco
  */
-function attack(chat, user, ctx){
+function attack(chat, user, ctx, autoAttack){
     // ottiene il riferimento alle stats dell'utente per la chat corrente
     var userStats = user.chats[chat.id];
     // ottiene il riferimento alle stats dell'utente per la chat corrente
@@ -107,7 +111,24 @@ function attack(chat, user, ctx){
 
     // aggiunge l'utente se è il suo primo attacco
     if (!monster.attackers[user.id]) {
-        monster.attackers[user.id] = { username: user.username, count: 0, damage: 0, lastAttackCode: '' };
+        monster.attackers[user.id] = { username: user.username, count: 0, damage: 0, lastAttackCode: '', autoAttack: null };
+    }
+
+    // assegna il sistema di autoattacco o notifica che è già attivo
+    if (autoAttack === true) {
+        if (monster.attackers[user.id].autoAttack === null) {
+            monster.attackers[user.id].autoAttack = () => attack(chat, user, ctx);
+
+            // chiama l'evento 
+            callEvent(monster.onAutoAttackEnabled, Object.assign(eventData, {}));
+
+            // evento per aggiornare lo stato del mostro
+            callEvent(monster.onUpdate, eventData);
+        } else {
+
+            // chiama l'evento 
+            callEvent(monster.onAutoAttackAlreadyEnabled, Object.assign(eventData, {}));
+        }
     }
     
     // ottiene il codice temporale a cui corrisponde l'attacco corrente
@@ -122,8 +143,10 @@ function attack(chat, user, ctx){
         var cooldownTime = 1000 * 60 * 30;
         var timeDiff = cooldownTime - (currMinutes + currSeconds) % cooldownTime;
 
-        // chiama l'evento 
-        callEvent(monster.onAttackCooldown, Object.assign(eventData, { timeDiff: timeDiff }));
+        if (!autoAttack) {
+            // chiama l'evento 
+            callEvent(monster.onAttackCooldown, Object.assign(eventData, { timeDiff: timeDiff }));
+        }
 
         // interrompe
         return;
@@ -197,7 +220,7 @@ function attack(chat, user, ctx){
             removeMonster(chat.id);
         } else {
 
-            // evento per la vittoria del gruppo contro il mostro
+            // evento per aggiornare lo stato del mostro
             callEvent(monster.onUpdate, eventData);
 
             // rende nuovamente disponibile la possibilità di attaccare i mostro
@@ -217,6 +240,7 @@ function spawn(chat, config){
         chatId: null,
         spawnTimeoutId: null,
         attackableTimeoutId: null,
+        autoAttackIntervalId: null,
         active: false,
         attackable: true,
         expired: false,
@@ -230,6 +254,8 @@ function spawn(chat, config){
         onExpire: () => {},
         onFirstAttack: () => {},
         onAttackCooldown: () => {},
+        onAutoAttackEnabled: () => {},
+        onAutoAttackAlreadyEnabled: () => {},
         onUpdate: () => {},
         onDefeated: () => {},
         onEscaped: () => {}
@@ -243,6 +269,13 @@ function spawn(chat, config){
         callEvent(monster.onExpire, { monster: monster, chat: chat });
         removeMonster(chat.id);
     }, spawnAttackTimeout);
+    monster.autoAttackIntervalId = setInterval(() => {
+        utils.each(monster.attackers, function(attUserId, attUser){
+            if (attUser.autoAttack) {
+                attUser.autoAttack();
+            }
+        });
+    }, autoAttackInterval);
 
     // chiama l'evento per confermare la creazione del mostro
     callEvent(monster.onSpawn, { monster: monster, chat: chat })

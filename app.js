@@ -97,14 +97,6 @@ function initSchedulerEvents(){
 
         scheduler.on('monster', function(){
             var lexicon = Lexicon.lang('en');
-            var button = Markup.inlineKeyboard(
-                [
-                    Markup.callbackButton(
-                        lexicon.get('MONSTER_ATTACK_LABEL'), 
-                        'monster_attack'
-                    )
-                ]
-            ).extra({ parse_mode: 'markdown' });
 
             var onFirstAttack = function(data){
 
@@ -123,12 +115,25 @@ function initSchedulerEvents(){
                 }), true).catch(()=>{});
             };
 
+            var onAutoAttackEnabled = function(data){
+
+                // invia un messaggio per notificare l'attivazione dell'attacco automatico
+                bot.telegram.answerCbQuery(data.ctx.update.callback_query.id, lexicon.get('MONSTER_AUTOATTACK_ENABLED'), true).catch(()=>{});
+            };
+
+            var onAutoAttackAlreadyEnabled = function(data){
+
+                // invia un messaggio per notificare l'attivazione dell'attacco automatico
+                bot.telegram.answerCbQuery(data.ctx.update.callback_query.id, lexicon.get('MONSTER_AUTOATTACK_ALREADYENABLED'), true).catch(()=>{});
+            };
+
             var onUpdate = function(data){
                 var attUsersLabels = [];
 
                 // genera la lista delle ricompense per ogni utente
                 utils.each(data.monster.attackers, function(attUserId, attUser){
                     attUsersLabels.push(lexicon.get('MONSTER_MESSAGE_ATTACKER', { 
+                        icon: attUser.autoAttack ? '🤖': '⚔️',
                         username: attUser.username,
                         count: attUser.count,
                         damage: utils.formatNumber(attUser.damage)
@@ -160,10 +165,18 @@ function initSchedulerEvents(){
                 // bottone per attaccare
                 var button = Markup.inlineKeyboard(
                     [
-                        Markup.callbackButton(
-                            lexicon.get('MONSTER_ATTACK_LABEL'), 
-                            'monster_attack'
-                        )
+                        [
+                            Markup.callbackButton(
+                                lexicon.get('MONSTER_ATTACK_LABEL'), 
+                                'monster_attack'
+                            )
+                        ],
+                        [
+                            Markup.callbackButton(
+                                lexicon.get('MONSTER_AUTOATTACK_LABEL'), 
+                                'monster_autoattack'
+                            )
+                        ]
                     ]
                 ).extra({ parse_mode: 'markdown' });        
                 
@@ -185,9 +198,17 @@ function initSchedulerEvents(){
                 utils.each(data.monster.attackers, function(attUserId, attUser){
     
                     // calcola il guadagno in base a quanti attacchi sono stati fatti
-                    var expReward = calcUserExpGain(data.ctx, storage.getUser(attUserId), attUser.count * 5 * (1 + data.monster.level/5));
+                    var messagesMult = attUser.count * 5 * (1 + data.monster.level / 5);
+                    
+                    // riduce il guadagno se era stato attivato l'attacco automatico
+                    if (attUser.autoAttack) {
+                        messagesMult = messagesMult / 2;
+                    } 
+
+                    var expReward = calcUserExpGain(data.ctx, storage.getUser(attUserId), messagesMult);
     
                     attUsersLabels.push(lexicon.get('MONSTER_DEFEATED_ATTACKER', { 
+                        icon: attUser.autoAttack ? '🤖': '⚔️',
                         username: attUser.username,
                         reward: utils.formatNumber(expReward)
                     }));
@@ -269,6 +290,16 @@ function initSchedulerEvents(){
             };
 
             var onSpawn = function(data){
+    
+                // bottone per attaccare
+                var button = Markup.inlineKeyboard(
+                    [
+                        Markup.callbackButton(
+                            lexicon.get('MONSTER_STARTFIGHT_LABEL'), 
+                            'monster_attack'
+                        )
+                    ]
+                ).extra({ parse_mode: 'markdown' });  
 
                 // crea il messaggio di spawn del mostro e salva l'id
                 return bot.telegram.sendMessage(
@@ -292,6 +323,8 @@ function initSchedulerEvents(){
                     onExpire: onExpire,
                     onFirstAttack: onFirstAttack,
                     onAttackCooldown: onAttackCooldown,
+                    onAutoAttackEnabled: onAutoAttackEnabled,
+                    onAutoAttackAlreadyEnabled: onAutoAttackAlreadyEnabled,
                     onUpdate: onUpdate,
                     onDefeated: onDefeated,
                     onEscaped: onEscaped
@@ -1220,6 +1253,20 @@ function setBotActions(){
         return true;
     });
 
+    bot.action('monster_autoattack', function(ctx){
+        var mexData = ctx.state.mexData;
+
+        // ottiene il riferimento all'utente
+        var user = storage.getUser(mexData.userId);
+        // ottiene il riferimento alla chat
+        var chat = storage.getChat(mexData.chatId);
+
+        // attacca il mostro
+        monsters.attack(chat, user, ctx, true);
+
+        return true;
+    });
+
     bot.action('dungeon_explore', function(ctx){
         var mexData = ctx.state.mexData;
 
@@ -2080,7 +2127,7 @@ function init(){
 init();
 
 // setTimeout(() => {
-//     scheduler.trigger('riddles');
+//     scheduler.trigger('monster');
 // }, 5000);
 
 // messages.q('sendMessage', {

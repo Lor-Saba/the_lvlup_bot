@@ -10,13 +10,13 @@ module.exports = {
         "en": "$(icon) *Monster*\n\nLevel:  `$(level)`\nHealth:  `$(health) / $(healthmax)`   _($(healthPercentage)%)_\n$(healthbar)\n\nAttacks:\n$(attackers)"
     },
     "MONSTER_MESSAGE_ATTACKER": {
-        "en": "  - *$(username)*  _x$(count)_  `$(damage) Dmg`"
+        "en": "  - $(icon) *$(username)*  _x$(count)_  `$(damage) Dmg`"
     },
     "MONSTER_DEFEATED": {
         "en": "💀 The Monster has been defeated!\n\nRewards:\n$(usersrewards)"
     },
     "MONSTER_DEFEATED_ATTACKER": {
-        "en": "  - *$(username)*  `+$(reward) Exp`"
+        "en": "  - $(icon) *$(username)*  `+$(reward) Exp`"
     },
     "MONSTER_ATTACK_COOLDOWN": {
         "en": "Wait!\nYou can attack again in $(time)"
@@ -24,8 +24,20 @@ module.exports = {
     "MONSTER_ESCAPED": {
         "en": "The monster survived.\nEnraged by what had happened, the \"Lord of Dungeon\" casted a strong curse to avenge the monster..\n\n🌀 _$(itemname)_\n\n$(value)  for  $(timeout)h"
     },
+    "MONSTER_STARTFIGHT_LABEL": {
+        "en": "⚔️ Start Fighting! ⚔️"
+    },
     "MONSTER_ATTACK_LABEL": {
-        "en": "⚔️ Attack! ⚔️"
+        "en": "Strike! 🗡"
+    },
+    "MONSTER_AUTOATTACK_LABEL": {
+        "en": "Send clone to battle 🤖"
+    },
+    "MONSTER_AUTOATTACK_ENABLED": {
+        "en": "Auto attack is now enabled!\nFrom now on you will attack the monster automatically.\nIn case of victory, however, you will get half the experience.\n\nCannot be deactivated."
+    },
+    "MONSTER_AUTOATTACK_ALREADYENABLED": {
+        "en": "Auto attack is already enabled.\nCannot be deactivated."
     },
     "MONSTER_OLD_MESSAGE": {
         "en": "_This monster is no longer a threat._"
