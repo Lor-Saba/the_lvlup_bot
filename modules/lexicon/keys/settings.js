@@ -12,6 +12,9 @@ module.exports = {
     "SETTINGS_EXIT": {
         "en": "✖️ Exit"
     },
+    "SETTINGS_CLOSE": {
+        "en": "✖️ Close"
+    },
     "SETTINGS_BACK": {
         "en": "🔙 Back"
     },
@@ -44,6 +47,9 @@ module.exports = {
     },
     "SETTINGS_CANNOT_ACCEPT": {
         "en": "Sorry, you can't select this action."
+    },
+    "SETTINGS_MESSAGE_DELETED": {
+        "en": "_(message deleted)_"
     },
     "SETTINGS_REPLY_ON": {
         "en": "On"

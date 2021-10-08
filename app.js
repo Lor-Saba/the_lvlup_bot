@@ -353,6 +353,9 @@ function initSchedulerEvents(){
                 )
                 .then(ctxSpawn => {
                     data.dungeon.extra.messageId = ctxSpawn.message_id;
+                    
+                    // pinna il messaggio del dungeon per avvertire che è iniziato l'attacco
+                    bot.telegram.pinChatMessage(data.chat.id, data.dungeon.extra.messageId).catch(()=>{}); 
                 })
                 .catch(err => {
                     utils.errorlog('DUNGEON_SPAWN:', JSON.stringify(err));
@@ -851,15 +854,14 @@ function setBotCommands(){
                 var intervalId = null;
                 var intervalDelay = 1000 * 60 * 31;
                 var intervalCall = function(){
-
-                    var res = monsters.attack(chat, user, ctx);
-
-                    if (res == false) {
-                        clearInterval(intervalId);
-                        ctx.reply('MAA - Stopped.');
-                    } else {
-                        ctx.reply('MAA - Attacked.');
-                    }
+                    monsters.attack(chat, user, ctx).then(res => {
+                        if (res == false) {
+                            clearInterval(intervalId);
+                            ctx.reply('MAA - Stopped.');
+                        } else {
+                            ctx.reply('MAA - Attacked.');
+                        }
+                    });
                 };
 
                 intervalId = setInterval(intervalCall, intervalDelay);
@@ -922,6 +924,8 @@ function setBotCommands(){
 
         // ottiene il riferimento all'utente
         var user = ctx.state.user;
+        // ottiene il riferimento alla chat
+        var chat = ctx.state.chat;
         // ottiene il riferimento alle stats dell'utente per la chat corrente
         var userStats = ctx.state.userStats;
         // testo finale contenente la lista di oggetti
@@ -970,9 +974,16 @@ function setBotCommands(){
             // aggiunge il titolo 
             text = lexicon.get('ITEMS_LIST_NOITEMS', { username: user.username })
         }
-
+        
         // invia il testo completo di risposta
-        ctx.replyWithMarkdown(text).catch(()=>{});
+        bot.telegram.sendMessage(chat.id, text, Markup.inlineKeyboard(
+            [
+                Markup.callbackButton(
+                    lexicon.get('SETTINGS_CLOSE'), 
+                    'remove_message'
+                )
+            ]
+        ).extra({ parse_mode: 'markdown' }));
     });
 
     bot.command('settings', function(ctx){
@@ -1052,6 +1063,8 @@ function setBotCommands(){
 
         // ottiene il riferimento all'utente
         var user = ctx.state.user;
+        // ottiene il riferimento alla chat
+        var chat = ctx.state.chat;
         // ottiene il riferimento alle stats dell'utente per la chat corrente
         var userStats = ctx.state.userStats;
 
@@ -1162,8 +1175,16 @@ function setBotCommands(){
                 text += (ind / maxBarsLength < prestigeDiff) ? '🟦' : '⬜️';
             }            
         }
-
-        ctx.replyWithMarkdown(text).catch(()=>{});
+        
+        // invia il testo completo di risposta
+        bot.telegram.sendMessage(chat.id, text, Markup.inlineKeyboard(
+            [
+                Markup.callbackButton(
+                    lexicon.get('SETTINGS_CLOSE'), 
+                    'remove_message'
+                )
+            ]
+        ).extra({ parse_mode: 'markdown' }));
     });
 
     bot.command('chatstats', function(ctx){
@@ -1317,6 +1338,32 @@ function setBotActions(){
         return true;
     });
 
+    bot.action('remove_message', function(ctx){
+        var mexData = ctx.state.mexData;
+
+        // ottiene il riferimento alla chat
+        var chat = storage.getChat(mexData.chatId);
+
+        // rimuove il vecchio messaggio
+        bot.telegram.deleteMessage(
+            chat.id, 
+            mexData.messageId
+        )
+        .catch(()=>{
+            // invia il messaggio aggiornato del mostro 
+            bot.telegram.editMessageText(
+                chat.id, 
+                mexData.messageId, 
+                null, 
+                Lexicon.get('SETTINGS_MESSAGE_DELETED'),
+                { parse_mode: 'markdown' }
+            )
+            .catch(()=>{});
+        });
+
+        return true;
+    });
+
     console.log("  - loaded bot actions");
 }
 
@@ -1461,7 +1508,14 @@ function setBotEvents(){
                     mexData.message.message_id, 
                     null, 
                     text,
-                    { parse_mode: 'markdown' }
+                    Markup.inlineKeyboard(
+                        [
+                            Markup.callbackButton(
+                                lexicon.get('SETTINGS_CLOSE'), 
+                                'remove_message'
+                            )
+                        ]
+                    ).extra({ parse_mode: 'markdown' })
                 )
                 .then(()=>{
                     // rimuove i dati markup
