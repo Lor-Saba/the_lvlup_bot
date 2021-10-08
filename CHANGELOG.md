@@ -1,3 +1,8 @@
+# 1.1.10
+    - fix and optimized monster auto attack
+    - ad pinChatMessage action on dungeon spawn
+    - add close button to "items","leaderboard","stats" commands
+
 # 1.1.9
     - fix a missing label for monster escape drop lexicon
     - add monster auto attack mode
