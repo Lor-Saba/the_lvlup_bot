@@ -1,6 +1,6 @@
 # 1.1.10
     - fix and optimized monster auto attack
-    - ad pinChatMessage action on dungeon spawn
+    - add pinChatMessage action on dungeon spawn
     - add close button to "items","leaderboard","stats" commands
 
 # 1.1.9
