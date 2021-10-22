@@ -372,6 +372,9 @@ function initSchedulerEvents(){
                     lexicon.get('DUNGEON_EXPIRED'), 
                     { parse_mode: 'markdown' }
                 ).catch(()=>{});
+
+                // rimuove il pin dal messaggio del dungeon
+                bot.telegram.unpinChatMessage(data.chat.id, data.dungeon.extra.messageId).catch(()=>{}); 
             };
 
             var onExplore = function(data){
@@ -1373,7 +1376,7 @@ function setBotActions(){
 function setBotEvents(){
 
     // handler che gestisce i messaggi 
-    bot.on(['text', 'sticker', 'photo'], function(ctx){
+    bot.on(['text', 'sticker' /*, 'photo'*/], function(ctx){
         var user = ctx.state.user;
         var chat = ctx.state.chat;
         var isText = (ctx.updateSubTypes || [])[0] == 'text';
