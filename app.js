@@ -626,6 +626,7 @@ function setBotMiddlewares(){
     bot.use(function(ctx, next) {
 
         if (ctx.updateType == 'edited_message') return false;
+        if (ctx.updateType == 'message' && ctx.updateSubTypes.includes('photo')) return false;
 
         // crea un oggetto contenente le informazioni generiche del messaggio ricevuto
         var mexData = utils.getMessageData(ctx);
@@ -1376,7 +1377,7 @@ function setBotActions(){
 function setBotEvents(){
 
     // handler che gestisce i messaggi 
-    bot.on(['text', 'sticker' /*, 'photo'*/], function(ctx){
+    bot.on(['text', 'sticker', 'photo'], function(ctx){
         var user = ctx.state.user;
         var chat = ctx.state.chat;
         var isText = (ctx.updateSubTypes || [])[0] == 'text';

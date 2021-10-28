@@ -7,10 +7,8 @@ const items = require('../items');
 const BigNumber = require('bignumber.js');
 // tempo limite per poter attaccare il mostro appena spawnato
 var spawnAttackTimeout = 1000 * 60 * 60 * 1;
-// tempo di cooldown per attacco
-var userAttackCooldown = 1000 * 60 * 30;
 // tempo limite per poter abbattere il mostro
-var monsterTimeLimit = 1000 * 60 * 60 * 8;
+var monsterTimeLimit = (1000 * 60 * 60 * 8) - (1000 * 60);
 // tempo di intervallo tra ogni attacco automatico
 var autoAttackInterval = 1000 * 60 * 10;
 
