@@ -259,12 +259,14 @@ function getMessageData(ctx){
         messageId:  message.message_id,
         date:       message.date,
         isMarkup:   message.reply_markup !== undefined,
+        isGame:     message.game ? true : false,
         isPrivate:  ctx.chat.type === 'private',
         isBot:      ctx.from.is_bot || !!message.via_bot,
         username:   ctx.from.username || ctx.from.first_name,
         userId:     ctx.from.id,
         chatId:     ctx.chat.id,
         chatTitle:  ctx.chat.title,
+        gameTitle:  message.game ? message.game.title : '',
         lang:       ctx.from.language_code
     };
 

@@ -1,0 +1,28 @@
+{{#if dungeonEnabled}}
+    <input type="hidden" name="chatId" value="{{chatId}}">
+    <input type="hidden" name="userId" value="{{userId}}">
+    <script type="text/javascript" src="/script/libs/pixi.min.js"></script>
+
+    <div id="body">
+        <div id="canvas"></div>
+        <div id="controls">
+            <div class="arrows">
+                <div class="arrows-buttons">
+                    <div class="arrow-top"></div>
+                    <div class="arrow-right"></div>
+                    <div class="arrow-left"></div>
+                    <div class="arrow-bottom"></div>
+                </div>
+                {{> svg-icon name="angle-up"    }}
+                {{> svg-icon name="angle-right" }}
+                {{> svg-icon name="angle-down"  }}
+                {{> svg-icon name="angle-left"  }}  
+            </div>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="/style/dungeon.css">
+    <script type="text/javascript" src="/script/dungeon.js"></script>
+{{else}}
+    ...
+{{/if}}

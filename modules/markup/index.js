@@ -296,7 +296,10 @@ function get(type, mexData, data){
  * @param {string} key chiave utilizzata per riprendere l'oggetto salvato alla creazione di un bottone
  */
 function getData(mapKey){
-    mapKey = mapKey.split(':');
+
+    if (!mapKey) return null;
+
+    mapKey = String(mapKey).split(':');
 
     var key = mapKey[0];
     var index = mapKey[1];

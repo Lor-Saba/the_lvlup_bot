@@ -1,0 +1,94 @@
+
+html {
+    background-color: #111115;
+    color: #ffffff;
+}
+
+#body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    padding: 25px;
+    padding-bottom: 0;
+    box-sizing: border-box;
+}
+
+#canvas {
+    height: 100%;
+    width: 100%;
+    background: #050505;
+    outline: 1px solid #000;
+    font-size: 0;
+}
+#controls {
+    min-height: 200px;
+    padding: 50px 0;
+    width: 100%;
+}
+
+.arrows {
+    position: fixed;
+    display: inline-block;
+    width: 200px;
+    height: 200px;
+    bottom: 50px;
+    left: calc(50% - 100px);
+    overflow: hidden;
+    user-select: none;
+    border-radius: 60px;
+    background: #2223;
+    outline: 1px solid #0003;
+}
+.arrows img {
+    pointer-events: none;
+    opacity: .5;
+}
+.arrows img.icon-angle-up {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.arrows img.icon-angle-right {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+}
+.arrows img.icon-angle-down {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.arrows img.icon-angle-left {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+}
+
+.arrows-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(45deg) scale(1.2);
+    transform-origin: 50%;
+}
+.arrows-buttons > div {
+    width: 50%;
+    height: 50%;
+    outline: 1px solid #0001;
+    cursor: pointer;
+}
+.arrows-buttons > div:hover {
+    background: #2223;
+}
+.arrows-buttons > div:active {
+    background: #3333;
+}

@@ -33,7 +33,9 @@ const dungeons = require('./modules/dungeon');
 // modulo per gestire l'evento dei riddles
 const riddles = require('./modules/riddles');
 // modulo per gestire i messaggi
-const messages = require('./modules/messages');
+//const messages = require('./modules/messages');
+// modulo per gestire la parte web site
+const site = require('./modules/site');
 // istanza del bot 
 var bot = null;
 // timestamp dell'avvio del bot
@@ -64,6 +66,55 @@ function connectTelegramAPI(){
 function connectMongoDB(){
     return new Promise(ok => {
         storage.connectMongoDB(process.env['mongodb']).then(ok);
+    });
+}
+
+/**
+ * Assegnazione ed inizializzazione routing pagine web del bot
+ */
+function startSite(){
+    return new Promise(ok => {
+
+        site.on('home', function(params, route){
+            console.log('site::home');
+        });
+
+        site.on('dungeon', function(params, route){
+            
+            route.set({
+                chatId: params.chatId,
+                userId: params.userId,
+                dungeonEnabled: true
+            });
+
+            console.log('site::dungeon');
+        });
+
+        site.on('leaderboard', function(params, route){
+            
+            route.set({
+                chatId: params.chatId
+            });
+
+            console.log('site::leaderboard');
+        });
+
+        site.on('stats', function(params, route){
+
+            route.set({
+                chatId: params.chatId,
+                userId: params.userId
+            });
+
+            console.log('site::stats');
+        });
+
+        site.init(process.env['siteport'])
+        .then(() => {
+            console.log("> WEB Site started");
+            ok();            
+        });
+
     });
 }
 
@@ -1234,6 +1285,9 @@ function setBotCommands(){
     });
 
     bot.command('challengeme', function(ctx){
+
+        return ctx.replyWithMarkdown('Nope').catch(() => {});
+
         var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
 
@@ -1290,6 +1344,42 @@ function setBotCommands(){
         }
 
         bot.telegram.sendMessage(mexData.chatId, markupData.text, markupData.buttons).catch(() => {});
+    });
+
+    bot.command('test1', function(ctx){
+
+        if (md5(userId) !== 'be6d916dafd19cddfd2573f8bb0cee4f') return;
+
+        var chat = ctx.state.chat;
+        var button = Markup.inlineKeyboard(
+            [[ Markup.gameButton('Explore the Dungeon!') ]]
+        ).extra({ parse_mode: 'markdown' }); 
+
+        bot.telegram.sendGame(chat.id, 'dungeon', button).catch(() => {});
+    });
+
+    bot.command('test2', function(ctx){
+        
+        if (md5(userId) !== 'be6d916dafd19cddfd2573f8bb0cee4f') return;
+
+        var chat = ctx.state.chat;
+        var button = Markup.inlineKeyboard(
+            [[ Markup.gameButton('Open the Leaderboard') ]]
+        ).extra({ parse_mode: 'markdown' }); 
+
+        bot.telegram.sendGame(chat.id, 'leaderboard', button).catch(() => {});
+    });
+
+    bot.command('test3', function(ctx){
+        
+        if (md5(userId) !== 'be6d916dafd19cddfd2573f8bb0cee4f') return;
+
+        var chat = ctx.state.chat;
+        var button = Markup.inlineKeyboard(
+            [[ Markup.gameButton('Check the Stats') ]]
+        ).extra({ parse_mode: 'markdown' }); 
+
+        bot.telegram.sendGame(chat.id, 'stats', button).catch(() => {});
     });
 
     console.log("  - loaded bot commands");
@@ -1420,6 +1510,22 @@ function setBotEvents(){
             //}, 1000 * 5); 
 
             return ctx.editMessageText(lexicon.get('ERROR_MARKUP_NOTFOUND'), { parse_mode: 'markdown' }).catch(()=>{});
+        };
+
+        // gestisce le chiamate dei bottoni di tipo game
+        if (mexData.isGame) {
+
+            if (mexData.gameTitle == 'dungeon') {
+                return ctx.answerGameQuery(process.env["siteurl"] + '/dungeon/' + mexData.chatId + '/' + mexData.userId).catch(() => {});
+            }
+            if (mexData.gameTitle == 'leaderboard') {
+                return ctx.answerGameQuery(process.env["siteurl"] + '/leaderboard/' + mexData.chatId).catch(() => {});
+            }
+            if (mexData.gameTitle == 'stats') {
+                return ctx.answerGameQuery(process.env["siteurl"] + '/stats/' + mexData.chatId + '/' + mexData.userId).catch(() => {});
+            }
+
+            return false;
         }
 
         if (!queryData) return modalError();
@@ -2195,6 +2301,7 @@ function init(){
     .then(connectMongoDB)
     .then(connectTelegramAPI)
     .then(initSchedulerEvents)
+    .then(startSite)
     .then(() => {
         
         // Avvia il bot

@@ -54,16 +54,64 @@ function on(type, callback){
  */
 function trigger(type){
 
-    if (!eventsList[type]) return;
-    // if (!global.botRunning) return; 
-    
-    utils.each(eventsList[type].fn, (indexEvent, event) => event());
+    console.log('scheduler:', type);
+
+    if (eventsList[type]) {
+        utils.each(eventsList[type].fn, (indexEvent, event) => event());
+    }
 }
 
+function parseRule(ruleString){
+
+    var ruleSplit = ruleString.split(/\s/g);
+    var rule = new schedule.RecurrenceRule();
+
+    var parseValue = function(value){
+
+        if (value == '*') return null;
+
+        var result = value.split(/\,/g);
+
+        utils.each(result, function(index, val){
+            var valSplit = val.split(/\-/g);
+
+            if (valSplit.length > 1) {
+                result[index] = new schedule.Range(...valSplit);
+            } else {
+                result[index] = Number(val);
+            }
+        });
+
+        if (result.length == 1) {
+            result = result[0];
+        }
+
+        return result;
+    };
+
+    /*
+        minute (0-59)
+        hour (0-23)
+        date (1-31)
+        month (0-11)
+        dayOfWeek (0-6) Starting with Sunday
+    */
+
+    rule.minute = parseValue(ruleSplit[0]);
+    rule.hour = parseValue(ruleSplit[1]);
+    rule.date = parseValue(ruleSplit[2]);
+    rule.month = parseValue(ruleSplit[3]);
+    rule.dayOfWeek = parseValue(ruleSplit[4]);
+    rule.tz = 'Europe/Rome';
+
+    console.log(ruleString, rule);
+
+    return rule;
+}
 
 // genera la lista di eventi da controllare
 utils.each(scheduleMap, function(indexItem, item){
-    schedule.scheduleJob(item.rule, () => trigger(item.type));
+    schedule.scheduleJob(parseRule(item.rule), () => trigger(item.type));
     // schedule.scheduleJob({ rule: item.rule, tz: 'GMT+2' }, () => trigger(item.type));
 });
 
