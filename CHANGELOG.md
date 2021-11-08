@@ -1,3 +1,10 @@
+# 1.2.0
+    - add an experimental version of the 'site' side of the bot (HTML5 pages!)
+    - add timezone "Europe/Rome" to scheduled events
+    - disabled 'challengeme' command
+    - add unpin message on dungeon expire
+    - remove 'photo' type message from the penality counter
+
 # 1.1.10
     - fix and optimized monster auto attack
     - add pinChatMessage action on dungeon spawn
