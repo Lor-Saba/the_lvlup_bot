@@ -1,1 +1,113 @@
-<div>STATS</div>
+<div class="wrap">
+    <div class="user-name">
+        <div class="user-penality" data-level="{{ penalityLevel }}"></div>
+        <span>{{ username }}</span>
+        <a href="#" onclick="location.reload();">{{> svg-icon name="reload" }}</a>
+    </div>
+    <div class="tabs">
+        <div id="page-stats" class="tab-page active">
+            {{#unless noStats}}
+                <div class="fields">
+                    <div class="field">
+                        <div class="field-title green">{{lexicon 'LABEL_EXP'}}</div>
+                        <div class="field-value">{{ stats.exp }}</div>
+                    </div>
+                    <div class="field half">
+                        <div class="field-title blue">{{lexicon 'LABEL_LEVEL'}}</div>
+                        <div class="field-value">{{ stats.level }} <small>({{ stats.maxLevelReached }})</small></div>
+                    </div>
+                    {{#if stats.hasPrestige }}
+                        <div class="field half">
+                            <div class="field-title purple">{{lexicon 'LABEL_PRESTIGE'}}</div>
+                            <div class="field-value">{{ stats.prestige }}</div>
+                        </div>
+                    {{/if}}
+
+                    <div class="field-separator"></div>
+
+                    <div class="field half">
+                        <div class="field-title">{{lexicon 'STATS_EPM_LABEL'}}</div>
+                        <div class="field-value">{{ stats.expPerMessage }}</div>
+                    </div>
+                    <div class="field half">
+                        <div class="field-title">{{lexicon 'STATS_PRESTIGE_BONUS_LABEL'}}</div>
+                        <div class="field-value">+{{ stats.prestigeBonus }}%</div>
+                    </div>
+                    {{#if stats.hasChallenges}}
+                        <div class="field half">
+                            <div class="field-title">{{lexicon 'STATS_CHALLENGE_TOTAL_LABEL'}}</div>
+                            <div class="field-value">
+                                {{ stats.challengesWon }}<small>{{lexicon 'STATS_CHALLENGE_W_LABEL'}}</small>
+                                ‒
+                                {{ stats.challengesLost }}<small>{{lexicon 'STATS_CHALLENGE_L_LABEL'}}</small>
+                            </div>
+                        </div>
+                        <div class="field half">
+                            <div class="field-title">{{lexicon 'STATS_CHALLENGE_RATEO_LABEL'}}</div>
+                            <div class="field-value">{{ stats.challengesRateo }}</div>
+                        </div>
+                    {{/if}}
+
+                    <div class="field-separator"></div>
+
+                    {{! - ITEMS BUFFERS - }}
+
+                    <div class="field-separator"></div>
+
+                    {{#if stats.progress.levelVisible }}
+                        <div class="field">
+                            <div class="field-title">
+                                {{lexicon 'STATS_LEVEL_PROGRESS_LABEL'}}
+                                <small>{{ stats.progress.levelExpRequired }} {{lexicon 'LABEL_EXP'}}</small>
+                            </div>
+                            <div class="field-progress">
+                                <div class="field-progress-bar blue">
+                                    <div style="width: {{ stats.progress.levelPercent }}%"></div>
+                                    <span style="left: {{mathmax 5 (mathmin 95 stats.progress.levelPercent) }}%">
+                                        {{stats.progress.levelPercent }}%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    {{/if}}
+
+                    {{#if stats.progress.prestigeVisible }}
+                        <div class="field">
+                            <div class="field-title">
+                                {{lexicon 'STATS_PRESTIGE_PROGRESS_LABEL'}}
+                                <small>{{ stats.progress.prestigeExpRequired }} {{lexicon 'LABEL_EXP'}}</small>
+                            </div>
+                            <div class="field-progress">
+                                <div class="field-progress-bar purple">
+                                    <div style="width: {{ stats.progress.prestigePercent }}%"></div>
+                                    <span style="left: {{mathmax 5 (mathmin 95 stats.progress.prestigePercent) }}%">
+                                        {{ stats.progress.prestigePercent }}%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    {{/if}}
+
+                    {{! - PERCENTUALI - }}
+                </div>
+            {{else}}
+                ---
+            {{/unless}}
+        </div>
+        <div id="page-items" class="tab-page">
+
+        </div>
+        <div id="page-leaderboard" class="tab-page">
+
+        </div>
+        <div class="tab-buttons">
+            <div class="tab-button active" onclick="changePage(this);" data-target="#page-stats">STATS</div>
+            <div class="tab-button"        onclick="changePage(this);" data-target="#page-items">ITEMS</div>
+            <div class="tab-button"        onclick="changePage(this);" data-target="#page-leaderboard">LEADERBOARD</div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="/style/stats.css">
+<script type="text/javascript" src="/script/libs/umbrella.min.js"></script>
+<script type="text/javascript" src="/script/stats.js"></script>

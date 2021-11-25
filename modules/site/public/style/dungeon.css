@@ -1,94 +1,107 @@
-
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+  user-select: none;
+}
 html {
-    background-color: #111115;
-    color: #ffffff;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  margin: 0;
+  box-sizing: border-box;
 }
-
+body {
+  margin: 0;
+  box-sizing: border-box;
+}
+.icon {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+}
+html {
+  background-color: #111115;
+  color: #fff;
+}
 #body {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    width: 100vw;
-    padding: 25px;
-    padding-bottom: 0;
-    box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  padding: 25px;
+  padding-bottom: 0;
+  box-sizing: border-box;
 }
-
 #canvas {
-    height: 100%;
-    width: 100%;
-    background: #050505;
-    outline: 1px solid #000;
-    font-size: 0;
+  height: 100%;
+  width: 100%;
+  background: #050505;
+  outline: 1px solid #000;
+  font-size: 0;
 }
 #controls {
-    min-height: 200px;
-    padding: 50px 0;
-    width: 100%;
+  min-height: 200px;
+  padding: 50px 0;
+  width: 100%;
 }
-
 .arrows {
-    position: fixed;
-    display: inline-block;
-    width: 200px;
-    height: 200px;
-    bottom: 50px;
-    left: calc(50% - 100px);
-    overflow: hidden;
-    user-select: none;
-    border-radius: 60px;
-    background: #2223;
-    outline: 1px solid #0003;
+  position: fixed;
+  display: inline-block;
+  width: 200px;
+  height: 200px;
+  bottom: 50px;
+  left: calc(50% - 100px);
+  overflow: hidden;
+  user-select: none;
+  border-radius: 60px;
+  background: rgba(34,34,34,0.2);
+  outline: 1px solid rgba(0,0,0,0.2);
 }
 .arrows img {
-    pointer-events: none;
-    opacity: .5;
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.5;
 }
 .arrows img.icon-angle-up {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 .arrows img.icon-angle-right {
-    position: absolute;
-    top: 50%;
-    right: 10px;
-    transform: translateY(-50%);
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
 }
 .arrows img.icon-angle-down {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 .arrows img.icon-angle-left {
-    position: absolute;
-    top: 50%;
-    left: 10px;
-    transform: translateY(-50%);
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
 }
-
 .arrows-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    transform: rotate(45deg) scale(1.2);
-    transform-origin: 50%;
+  display: flex;
+  flex-wrap: wrap;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(45deg) scale(1.2);
+  transform-origin: 50%;
 }
 .arrows-buttons > div {
-    width: 50%;
-    height: 50%;
-    outline: 1px solid #0001;
-    cursor: pointer;
+  width: 50%;
+  height: 50%;
+  outline: 1px solid rgba(0,0,0,0.067);
+  cursor: pointer;
 }
 .arrows-buttons > div:hover {
-    background: #2223;
+  background: rgba(34,34,34,0.2);
 }
 .arrows-buttons > div:active {
-    background: #3333;
+  background: rgba(51,51,51,0.2);
 }

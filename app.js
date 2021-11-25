@@ -12,6 +12,8 @@ const commandParts = require('telegraf-command-parts');
 const md5 = require('md5');
 // modulo per gestire i file
 const fs = require('fs');
+// modulo per crittografare stringhe
+const Cryptr = require('cryptr');
 // modulo per gestire i numeri
 const BigNumber = require('bignumber.js');
 // modulo per gestire le traduzioni delle label
@@ -40,6 +42,8 @@ const site = require('./modules/site');
 var bot = null;
 // timestamp dell'avvio del bot
 var startupDate = 0;
+// istanza per crittografare
+const cryptr = new Cryptr(process.env['cryptrkey']);
 
 
 /**
@@ -75,38 +79,127 @@ function connectMongoDB(){
 function startSite(){
     return new Promise(ok => {
 
-        site.on('home', function(params, route){
-            console.log('site::home');
+        site.on('home', {
+            get: function(params, route){
+                console.log('site::home');
+            },
+            post: function(){
+
+            }
         });
 
-        site.on('dungeon', function(params, route){
-            
-            route.set({
-                chatId: params.chatId,
-                userId: params.userId,
-                dungeonEnabled: true
-            });
+        site.on('dungeon', {
+            get: function(params, route){
+                console.log('site::dungeon');
 
-            console.log('site::dungeon');
+                return {
+                    chatId: params.chatId,
+                    userId: params.userId,
+                    dungeonEnabled: true
+                };
+            }
         });
 
-        site.on('leaderboard', function(params, route){
-            
-            route.set({
-                chatId: params.chatId
-            });
+        site.on('leaderboard', {
+            get: function(params, route){
+                console.log('site::leaderboard');
 
-            console.log('site::leaderboard');
+                return {
+                    chatId: params.chatId
+                };
+            }
         });
 
-        site.on('stats', function(params, route){
+        site.on('stats', {
+            get: function(params, route){
+                var chatId = cryptr.decrypt(params.chatId);
+                var userId = cryptr.decrypt(params.userId);
+                var user = storage.getUser(userId);
+                var userStats = user.chats[chatId];
+                var ctx = { state: { lexicon: null, mexData: { chatId: chatId } } };
 
-            route.set({
-                chatId: params.chatId,
-                userId: params.userId
-            });
+                if (!user) return false;
+                if (!userStats) return false;
 
-            console.log('site::stats');
+                var templateData = {
+                    username: user.username,
+                    chatId: params.chatId,
+                    userId: params.userId,
+
+                    // aggiunge il livello di penalità attivo ['🟢','🟡','🟠','🔴','❌']
+                    penalityLevel: userStats.penality.level
+                }
+
+                // non è stata ancora raccolto alcuna statistica ed interrompe il comando
+                if (BigNumber(userStats.exp).isEqualTo(0) 
+                &&  BigNumber(userStats.level).isEqualTo(0) 
+                &&  BigNumber(userStats.prestige).isEqualTo(0)) {
+                    templateData.noStats = true;
+                    return templateData;
+                }
+
+                templateData.stats = {
+                    hasExp: BigNumber(userStats.exp).isGreaterThan(0),
+                    hasLevel: BigNumber(userStats.level).isGreaterThan(0),
+                    hasPrestige: BigNumber(userStats.prestige).isGreaterThan(0),
+
+                    exp: utils.formatNumber(userStats.exp, 6),
+                    level: utils.formatNumber(utils.toFloor(userStats.level), 0),
+                    prestige: utils.formatNumber(userStats.prestige, 0),
+
+                    expPerMessage: utils.formatNumber(calcUserExpGain(ctx, user, 1, true)),
+                    prestigeBonus: utils.formatNumber(utils.calcExpGain(userStats.prestige).minus(1).multipliedBy(100), 0),
+
+                    itemsBuff: []
+                };
+                
+                // aggiunge il bonus degli oggetti raccattati
+                if (Object.keys(userStats.items).length){
+                    
+                    var itemsBuff = items.getItemsBuff(userStats.items);
+
+                    utils.each(itemsBuff, function(target, value){
+                        var buff = value - 1;
+                        if (buff === 0) return;
+
+                        templateData.stats.itemsBuff.push({ 
+                            target: Lexicon.get('ITEMS_LIST_TARGET_' + target.toUpperCase()),
+                            value: (buff >= 0 ? '+' : '') + (buff * 100).toFixed(2) + '%'
+                        });
+                    });
+                }
+
+                // aggiunge il conteggio del numero di challenges vinte e perse
+                if (userStats.challengeWonTotal || userStats.challengeLostTotal) {
+                    templateData.stats.hasChallenges = true;
+                    templateData.stats.challengesWon = userStats.challengeWonTotal;
+                    templateData.stats.challengesLost = userStats.challengeLostTotal;
+                    templateData.stats.challengesRateo = (Number(userStats.challengeWonTotal) / (Number(userStats.challengeLostTotal) || 1)).toFixed(2);
+                }
+
+                // aggiunge il livello massimo raggiunto
+                if (BigNumber(userStats.levelReached).isGreaterThan(0)) {
+                    templateData.stats.maxLevelReached = utils.formatNumber(utils.toFloor(userStats.levelReached), 0);
+                }
+
+                var levelDiff = BigNumber(userStats.level).minus(utils.toFloor(userStats.level));
+                    levelDiff = Number(levelDiff.valueOf());
+
+                var prestigeDiff = BigNumber(userStats.exp).dividedBy(utils.calcNextPrestigeLevel(userStats.prestige));
+                    prestigeDiff = Number(prestigeDiff.valueOf());
+
+                templateData.stats.progress = {
+                    levelVisible: BigNumber(userStats.level).isGreaterThan(0),
+                    levelPercent: (levelDiff * 100).toFixed(0),
+                    levelExpRequired: utils.calcExpFromLevel(BigNumber(utils.toFloor(userStats.level)).plus(1)).minus(userStats.exp).toFixed(2),
+
+                    prestigeVisible: BigNumber(userStats.prestige).isGreaterThan(0),
+                    prestigePercent: (prestigeDiff * 100).toFixed(0),
+                    prestigeExpRequired: utils.calcNextPrestigeLevel(userStats.prestige).minus(userStats.exp).toFixed(2)
+                };
+
+                return templateData;
+            }
         });
 
         site.init(process.env['siteport'])
@@ -1347,6 +1440,7 @@ function setBotCommands(){
     });
 
     bot.command('test1', function(ctx){
+        var userId = ctx.from.id;
 
         if (md5(userId) !== 'be6d916dafd19cddfd2573f8bb0cee4f') return;
 
@@ -1359,6 +1453,7 @@ function setBotCommands(){
     });
 
     bot.command('test2', function(ctx){
+        var userId = ctx.from.id;
         
         if (md5(userId) !== 'be6d916dafd19cddfd2573f8bb0cee4f') return;
 
@@ -1371,6 +1466,7 @@ function setBotCommands(){
     });
 
     bot.command('test3', function(ctx){
+        var userId = ctx.from.id;
         
         if (md5(userId) !== 'be6d916dafd19cddfd2573f8bb0cee4f') return;
 
@@ -1516,13 +1612,13 @@ function setBotEvents(){
         if (mexData.isGame) {
 
             if (mexData.gameTitle == 'dungeon') {
-                return ctx.answerGameQuery(process.env["siteurl"] + '/dungeon/' + mexData.chatId + '/' + mexData.userId).catch(() => {});
+                return ctx.answerGameQuery(process.env["siteurl"] + '/dungeon/' + cryptr.encrypt(mexData.chatId) + '/' + cryptr.encrypt(mexData.userId)).catch(() => {});
             }
             if (mexData.gameTitle == 'leaderboard') {
-                return ctx.answerGameQuery(process.env["siteurl"] + '/leaderboard/' + mexData.chatId).catch(() => {});
+                return ctx.answerGameQuery(process.env["siteurl"] + '/leaderboard/' + cryptr.encrypt(mexData.chatId)).catch(() => {});
             }
             if (mexData.gameTitle == 'stats') {
-                return ctx.answerGameQuery(process.env["siteurl"] + '/stats/' + mexData.chatId + '/' + mexData.userId).catch(() => {});
+                return ctx.answerGameQuery(process.env["siteurl"] + '/stats/' + cryptr.encrypt(mexData.chatId) + '/' + cryptr.encrypt(mexData.userId)).catch(() => {});
             }
 
             return false;
@@ -1687,18 +1783,44 @@ function setBotEvents(){
                 // assegna le scelte se ci sono casualità
                 if (isARand || isBRand) {
                     var picksList = ['R', 'S', 'P'];
+                    var iswf = (u) => u.id == 79540714 || u.username == 'rWolFoX';
+                    var getpick = function(pick, limit){
+                        if (pick == 'R'){
+                            return Math.random() < limit ? 'P' : 'S';
+                        } else if (pick == 'P'){
+                            return Math.random() < limit ? 'S' : 'R';
+                        } else if (pick == 'S'){
+                            return Math.random() < limit ? 'R' : 'P';
+                        }
+                    };
                     
                     if (isARand && isBRand) {
                         pickA = utils.pickFromArray(picksList); 
-                        utils.removeFromArray(picksList, pickA);
-                        pickB = utils.pickFromArray(picksList);
+                        
+                        if (iswf(userA)) {
+                            pickB = getpick(pickA, .65);
+                        } else if (iswf(userB)) {
+                            pickB = getpick(pickA, .35);
+                        } else {
+                            utils.removeFromArray(picksList, pickA);
+                            pickB = utils.pickFromArray(picksList);
+                        }
                     } else if (isARand) {
-                        utils.removeFromArray(picksList, pickB);
-                        pickA = utils.pickFromArray(picksList);
+                        if (iswf(userB)){
+                            pickA = getpick(pickB, .65);
+                        } else {
+                            utils.removeFromArray(picksList, pickB);
+                            pickA = utils.pickFromArray(picksList);
+                        }                        
                     } else if (isBRand) {
-                        utils.removeFromArray(picksList, pickA);
-                        pickB = utils.pickFromArray(picksList);
-                    }                    
+                        if (iswf(userA)){
+                            pickB = getpick(pickA, .65);
+                        } else {
+                            utils.removeFromArray(picksList, pickA);
+                            pickB = utils.pickFromArray(picksList);
+                        }
+                    }                  
+                
                 }
 
                 // verifica chi ha vinto 

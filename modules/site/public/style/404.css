@@ -1,0 +1,77 @@
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+  user-select: none;
+}
+html {
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  margin: 0;
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  box-sizing: border-box;
+}
+html {
+  background-color: #2b323c;
+}
+div {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: scale(0.95) translate(-50%, -50%);
+  transform-origin: 0 0;
+  opacity: 0;
+  display: inline-block;
+  white-space: nowrap;
+  animation: show 0.6s 0.2s;
+  animation-fill-mode: forwards;
+}
+span {
+  font-size: 210px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 3px 0 #f0f, -3px 0 #0ff;
+}
+@-moz-keyframes show {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translate(-50%, -50%);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translate(-50%, -50%);
+  }
+}
+@-webkit-keyframes show {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translate(-50%, -50%);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translate(-50%, -50%);
+  }
+}
+@-o-keyframes show {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translate(-50%, -50%);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translate(-50%, -50%);
+  }
+}
+@keyframes show {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translate(-50%, -50%);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translate(-50%, -50%);
+  }
+}

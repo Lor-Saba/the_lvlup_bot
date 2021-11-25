@@ -1,0 +1,98 @@
+@require 'blocks/main.styl';
+@require 'blocks/icon.styl';
+
+html {
+    background-color: #111115;
+    color: #ffffff;
+}
+
+#body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    padding: 25px;
+    padding-bottom: 0;
+    box-sizing: border-box;
+}
+#canvas {
+    height: 100%;
+    width: 100%;
+    background: #050505;
+    outline: 1px solid #000;
+    font-size: 0;
+}
+#controls {
+    min-height: 200px;
+    padding: 50px 0;
+    width: 100%;
+}
+
+.arrows {
+    position: fixed;
+    display: inline-block;
+    width: 200px;
+    height: 200px;
+    bottom: 50px;
+    left: calc(50% - 100px);
+    overflow: hidden;
+    user-select: none;
+    border-radius: 60px;
+    background: #2223;
+    outline: 1px solid #0003;
+
+    img {
+        position: absolute;
+        pointer-events: none;
+        opacity: .5;
+
+        &.icon-angle-up {
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        &.icon-angle-right {
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+        }
+        &.icon-angle-down {
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        &.icon-angle-left {
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+        }
+    }
+
+}
+
+.arrows-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(45deg) scale(1.2);
+    transform-origin: 50%;
+
+    > div {
+        width: 50%;
+        height: 50%;
+        outline: 1px solid #0001;
+        cursor: pointer;
+
+        &:hover {
+            background: #2223;
+        }
+        &:active {
+            background: #3333;
+        }
+    }
+
+}

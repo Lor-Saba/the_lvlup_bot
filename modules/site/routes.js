@@ -2,33 +2,21 @@ module.exports = {
     'home': {
         name: 'home',
         path: '/',
-        view: 'index',
-        options: {},
-        preRender: (route, req) => {},
-        callback: (err, html) => {},
+        view: 'index'
     },
     'dungeon': {
         name: 'dungeon',
         path: '/dungeon/:chatId/:userId',
-        view: 'dungeon',
-        options: {},
-        preRender: (route, req) => {},
-        callback: (err, html) => {},
+        view: 'dungeon'
     },
     'leaderboard': {
         name: 'leaderboard',
         path: '/leaderboard/:chatId/',
-        view: 'leaderboard',
-        options: {},
-        preRender: (route, req) => {},
-        callback: (err, html) => {},
+        view: 'leaderboard'
     },
     'stats': {
         name: 'stats',
         path: '/stats/:chatId/:userId',
-        view: 'stats',
-        options: {},
-        preRender: (route, req) => {},
-        callback: (err, html) => {},
+        view: 'stats'
     }
 }

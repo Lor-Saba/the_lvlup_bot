@@ -2,6 +2,7 @@ var gulp = require('gulp');
 var clean = require('gulp-clean');
 var gulpCopy = require('gulp-copy');
 var shell = require('gulp-shell');
+var stylus = require('gulp-stylus');
 
 /*
 Git alias:
@@ -36,6 +37,18 @@ gulp.task('copy', function(){
     .pipe(gulpCopy('../dist/'))
 });
 
-gulp.task('shell', shell.task('cd ../dist/ && git cmp "deploy"'));
+gulp.task('compile-stylus', function () {
+    return gulp.src('./modules/site/stylus/*.styl')
+        .pipe(stylus())
+        .pipe(gulp.dest('./modules/site/public/style'));
+});
 
-gulp.task('default', gulp.series('clean', 'copy', 'cleanbak', 'shell'));
+gulp.task('shell', shell.task('cd ../dist/ && git cmp "deploy"'));
+gulp.task('watch', function() {
+    gulp.watch([
+        './modules/site/stylus/*.styl',
+        './modules/site/stylus/blocks/*.styl'
+    ], gulp.series('compile-stylus'))
+});
+
+//gulp.task('default', gulp.series('clean', 'compile-stylus', 'copy', 'cleanbak', 'shell'));

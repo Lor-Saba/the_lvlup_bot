@@ -20,12 +20,13 @@ app.set("view engine", "hbs");
  * @param {function} preRender 
  * @param {function} callback 
  */
-function on(name, preRender, callback){
+function on(name, config){
 
+    if (!(config && config.constructor === Object)) return;
     if (routes[name].name != name) return;
 
-    routes[name].preRender = preRender || routes[name].preRender;
-    routes[name].callback  = callback  || routes[name].callback;
+    routes[name].getHandler   = config.get  || null;
+    routes[name].postHandler  = config.post || null;
 }
 
 /**
@@ -36,14 +37,38 @@ function init(port){
     return new Promise(ok => {
 
         utils.each(routes, function(name, route){
-            route.set = function(options){
-                route.options = Object.assign(route.options, options);
-            };
-            app.get(route.path, function (req, res) {
-                route.preRender(req.params, route);
-                route.set({ viewName: route.name });
-                res.render(route.view, route.options);
-            });
+
+            if (route.getHandler) {
+                app.get(route.path, function (req, res) {
+                    let data = route.getHandler(req.params, route);
+
+                    if (data != false) {
+                        res.render(route.view, Object.assign(data, { viewName: route.name }));
+                    } else {
+                        res.render('404', data);
+                    }                    
+                });                
+            }
+
+            if (route.postHandler) {
+                app.post(route.path, function (req, res) {
+                    let data = route.postHandler(req, res, route);
+                    let result = null;
+
+                    if (data != false) {
+                        result = { data: options };
+                        res.status(200);
+                        // ok
+                    } else {
+                        result = { error: true, data: options }
+                        res.status(501);
+                        // error
+                    }      
+
+                    res.json(result);
+                });
+            }
+
         });
 
         // app.get('*',function (req, res) {

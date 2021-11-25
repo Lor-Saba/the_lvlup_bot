@@ -8,19 +8,19 @@ var eventsList = {};
 // lista di eventi da schedulare
 var scheduleMap = [
     // “At 12:00 on Sunday.” 
-    { rule: '0 12 * * 0', type: 'monster' },
+    { rule: '0 13 * * 0', type: 'monster' },
     // “At 12:00 on Monday, Wednesday, and Friday.” 
-    { rule: '0 12 * * 1,3,5', type: 'dungeon' },
+    { rule: '0 13 * * 1,3,5', type: 'dungeon' },
     // “At 11:00 on Saturday.” 
-    { rule: '0 11 * * 6', type: 'randomevent' },
+    { rule: '0 12 * * 6', type: 'randomevent' },
     // “At 08:00 on every day-of-week from Monday through Friday.” 
-    { rule: '0 12,17 * * 1-5', type: 'riddles' },
+    { rule: '0 13,18 * * 1-5', type: 'riddles' },
     // “At 00:00 on day-of-month 25 in December.” 
     { rule: '0 0 25 12 *', type: 'xmas' },
     // “At 10:17 on day-of-month 1 in April.” 
     { rule: '17 10 1 4 *', type: 'aprilfool' },
     // “At 10:00 on day-of-month 31 in October.” 
-    { rule: '0 10 31 10 *', type: 'halloween' },
+    { rule: '0 11 31 10 *', type: 'halloween' },
     // “At 01:00.” 
     { rule: '0 1 * * *', type: 'backup' },
     // “At 08:00 on every day-of-week from Monday through Friday.” 
@@ -103,8 +103,6 @@ function parseRule(ruleString){
     rule.month = parseValue(ruleSplit[3]);
     rule.dayOfWeek = parseValue(ruleSplit[4]);
     rule.tz = 'Europe/Rome';
-
-    console.log(ruleString, rule);
 
     return rule;
 }
