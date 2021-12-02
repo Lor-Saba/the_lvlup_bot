@@ -78,16 +78,6 @@ function connectMongoDB(){
  */
 function startSite(){
     return new Promise(ok => {
-
-        site.on('home', {
-            get: function(params, route){
-                console.log('site::home');
-            },
-            post: function(){
-
-            }
-        });
-
         site.on('dungeon', {
             get: function(params, route){
                 console.log('site::dungeon');
@@ -116,7 +106,8 @@ function startSite(){
                 var userId = cryptr.decrypt(params.userId);
                 var user = storage.getUser(userId);
                 var userStats = user.chats[chatId];
-                var ctx = { state: { lexicon: null, mexData: { chatId: chatId } } };
+                var lexicon = Lexicon.lang('en');
+                var ctx = { state: { lexicon: lexicon, mexData: { chatId: chatId } } };
 
                 if (!user) return false;
                 if (!userStats) return false;
@@ -125,82 +116,141 @@ function startSite(){
                     username: user.username,
                     chatId: params.chatId,
                     userId: params.userId,
-
-                    // aggiunge il livello di penalità attivo ['🟢','🟡','🟠','🔴','❌']
-                    penalityLevel: userStats.penality.level
-                }
-
-                // non è stata ancora raccolto alcuna statistica ed interrompe il comando
-                if (BigNumber(userStats.exp).isEqualTo(0) 
-                &&  BigNumber(userStats.level).isEqualTo(0) 
-                &&  BigNumber(userStats.prestige).isEqualTo(0)) {
-                    templateData.noStats = true;
-                    return templateData;
-                }
-
-                templateData.stats = {
-                    hasExp: BigNumber(userStats.exp).isGreaterThan(0),
-                    hasLevel: BigNumber(userStats.level).isGreaterThan(0),
-                    hasPrestige: BigNumber(userStats.prestige).isGreaterThan(0),
-
-                    exp: utils.formatNumber(userStats.exp, 6),
-                    level: utils.formatNumber(utils.toFloor(userStats.level), 0),
-                    prestige: utils.formatNumber(userStats.prestige, 0),
-
-                    expPerMessage: utils.formatNumber(calcUserExpGain(ctx, user, 1, true)),
-                    prestigeBonus: utils.formatNumber(utils.calcExpGain(userStats.prestige).minus(1).multipliedBy(100), 0),
-
-                    itemsBuff: []
+                    penalityLevel: userStats.penality.level // ['🟢','🟡','🟠','🔴','❌']
                 };
-                
-                // aggiunge il bonus degli oggetti raccattati
-                if (Object.keys(userStats.items).length){
+
+                var getStatsData = function(){
+
+                    var data = {                        
+                        hasExp: BigNumber(userStats.exp).isGreaterThan(0),
+                        hasLevel: BigNumber(userStats.level).isGreaterThan(0),
+                        hasPrestige: BigNumber(userStats.prestige).isGreaterThan(0),
+    
+                        exp: utils.formatNumber(userStats.exp, 6),
+                        level: utils.formatNumber(utils.toFloor(userStats.level), 0),
+                        prestige: utils.formatNumber(userStats.prestige, 0),
+    
+                        prestigeAvailable: userStats.prestigeAvailable,
+                        expPerMessage: utils.formatNumber(calcUserExpGain(ctx, user, 1, true)),
+                        prestigeBonus: utils.formatNumber(utils.calcExpGain(userStats.prestige).minus(1).multipliedBy(100), 0),
+    
+                        itemsBuff: []
+                    };
+
+                    // non è stata ancora raccolto alcuna statistica ed interrompe il comando
+                    if (BigNumber(userStats.exp).isEqualTo(0) 
+                    &&  BigNumber(userStats.level).isEqualTo(0) 
+                    &&  BigNumber(userStats.prestige).isEqualTo(0)) {} 
+                    else {
+                        data.hasStats = true;
+                    }
                     
-                    var itemsBuff = items.getItemsBuff(userStats.items);
-
-                    utils.each(itemsBuff, function(target, value){
-                        var buff = value - 1;
-                        if (buff === 0) return;
-
-                        templateData.stats.itemsBuff.push({ 
-                            target: Lexicon.get('ITEMS_LIST_TARGET_' + target.toUpperCase()),
-                            value: (buff >= 0 ? '+' : '') + (buff * 100).toFixed(2) + '%'
+                    // aggiunge il bonus degli oggetti raccattati
+                    if (Object.keys(userStats.items).length){
+                        
+                        var itemsBuff = items.getItemsBuff(userStats.items);
+    
+                        utils.each(itemsBuff, function(target, value){
+                            var buff = value - 1;
+                            if (buff === 0) return;
+    
+                            data.itemsBuff.push({ 
+                                target: lexicon.get('ITEMS_LIST_TARGET_' + target.toUpperCase()),
+                                value: (buff >= 0 ? '+' : '') + (buff * 100).toFixed(2) + '%'
+                            });
                         });
-                    });
-                }
+                    }
+    
+                    // aggiunge il conteggio del numero di challenges vinte e perse
+                    if (userStats.challengeWonTotal || userStats.challengeLostTotal) {
+                        data.hasChallenges = true;
+                        data.challengesWon = userStats.challengeWonTotal;
+                        data.challengesLost = userStats.challengeLostTotal;
+                        data.challengesRateo = (Number(userStats.challengeWonTotal) / (Number(userStats.challengeLostTotal) || 1)).toFixed(2);
+                    }
+    
+                    // aggiunge il livello massimo raggiunto
+                    if (BigNumber(userStats.levelReached).isGreaterThan(0)) {
+                        data.maxLevelReached = utils.formatNumber(utils.toFloor(userStats.levelReached), 0);
+                    }
+    
+                    var levelDiff = BigNumber(userStats.level).minus(utils.toFloor(userStats.level));
+                        levelDiff = Number(levelDiff.valueOf());
+    
+                    var prestigeDiff = BigNumber(userStats.exp).dividedBy(utils.calcNextPrestigeLevel(userStats.prestige));
+                        prestigeDiff = Number(prestigeDiff.valueOf());
+    
+                    data.progress = {
+                        levelVisible: BigNumber(userStats.level).isGreaterThan(0),
+                        levelPercent: (levelDiff * 100).toFixed(0),
+                        levelExpRequired: utils.calcExpFromLevel(BigNumber(utils.toFloor(userStats.level)).plus(1)).minus(userStats.exp).toFixed(2),
+    
+                        prestigeVisible: BigNumber(userStats.prestige).isGreaterThan(0),
+                        prestigePercent: (prestigeDiff * 100).toFixed(0),
+                        prestigeExpRequired: utils.calcNextPrestigeLevel(userStats.prestige).minus(userStats.exp).toFixed(2)
+                    };
 
-                // aggiunge il conteggio del numero di challenges vinte e perse
-                if (userStats.challengeWonTotal || userStats.challengeLostTotal) {
-                    templateData.stats.hasChallenges = true;
-                    templateData.stats.challengesWon = userStats.challengeWonTotal;
-                    templateData.stats.challengesLost = userStats.challengeLostTotal;
-                    templateData.stats.challengesRateo = (Number(userStats.challengeWonTotal) / (Number(userStats.challengeLostTotal) || 1)).toFixed(2);
-                }
-
-                // aggiunge il livello massimo raggiunto
-                if (BigNumber(userStats.levelReached).isGreaterThan(0)) {
-                    templateData.stats.maxLevelReached = utils.formatNumber(utils.toFloor(userStats.levelReached), 0);
-                }
-
-                var levelDiff = BigNumber(userStats.level).minus(utils.toFloor(userStats.level));
-                    levelDiff = Number(levelDiff.valueOf());
-
-                var prestigeDiff = BigNumber(userStats.exp).dividedBy(utils.calcNextPrestigeLevel(userStats.prestige));
-                    prestigeDiff = Number(prestigeDiff.valueOf());
-
-                templateData.stats.progress = {
-                    levelVisible: BigNumber(userStats.level).isGreaterThan(0),
-                    levelPercent: (levelDiff * 100).toFixed(0),
-                    levelExpRequired: utils.calcExpFromLevel(BigNumber(utils.toFloor(userStats.level)).plus(1)).minus(userStats.exp).toFixed(2),
-
-                    prestigeVisible: BigNumber(userStats.prestige).isGreaterThan(0),
-                    prestigePercent: (prestigeDiff * 100).toFixed(0),
-                    prestigeExpRequired: utils.calcNextPrestigeLevel(userStats.prestige).minus(userStats.exp).toFixed(2)
+                    return data;
                 };
+                var getItemsData = function(){
+
+                    var data = {
+                        hasItems: !!Object.keys(userStats.items).length,
+                        group: {}
+                    };
+
+                    if (data.hasItems){
+                        var itemsBuff = items.getItemsBuff(userStats.items);
+
+                        utils.each(userStats.items, function(key, value){
+                            var item = items.get(key);
+                            var buff = itemsBuff[item.target] - 1;
+
+                            if (!data.group[item.target]){
+                                data.group[item.target] = {
+                                    label: lexicon.get('ITEMS_LIST_TARGETLONG_' + item.target.toUpperCase()),
+                                    buff: (buff >= 0 ? '+' : '') + (buff * 100).toFixed(2) + '%',
+                                    list: []
+                                };
+                            }
+
+                            data.group[item.target].list.push({
+                                rarityicon: items.getItemRarityIcon(key),
+                                title: lexicon.get('ITEMS_TITLE_' + key),
+                                // description: lexicon.get('ITEMS_DESCRIPTION_' + key),
+                                buff: items.getItemBuffText(item),
+                                quantity: item.timeout ? null : value,
+                                timeout: item.timeout ? (value + ( 60 * 60 * item.timeout) - (Date.now() / 1000)) : null,
+                            });
+                        });
+
+                    } else {
+
+                        // aggiunge il titolo 
+                        //text = lexicon.get('ITEMS_LIST_NOITEMS', { username: user.username })
+                    }
+
+                    return data;
+                };
+
+                templateData.stats = getStatsData();
+                templateData.items = getItemsData();
 
                 return templateData;
             }
         });
+
+        site.on('chat', {
+            get: function(params, route){
+                console.log('site::chat');
+
+                return {};
+            },
+            post: function(){
+
+            }
+        });
+
 
         site.init(process.env['siteport'])
         .then(() => {
@@ -525,7 +575,7 @@ function initSchedulerEvents(){
                 var text = '';
                 var lexicon = data.ctx.state.lexicon;
                 
-                if (Math.random() < 0.1) {
+                if (Math.random() < 0.05) {
                     text += lexicon.get('DUNGEON_EXPLORE_FAIL_TITLE', { username: data.user.username });
                 } else {
                     // oggetto droppato dal dungeon
@@ -1612,16 +1662,19 @@ function setBotEvents(){
         if (mexData.isGame) {
 
             if (mexData.gameTitle == 'dungeon') {
-                return ctx.answerGameQuery(process.env["siteurl"] + '/dungeon/' + cryptr.encrypt(mexData.chatId) + '/' + cryptr.encrypt(mexData.userId)).catch(() => {});
+                return ctx.answerGameQuery(process.env["siteurl"] + '/page/dungeon/' + cryptr.encrypt(mexData.chatId) + '/' + cryptr.encrypt(mexData.userId)).catch(() => {});
             }
             if (mexData.gameTitle == 'leaderboard') {
-                return ctx.answerGameQuery(process.env["siteurl"] + '/leaderboard/' + cryptr.encrypt(mexData.chatId)).catch(() => {});
+                return ctx.answerGameQuery(process.env["siteurl"] + '/page/leaderboard/' + cryptr.encrypt(mexData.chatId)).catch(() => {});
             }
             if (mexData.gameTitle == 'stats') {
-                return ctx.answerGameQuery(process.env["siteurl"] + '/stats/' + cryptr.encrypt(mexData.chatId) + '/' + cryptr.encrypt(mexData.userId)).catch(() => {});
+                return ctx.answerGameQuery(process.env["siteurl"] + '/page/stats/' + cryptr.encrypt(mexData.chatId) + '/' + cryptr.encrypt(mexData.userId)).catch(() => {});
+            }
+            if (mexData.gameTitle == 'chat') {
+                return ctx.answerGameQuery(process.env["siteurl"] + '/page/chat/' + cryptr.encrypt(mexData.chatId)).catch(() => {});
             }
 
-            return false;
+            return ctx.answerGameQuery(process.env["siteurl"] + '/404').catch(() => {});
         }
 
         if (!queryData) return modalError();
@@ -2436,13 +2489,24 @@ function init(){
             checkIfUpdated();
 
             console.log('-----\nBot running!');
+
+
+                    //// ottiene il riferimento alle stats dell'utente per la chat corrente
+                    //var userStats = storage.getUser(357270868).chats['-553783828'];
+//
+                    //// inserisce l'oggetto nella lista dell'utente
+                    //items.insertItemTo(userStats.items, items.get('POISON'));
+                    //items.insertItemTo(userStats.items, items.get('SHIT'));
+
         });
 
     })
     .catch(err => {
 
         // Errore
-        utils.errorlog('Errors in initialization, Bot not launched.', JSON.stringify(err));
+        utils.errorlog('Global catch:');
+        console.log(err.message);
+        console.log(err.stack);
     });
 }
 
@@ -2455,4 +2519,5 @@ init();
 
 // messages.q('sendMessage', {
 //     userId: 13112141
-// })
+// });
+

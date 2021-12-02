@@ -32,6 +32,28 @@ module.exports = {
         "en": "Ch. Cooldown"
     },
 
+    "ITEMS_LIST_TARGETLONG_EXP": {
+        "en": "Exp"
+    },
+    "ITEMS_LIST_TARGETLONG_ATTACK_DAMAGE": {
+        "en": "Attack Damage"
+    },
+    "ITEMS_LIST_TARGETLONG_DROP_CHANCE": {
+        "en": "Drop Chance"
+    },
+    "ITEMS_LIST_TARGETLONG_DROP_CD": {
+        "en": "Drop Cooldown"
+    },
+    "ITEMS_LIST_TARGETLONG_CH_WIN": {
+        "en": "Challenge Win Exp"
+    },
+    "ITEMS_LIST_TARGETLONG_CH_LOSE": {
+        "en": "Challenge Lose Exp"
+    },
+    "ITEMS_LIST_TARGETLONG_CH_CD": {
+        "en": "Challenge Cooldown"
+    },
+
     "ITEMS_LIST_ITEM_PERM": {
         "en": "_$(name)_    `+$(value)%`   (x$(quantity))"
     },

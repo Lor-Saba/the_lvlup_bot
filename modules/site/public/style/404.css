@@ -13,6 +13,17 @@ html {
 body {
   margin: 0;
   box-sizing: border-box;
+  overflow: hidden;
+}
+.wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  color: #334;
+  overflow: hidden;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
 }
 html {
   background-color: #2b323c;
@@ -30,10 +41,10 @@ div {
   animation-fill-mode: forwards;
 }
 span {
-  font-size: 210px;
+  font-size: 100px;
   font-weight: bold;
   color: #fff;
-  text-shadow: 3px 0 #f0f, -3px 0 #0ff;
+  text-shadow: 2px 0 #f0f, -2px 0 #0ff;
 }
 @-moz-keyframes show {
   0% {

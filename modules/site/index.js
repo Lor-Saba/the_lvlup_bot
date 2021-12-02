@@ -23,7 +23,7 @@ app.set("view engine", "hbs");
 function on(name, config){
 
     if (!(config && config.constructor === Object)) return;
-    if (routes[name].name != name) return;
+    if (!routes[name]) return;
 
     routes[name].getHandler   = config.get  || null;
     routes[name].postHandler  = config.post || null;
@@ -38,12 +38,14 @@ function init(port){
 
         utils.each(routes, function(name, route){
 
+            route.routeName = name;
+
             if (route.getHandler) {
                 app.get(route.path, function (req, res) {
                     let data = route.getHandler(req.params, route);
 
                     if (data != false) {
-                        res.render(route.view, Object.assign(data, { viewName: route.name }));
+                        res.render(route.view, Object.assign(data || {}, { viewName: route.name }));
                     } else {
                         res.render('404', data);
                     }                    
@@ -71,11 +73,8 @@ function init(port){
 
         });
 
-        // app.get('*',function (req, res) {
-        //     res.render("index");
-        // });
-
         app.use(express.static(path.join(__dirname, 'public/')));
+        app.use((req, res) => res.render('404', {})); 
         app.listen(Number(port), ok);
     });
 }

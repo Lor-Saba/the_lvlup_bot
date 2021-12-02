@@ -9,14 +9,26 @@ module.exports = {
     "STATS_EPM": {
         "en": "Exp per message:  `$(value)`"
     },
+    "STATS_EPM_LABEL": {
+        "en": "Exp per message"
+    },
     "STATS_PRESTIGE_BONUS": {
         "en": "Prestige bonus:  `+$(value)%`"
+    },
+    "STATS_PRESTIGE_BONUS_LABEL": {
+        "en": "Prestige bonus"
     },
     "STATS_LEVEL_PROGRESS": {
         "en": "To next Level:  `$(percentage)%`"
     },
+    "STATS_LEVEL_PROGRESS_LABEL": {
+        "en": "To next Level:"
+    },
     "STATS_PRESTIGE_PROGRESS": {
         "en": "To next Prestige:  `$(percentage)%`"
+    },
+    "STATS_PRESTIGE_PROGRESS_LABEL": {
+        "en": "To next Prestige:"
     },
     "STATS_LEADERBOARD_POSITION": {
         "en": "Position in /leaderboard"
@@ -42,6 +54,9 @@ module.exports = {
     "STATS_ITEM_TARGET": {
         "en": " - $(target):   `$(value)`"
     },
+    "STATS_BONUSES": {
+        "en": "Bonuses"
+    },
     "STATS_EFFECTS": {
         "en": "Effects bonus:  "
     },
@@ -50,5 +65,23 @@ module.exports = {
     },
     "STATS_CHALLENGE_LUCK": {
         "en": "Challenges (total):  _W_ `$(valueW)` - _L_ `$(valueL)`"
+    },
+    "STATS_CHALLENGE_TOTAL_LABEL": {
+        "en": "Challenges Total"
+    },
+    "STATS_CHALLENGE_RATEO_LABEL": {
+        "en": "Challenges Rateo"
+    },
+    "STATS_CHALLENGE_W_LABEL": {
+        "en": "W"
+    },
+    "STATS_CHALLENGE_L_LABEL": {
+        "en": "L"
+    },
+    "STATS_NOSTATS": {
+        "en": "There are no stats."
+    },
+    "STATS_LABEL_PRESTIGEAVAILABLE": {
+        "en": "Prestige available"
     }
 };

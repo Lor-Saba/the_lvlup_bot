@@ -1,0 +1,23 @@
+@import 'blocks/main.styl';
+@import 'blocks/icon.styl';
+@import 'blocks/fields.styl';
+
+html {
+    background: #f5f5f5;
+}
+
+.chat-name {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    height: 80px;
+
+    span {
+        font-size: 22px;
+        font-weight: 600;
+        flex-grow: 1;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+    }
+}

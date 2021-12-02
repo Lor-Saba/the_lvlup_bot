@@ -1,0 +1,191 @@
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+  user-select: none;
+}
+html {
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  margin: 0;
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  color: #334;
+  overflow: hidden;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+}
+.icon {
+  display: inline-flex;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+}
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+}
+.field {
+  width: 100%;
+  margin-top: 15px;
+  color: #334;
+}
+.field:first-child {
+  margin-top: 0;
+}
+.field.half {
+  width: 50%;
+}
+.field-separator {
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid #ddd;
+}
+.field-separator + .field-separator {
+  display: none;
+}
+.field-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+}
+.field-title.green {
+  color: #3b3;
+}
+.field-title.blue {
+  color: #3a84d2;
+}
+.field-title.purple {
+  color: #9922ea;
+}
+.field-title small {
+  color: #445;
+  font-family: Oxanium;
+  font-weight: 400;
+}
+.field-value {
+  color: #445;
+  font-size: 15px;
+  font-family: Oxanium;
+  margin-top: 4px;
+}
+.field-values {
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+}
+.field-values > div {
+  width: 100%;
+}
+.field-values .field-value-row {
+  display: flex;
+  justify-content: space-between;
+}
+.field-values .field-value-row span:last-child {
+  color: #445;
+  font-size: 15px;
+  font-family: Oxanium;
+}
+.field-progress-bar {
+  display: flex;
+  height: 5px;
+  position: relative;
+  margin: 15px 0;
+  background: #ddd;
+  border-radius: 5px;
+}
+.field-progress-bar div {
+  display: inline-block;
+  height: 100%;
+  border-radius: 5px;
+}
+.field-progress-bar span {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  height: 19px;
+  border-radius: 50px;
+  font-size: 12px;
+  padding: 0 10px;
+  line-height: 20px;
+  color: #fff;
+  font-weight: bold;
+  margin-top: -1px;
+}
+.field-progress-bar.blue div,
+.field-progress-bar.blue span {
+  background: #3a84d2;
+}
+.field-progress-bar.purple div,
+.field-progress-bar.purple span {
+  background: #9922ea;
+}
+.field-progress-bar.purple.pulse div {
+  animation: progressbar-purple-pulse 0.6s infinite;
+}
+.field-progress-bar.purple.pulse span {
+  transform: translate(0%, -50%);
+  right: -10px;
+  left: auto !important;
+}
+@-moz-keyframes progressbar-purple-pulse {
+  from {
+    box-shadow: 0 0 0 0px #9922ea;
+  }
+  to {
+    box-shadow: 0 0 0 7px rgba(153,34,234,0);
+  }
+}
+@-webkit-keyframes progressbar-purple-pulse {
+  from {
+    box-shadow: 0 0 0 0px #9922ea;
+  }
+  to {
+    box-shadow: 0 0 0 7px rgba(153,34,234,0);
+  }
+}
+@-o-keyframes progressbar-purple-pulse {
+  from {
+    box-shadow: 0 0 0 0px #9922ea;
+  }
+  to {
+    box-shadow: 0 0 0 7px rgba(153,34,234,0);
+  }
+}
+@keyframes progressbar-purple-pulse {
+  from {
+    box-shadow: 0 0 0 0px #9922ea;
+  }
+  to {
+    box-shadow: 0 0 0 7px rgba(153,34,234,0);
+  }
+}
+html {
+  background: #f5f5f5;
+}
+.chat-name {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  height: 80px;
+}
+.chat-name span {
+  font-size: 22px;
+  font-weight: 600;
+  flex-grow: 1;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}

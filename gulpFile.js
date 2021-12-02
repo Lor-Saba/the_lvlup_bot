@@ -44,11 +44,11 @@ gulp.task('compile-stylus', function () {
 });
 
 gulp.task('shell', shell.task('cd ../dist/ && git cmp "deploy"'));
-gulp.task('watch', function() {
+gulp.task('watch', gulp.series('compile-stylus', function() {
     gulp.watch([
         './modules/site/stylus/*.styl',
         './modules/site/stylus/blocks/*.styl'
     ], gulp.series('compile-stylus'))
-});
+}));
 
 //gulp.task('default', gulp.series('clean', 'compile-stylus', 'copy', 'cleanbak', 'shell'));

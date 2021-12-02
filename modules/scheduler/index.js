@@ -54,8 +54,6 @@ function on(type, callback){
  */
 function trigger(type){
 
-    console.log('scheduler:', type);
-
     if (eventsList[type]) {
         utils.each(eventsList[type].fn, (indexEvent, event) => event());
     }

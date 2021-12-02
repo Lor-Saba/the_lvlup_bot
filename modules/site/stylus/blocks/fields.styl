@@ -1,0 +1,132 @@
+
+.fields {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.field {
+    width: 100%;
+    margin-top: 15px;
+    color: #334;
+
+    &:first-child {
+        margin-top: 0;
+    }
+
+    &.half {
+        width: 50%;
+    }
+}
+
+.field-separator {
+    width: 100%;
+    margin-top: 20px;
+    margin-bottom: 5px;
+    border-bottom: 1px solid #ddd;
+
+    + .field-separator {
+        display: none;
+    }
+}
+
+.field-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+
+    &.green {
+        color: #3b3;
+    }
+    &.blue {
+        color: #3a84d2;
+    }
+    &.purple {
+        color: #9922ea;
+    }
+
+    small {
+        color: #445;
+        font-family: Oxanium; 
+        font-weight: 400;
+    }
+}
+.field-value {
+    color: #445;
+    font-size: 15px; 
+    font-family: Oxanium; 
+    margin-top: 4px;
+}
+.field-values {
+    margin-top: 4px;
+    display: flex;
+    flex-wrap: wrap;
+
+    > div {
+        width: 100%;
+    }
+
+    .field-value-row {
+        display: flex;
+        justify-content: space-between;
+
+        span:last-child {
+            color: #445;
+            font-size: 15px; 
+            font-family: Oxanium;      
+        }
+    }
+}
+
+.field-progress-bar {
+    display: flex;
+    height: 5px;
+    position: relative;
+    margin: 15px 0;
+    background: #ddd;
+    border-radius: 5px;
+
+    div {
+        display: inline-block;
+        height: 100%;
+        border-radius: 5px;
+    }
+
+    span {
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        height: 19px;
+        border-radius: 50px;
+        font-size: 12px;
+        padding: 0 10px;
+        line-height: 20px;
+        color: #fff;
+        font-weight: bold;
+        margin-top: -1px;
+    }
+
+    &.blue {
+        div, span { background: #3a84d2; }
+    }
+
+    &.purple {
+        div, span { background: #9922ea; }
+    }
+
+    &.purple.pulse {
+        div {
+            animation: progressbar-purple-pulse .6s infinite;
+        }
+        span {
+            transform: translate(0%, -50%);
+            right: -10px;
+            left: auto !important;
+        }
+    }
+
+    @keyframes progressbar-purple-pulse {
+        from { box-shadow: 0 0 0 0px  #9922eaff; }
+        to   { box-shadow: 0 0 0 7px #9922ea00; }
+    }
+}

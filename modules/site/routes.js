@@ -1,22 +1,18 @@
 module.exports = {
-    'home': {
-        name: 'home',
-        path: '/',
-        view: 'index'
-    },
     'dungeon': {
-        name: 'dungeon',
-        path: '/dungeon/:chatId/:userId',
+        path: '/page/dungeon/:chatId/:userId',
         view: 'dungeon'
     },
     'leaderboard': {
-        name: 'leaderboard',
-        path: '/leaderboard/:chatId/',
+        path: '/page/leaderboard/:chatId/',
         view: 'leaderboard'
     },
     'stats': {
-        name: 'stats',
-        path: '/stats/:chatId/:userId',
+        path: '/page/stats/:chatId/:userId',
         view: 'stats'
+    },
+    'chat': {
+        path: '/page/chat/:chatId/',
+        view: 'chat'
     }
 }
