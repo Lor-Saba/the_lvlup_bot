@@ -271,6 +271,8 @@ function spawn(chat, config){
 
     var monster = Object.assign({
         chatId: null,
+        icon: '',
+        spawnTime: null,
         spawnTimeoutId: null,
         attackableTimeoutId: null,
         autoAttackIntervalId: null,
@@ -294,10 +296,14 @@ function spawn(chat, config){
         onEscaped: () => {}
     }, config);
 
+    var iconEmoji =['🐁', '🐈', '🐩', '🐖', '🦨', '🦩', '🐺', '🐝', '🐗', '🐌', '🦋', '🕷', '🦟', '🐍', '🦑', '🦆', '🦉', '🐊', '🐋', '🐘', '🦧', '🐬', '🐟', '🦜', '🐫', '🦒', '🦐', '🦂', '🐢', '🦕', '🦖'];
+
+    monster.timeLimit = (Date.now() + monsterTimeLimit) / 1000;
     monster.chatId = chat.id;
     monster.level = chat.monsterDefeated;
     monster.health = calcMonsterHealth(monster.level);
     monster.healthMax = monster.health;
+    monster.icon = iconEmoji[monster.level % iconEmoji.length];
     monster.spawnTimeoutId = setTimeout(() => {
         callEvent(monster.onExpire, { monster: monster, chat: chat });
         removeMonster(chat.id);

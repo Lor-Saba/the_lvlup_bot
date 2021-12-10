@@ -1,5 +1,7 @@
 @import 'blocks/main.styl';
 @import 'blocks/icon.styl';
+@import 'blocks/tabs.styl';
+@import 'blocks/items.styl';
 @import 'blocks/fields.styl';
 
 html {
@@ -8,10 +10,29 @@ html {
 
 .chat-name {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
-    height: 80px;
+    padding: 40px 20px 20px;
+    background: url(../img/color-triangles-contrast-bg.jpg);
+    box-shadow: inset 0 -50px 70px #fff;
+    background-size: cover;
+    background-position-y: -20%;
+    background-repeat: no-repeat;
+    background-color: #fff;
+    height: 112px;
+    animation: show-top-background 2s;
+    animation-fill-mode: forwards;
+
+    @keyframes show-top-background {
+        0%   { background-position-y: -20%;  }
+        100% { background-position-y: 50%; }
+    }
+
+    div {
+        width: 100%;
+        opacity: .7;
+    }
 
     span {
         font-size: 22px;
@@ -21,3 +42,248 @@ html {
         text-overflow: ellipsis;
     }
 }
+
+.tabs {
+    height: calc(100% - 112px);
+}
+
+.users-filter {
+    position: relative;
+
+    input {
+        height: 35px;
+        line-height: 35px;
+        padding: 0 30px 0 40px;
+        width: 100%;
+        border: 0;
+        border-radius: 4px;
+        box-shadow: inset 0 0 0 2px #eee;        
+    }
+
+    .icon {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 16px;
+        height: 16px;
+        color: #ccc;
+    }
+
+}
+
+.users-list {
+    margin-top: 20px;
+    background: #f5f5f5;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 15px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: calc(100% - 60px);
+}
+
+.user {
+    display: flex;
+    position: relative;
+
+    > div { 
+        width: 100%; 
+        padding-right: 40px;
+    }
+
+    &:not(:first-child) {
+        margin-top: 19px;
+
+        &::before {
+            content: '';
+            display: inline-block;
+            height: 1px;
+            width: 100%;
+            background: #ddd;
+            position: absolute;
+            top: -10px
+        }
+    }
+
+    &.hidden {
+        display: none;
+    }
+}
+.user-name {
+    text-overflow: ellipsis;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.user-stats {
+    display: flex;
+
+    > div {
+        white-space: nowrap;
+        margin-right: 15px;
+        color: #667;
+        font-family: Oxanium;     
+        font-size: 13px;
+    }
+}
+.user-checkstats {
+    position: absolute;
+    right: 0;
+    top: 0;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px #0001;
+    color: #445;
+
+    .icon {
+        width: 40px;
+        height: 40px;
+        padding: 8px;
+    }
+}
+
+
+.monster {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border-radius: 4px;
+    box-shadow: inset 0 0 0 2px #81f;
+    background: linear-gradient(135deg, rgba(136, 17, 255, 0.04) 50%, rgba(136, 17, 255, 0.24));
+    padding: 15px;
+}
+.monster-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+}
+.monster-info {
+    display: flex;
+    position: relative;
+
+    > div:first-child {
+        text-align: center;
+    }
+
+    > div:last-child {
+        width: 100%;
+        text-align: right;
+    }
+}
+
+
+.monster-health {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-left: 15px;
+
+    .field-progress {
+        width: 100%;
+    }
+    .field-progress-bar {
+        background: #0002;
+    }
+}
+
+.monster-health-label {
+    color: #445;
+    font-size: 14px;
+    font-family: Oxanium;
+    font-weight: 400;
+    text-align: right;
+    width: 100%;
+    line-height: 1em;
+}
+
+.monster-icon {
+    font-size: 22px;
+}
+.monster-level {
+    color: #445;
+    font-size: 15px;
+    font-family: Oxanium;  
+    width: 100%;
+    white-space: nowrap;
+}
+
+.monster-timeout {
+    display: flex;
+    font-size: 14px;
+    font-family: Oxanium;   
+    font-weight: 400;
+}
+.monster-timeouticon {
+    margin-right: 5px;
+
+    .icon {
+        width: 16px;
+        height: 16px;
+    }
+}
+.monster-timeoutduration {
+    display: flex;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+<div class="monster-heart">
+    <div><div class="monster-heart-fill"></div></div>
+    <div class="monster-heart-empty"></div>
+</div>
+
+.monster-heart {
+    position: relative;
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+
+    > div:first-child {
+        margin: 3px;
+        display: inline-block;
+        position: relative;
+        width: calc(100% - 6px);
+        height: calc(100% - 6px);
+    }
+    > div:last-child {
+        background-image: url(../img/heart-empty.png);
+    }
+}
+
+.monster-heart-empty ,
+.monster-heart-fill {
+    width: 100%;
+    height: 100%;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-position-y: 100%;
+    image-rendering: crisp-edges;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+}
+
+.monster-heart-empty {
+    background-image: url(../img/heart-empty.png);
+    background-size: 30px;
+}
+
+.monster-heart-fill {
+    background-image: url(../img/heart-fill.png);
+    background-size: 24px;
+}
+
+*/

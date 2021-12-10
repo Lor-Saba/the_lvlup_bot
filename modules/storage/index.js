@@ -587,6 +587,12 @@ function updateChatId(oldChatId, newChatId){
     deleteChat(oldChatId);
 }
 
+function eachUsers(callback){
+    utils.each(cache.users, function(userId, user){
+        callback(user);
+    });
+}
+
 module.exports = {
     connectMongoDB,
     getUser,
@@ -613,5 +619,6 @@ module.exports = {
     setVersion,
     setForcedSync,
     checkChatsVitality,
-    updateChatId
+    updateChatId,
+    eachUsers
 };

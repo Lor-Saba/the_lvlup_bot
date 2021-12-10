@@ -1,6 +1,7 @@
 @import 'blocks/main.styl';
 @import 'blocks/icon.styl';
 @import 'blocks/tabs.styl';
+@import 'blocks/items.styl';
 @import 'blocks/fields.styl';
 
 html {
@@ -9,10 +10,24 @@ html {
 
 .user-name {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: 20px 20px 20px;
+    background: url(../img/color-triangles-contrast-bg.jpg);
+    box-shadow: inset 0 -50px 70px #fff;
+    background-size: cover;
+    background-position-y: -20%;
+    background-repeat: no-repeat;
+    background-color: #fff;
     height: 80px;
+    animation: show-top-background 2s;
+    animation-fill-mode: forwards;
+
+    @keyframes show-top-background {
+        0%   { background-position-y: -20%;  }
+        100% { background-position-y: 50%; }
+    }
 
     span {
         font-size: 22px;
@@ -20,15 +35,11 @@ html {
         flex-grow: 1;
         overflow-x: hidden;
         text-overflow: ellipsis;
-
-        &::before {
-            //content: '@';
-        }
     }
 
     a {
         font-size: 0;
-        outline: 1px solid #ddd;
+        box-shadow: 0 1px 2px #3344; 
         border-radius: 4px;
         white-space: nowrap;
         background: #fff;
@@ -45,6 +56,10 @@ html {
         width: 30px;
         margin-right: -15px;
     }
+}
+
+.tabs {
+    height: calc(100% - 80px);
 }
 
 .user-penality {
@@ -74,98 +89,5 @@ html {
             font-size: 23px;
             font-weight: 900;
         }
-    }
-}
-
-.item-group {
-
-    .field-title small {
-        color: #1c4093;
-    }
-    
-    &[data-itemsgroup] { order: 9; }
-    &[data-itemsgroup="exp"] { order: 1; }
-    &[data-itemsgroup="attack_damage"] { order: 2; }    
-}
-
-.item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    &[data-rarityicon="⬜️"] { order: 6; }
-    &[data-rarityicon="🟩"] { order: 5; }
-    &[data-rarityicon="🟦"] { order: 4; }
-    &[data-rarityicon="🟪"] { order: 3; }
-    &[data-rarityicon="🟧"] { order: 2; }
-    &[data-rarityicon="🟥"] { order: 1; }
-    &[data-rarityicon="🔲"] { order: 7; }
-
-    > div {
-        display: flex;
-        align-items: center;
-    }
-
-    .item-rarity {
-        margin-right: 4px;
-        line-height: 12px;
-
-        &::before {
-            content: '';
-            display: inline-block;
-            width: 15px;
-            min-width: 15px;
-            height: 15px;
-            margin-right: 4px;
-            border-radius: 3px;
-            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
-        }
-
-        &[data-rarityicon="⬜️"]::before { background: #dddddd; }
-        &[data-rarityicon="🟩"]::before { background: #16c60c; }
-        &[data-rarityicon="🟦"]::before { background: #0078d7; }
-        &[data-rarityicon="🟪"]::before { background: #886ce4; }
-        &[data-rarityicon="🟧"]::before { background: #f7630c; }
-        &[data-rarityicon="🟥"]::before { background: #e81224; }
-        &[data-rarityicon="🔲"]::before { background: #dddddd;
-            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 0 0 3px #ddd, inset 0 0 0 5px #556;
-        }
-    }
-    .item-name {}
-    .item-buff {
-        color: #445;
-        font-size: 15px; 
-        font-family: Oxanium;
-        margin-top: 2px;
-    }
-    .item-quantity {
-        background: #99a;
-        color: #fff;
-        font-size: 12px;
-        padding: 2px 3px;
-        line-height: 12px;
-        display: inline-block;
-        height: 16px;
-        border-radius: 3px;
-        margin-left: 4px;
-    }
-    .item-timeouticon {
-        .icon {
-            width: 15px;
-            height: 15px;
-            vertical-align: sub;
-            margin: 0 2px 0 5px;
-            color: #b34b4b;
-        }
-    }
-    .item-timeoutduration {
-        display: flex;
-        color: #b34b4b;
-        font-size: 13px; 
-        font-family: Oxanium;
-        margin-top: 2px;
-    }
-    .item-timeoutduration-dots {
-
     }
 }

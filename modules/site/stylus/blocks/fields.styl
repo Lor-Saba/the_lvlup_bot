@@ -76,6 +76,17 @@
             font-family: Oxanium;      
         }
     }
+
+    .field-value-icon {
+
+        .icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        &.check .icon { color: #2ad945; }
+        &.cross .icon { color: #d92a2a; }
+    }
 }
 
 .field-progress-bar {
@@ -114,6 +125,10 @@
         div, span { background: #9922ea; }
     }
 
+    &.red {
+        div, span { background: #d50000; }
+    }
+
     &.purple.pulse {
         div {
             animation: progressbar-purple-pulse .6s infinite;
@@ -128,5 +143,15 @@
     @keyframes progressbar-purple-pulse {
         from { box-shadow: 0 0 0 0px  #9922eaff; }
         to   { box-shadow: 0 0 0 7px #9922ea00; }
+    }
+}
+
+.empty {
+    text-align: center;
+
+    .icon {
+        width: 100px;
+        height: 100px;
+        color: #0002;
     }
 }

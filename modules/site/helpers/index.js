@@ -4,8 +4,16 @@ const Lexicon = require('../../lexicon');
 const fs = require('fs');
 const path = require('path');
 
-exports.lexicon = function(key) {
-    return Lexicon.get(key);
+exports.lexicon = function(key, options) {
+    return Lexicon.get(key, options.hash);
+};
+
+exports.uppercase = function(text){
+    return String(text).toUpperCase();
+};
+
+exports.lowercase = function(text){
+    return String(text).toLowerCase();
 };
 
 exports.mathmax = function(a, b){

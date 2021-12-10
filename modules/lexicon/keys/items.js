@@ -66,6 +66,9 @@ module.exports = {
     "ITEMS_LIST_NOITEMS": {
         "en": "*$(username)* you have no items yet.\nKeep texting, sooner or later you will find something!"
     },
+    "ITEMS_LIST_NOITEMS_LABEL": {
+        "en": "You have no items yet. Keep texting, sooner or later you will find something!"
+    },
     "ITEMS_CARD_FULL": {
         "en": "$(itemicon)  _$(itemname)_\n$(itemdescription)\n\nBonus: `$(itembonus)`\nType: `$(itemtype)`\nChance: `$(itemchance)`"
     },

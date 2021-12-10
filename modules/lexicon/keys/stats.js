@@ -83,5 +83,11 @@ module.exports = {
     },
     "STATS_LABEL_PRESTIGEAVAILABLE": {
         "en": "Prestige available"
+    },
+    "STATS_PAGENAME_STATS": {
+        "en": "STATS"
+    },
+    "STATS_PAGENAME_ITEMS": {
+        "en": "ITEMS"
     }
 };

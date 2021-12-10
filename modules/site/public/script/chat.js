@@ -9,11 +9,29 @@ function changePage(el){
     }
 }
 
+function initComponents(){
+
+    var $users = $('.user');
+    $('#users-filter-input').on('input', function(){
+        var value = this.value.trim().toUpperCase();
+
+        $users.removeClass('hidden');
+
+        if (value) {
+            $users
+                .filter(function() { 
+                    return !this.getAttribute('data-username').includes(value); 
+                })
+                .addClass('hidden');
+        }
+    });
+}
+
 function initItemsTimeout(){
 
     var timeoutList = [];
 
-    $('.item-timeoutduration').each(function(index, el){
+    $('.item-timeoutduration , .monster-timeoutduration').each(function(index, el){
         var timeoutEnd = el.getAttribute('data-timeout');
         
         $(el).append(
@@ -53,4 +71,5 @@ function initItemsTimeout(){
 
 Zepto(function(){
     initItemsTimeout();
+    initComponents();
 });

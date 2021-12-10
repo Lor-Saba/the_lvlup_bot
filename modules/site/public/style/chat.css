@@ -31,6 +31,169 @@ body {
   width: 50px;
   height: 50px;
 }
+.tabs {
+  height: 100%;
+  padding-bottom: 40px;
+}
+.tab-page {
+  display: none;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  box-shadow: 0 1px #ddd;
+  background: #fff;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.tab-page.active {
+  display: block;
+}
+.tab-buttons {
+  display: flex;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+.tab-button {
+  position: relative;
+  width: 100%;
+  text-align: center;
+  height: 40px;
+  line-height: 40px;
+  color: #667;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 25px;
+}
+.tab-button:not(.active):not(:last-child)::before {
+  content: '';
+  position: absolute;
+  top: 20%;
+  right: 0;
+  width: 1px;
+  height: 60%;
+  display: inline-block;
+  background: #ddd;
+}
+.tab-button.active {
+  color: #000;
+  background: #fff;
+  box-shadow: 1px 0 #ddd, -1px 0 #ddd;
+}
+.item-group .field-title small {
+  color: #1c4093;
+}
+.item-group[data-itemsgroup] {
+  order: 9;
+}
+.item-group[data-itemsgroup="exp"] {
+  order: 1;
+}
+.item-group[data-itemsgroup="attack_damage"] {
+  order: 2;
+}
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.item[data-rarityicon="⬜️"] {
+  order: 6;
+}
+.item[data-rarityicon="🟩"] {
+  order: 5;
+}
+.item[data-rarityicon="🟦"] {
+  order: 4;
+}
+.item[data-rarityicon="🟪"] {
+  order: 3;
+}
+.item[data-rarityicon="🟧"] {
+  order: 2;
+}
+.item[data-rarityicon="🟥"] {
+  order: 1;
+}
+.item[data-rarityicon="🔲"] {
+  order: 7;
+}
+.item > div {
+  display: flex;
+  align-items: center;
+}
+.item .item-rarity {
+  margin-right: 4px;
+  line-height: 12px;
+}
+.item .item-rarity::before {
+  content: '';
+  display: inline-block;
+  width: 15px;
+  min-width: 15px;
+  height: 15px;
+  margin-right: 4px;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+}
+.item .item-rarity[data-rarityicon="⬜️"]::before {
+  background: #ddd;
+}
+.item .item-rarity[data-rarityicon="🟩"]::before {
+  background: #16c60c;
+}
+.item .item-rarity[data-rarityicon="🟦"]::before {
+  background: #0078d7;
+}
+.item .item-rarity[data-rarityicon="🟪"]::before {
+  background: #886ce4;
+}
+.item .item-rarity[data-rarityicon="🟧"]::before {
+  background: #f7630c;
+}
+.item .item-rarity[data-rarityicon="🟥"]::before {
+  background: #e81224;
+}
+.item .item-rarity[data-rarityicon="🔲"]::before {
+  background: #ddd;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 0 0 3px #ddd, inset 0 0 0 5px #556;
+}
+.item .item-buff {
+  color: #445;
+  font-size: 15px;
+  font-family: Oxanium;
+  margin-top: 2px;
+}
+.item .item-buff small {
+  font-size: 12px;
+  white-space: nowrap;
+  display: contents;
+}
+.item .item-quantity {
+  background: #99a;
+  color: #fff;
+  font-size: 12px;
+  padding: 2px 3px;
+  line-height: 12px;
+  display: inline-block;
+  height: 16px;
+  border-radius: 3px;
+  margin-left: 4px;
+}
+.item .item-timeouticon .icon {
+  width: 15px;
+  height: 15px;
+  vertical-align: sub;
+  margin: 0 2px 0 5px;
+  color: #b34b4b;
+}
+.item .item-timeoutduration {
+  display: flex;
+  color: #b34b4b;
+  font-size: 13px;
+  font-family: Oxanium;
+  margin-top: 2px;
+}
 .fields {
   display: flex;
   flex-wrap: wrap;
@@ -98,6 +261,16 @@ body {
   font-size: 15px;
   font-family: Oxanium;
 }
+.field-values .field-value-icon .icon {
+  width: 16px;
+  height: 16px;
+}
+.field-values .field-value-icon.check .icon {
+  color: #2ad945;
+}
+.field-values .field-value-icon.cross .icon {
+  color: #d92a2a;
+}
 .field-progress-bar {
   display: flex;
   height: 5px;
@@ -131,6 +304,10 @@ body {
 .field-progress-bar.purple div,
 .field-progress-bar.purple span {
   background: #9922ea;
+}
+.field-progress-bar.red div,
+.field-progress-bar.red span {
+  background: #d50000;
 }
 .field-progress-bar.purple.pulse div {
   animation: progressbar-purple-pulse 0.6s infinite;
@@ -172,15 +349,36 @@ body {
     box-shadow: 0 0 0 7px rgba(153,34,234,0);
   }
 }
+.empty {
+  text-align: center;
+}
+.empty .icon {
+  width: 100px;
+  height: 100px;
+  color: rgba(0,0,0,0.133);
+}
 html {
   background: #f5f5f5;
 }
 .chat-name {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  height: 80px;
+  padding: 40px 20px 20px;
+  background: url("../img/color-triangles-contrast-bg.jpg");
+  box-shadow: inset 0 -50px 70px #fff;
+  background-size: cover;
+  background-position-y: -20%;
+  background-repeat: no-repeat;
+  background-color: #fff;
+  height: 112px;
+  animation: show-top-background 2s;
+  animation-fill-mode: forwards;
+}
+.chat-name div {
+  width: 100%;
+  opacity: 0.7;
 }
 .chat-name span {
   font-size: 22px;
@@ -189,3 +387,243 @@ html {
   overflow-x: hidden;
   text-overflow: ellipsis;
 }
+@-moz-keyframes show-top-background {
+  0% {
+    background-position-y: -20%;
+  }
+  100% {
+    background-position-y: 50%;
+  }
+}
+@-webkit-keyframes show-top-background {
+  0% {
+    background-position-y: -20%;
+  }
+  100% {
+    background-position-y: 50%;
+  }
+}
+@-o-keyframes show-top-background {
+  0% {
+    background-position-y: -20%;
+  }
+  100% {
+    background-position-y: 50%;
+  }
+}
+@keyframes show-top-background {
+  0% {
+    background-position-y: -20%;
+  }
+  100% {
+    background-position-y: 50%;
+  }
+}
+.tabs {
+  height: calc(100% - 112px);
+}
+.users-filter {
+  position: relative;
+}
+.users-filter input {
+  height: 35px;
+  line-height: 35px;
+  padding: 0 30px 0 40px;
+  width: 100%;
+  border: 0;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 2px #eee;
+}
+.users-filter .icon {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 16px;
+  height: 16px;
+  color: #ccc;
+}
+.users-list {
+  margin-top: 20px;
+  background: #f5f5f5;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 15px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  max-height: calc(100% - 60px);
+}
+.user {
+  display: flex;
+  position: relative;
+}
+.user > div {
+  width: 100%;
+  padding-right: 40px;
+}
+.user:not(:first-child) {
+  margin-top: 19px;
+}
+.user:not(:first-child)::before {
+  content: '';
+  display: inline-block;
+  height: 1px;
+  width: 100%;
+  background: #ddd;
+  position: absolute;
+  top: -10px;
+}
+.user.hidden {
+  display: none;
+}
+.user-name {
+  text-overflow: ellipsis;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.user-stats {
+  display: flex;
+}
+.user-stats > div {
+  white-space: nowrap;
+  margin-right: 15px;
+  color: #667;
+  font-family: Oxanium;
+  font-size: 13px;
+}
+.user-checkstats {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.067);
+  color: #445;
+}
+.user-checkstats .icon {
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+}
+.monster {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 2px #81f;
+  background: linear-gradient(135deg, rgba(136,17,255,0.04) 50%, rgba(136,17,255,0.24));
+  padding: 15px;
+}
+.monster-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+}
+.monster-info {
+  display: flex;
+  position: relative;
+}
+.monster-info > div:first-child {
+  text-align: center;
+}
+.monster-info > div:last-child {
+  width: 100%;
+  text-align: right;
+}
+.monster-health {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-left: 15px;
+}
+.monster-health .field-progress {
+  width: 100%;
+}
+.monster-health .field-progress-bar {
+  background: rgba(0,0,0,0.133);
+}
+.monster-health-label {
+  color: #445;
+  font-size: 14px;
+  font-family: Oxanium;
+  font-weight: 400;
+  text-align: right;
+  width: 100%;
+  line-height: 1em;
+}
+.monster-icon {
+  font-size: 22px;
+}
+.monster-level {
+  color: #445;
+  font-size: 15px;
+  font-family: Oxanium;
+  width: 100%;
+  white-space: nowrap;
+}
+.monster-timeout {
+  display: flex;
+  font-size: 14px;
+  font-family: Oxanium;
+  font-weight: 400;
+}
+.monster-timeouticon {
+  margin-right: 5px;
+}
+.monster-timeouticon .icon {
+  width: 16px;
+  height: 16px;
+}
+.monster-timeoutduration {
+  display: flex;
+}
+/*
+
+<div class="monster-heart">
+    <div><div class="monster-heart-fill"></div></div>
+    <div class="monster-heart-empty"></div>
+</div>
+
+.monster-heart {
+    position: relative;
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+
+    > div:first-child {
+        margin: 3px;
+        display: inline-block;
+        position: relative;
+        width: calc(100% - 6px);
+        height: calc(100% - 6px);
+    }
+    > div:last-child {
+        background-image: url(../img/heart-empty.png);
+    }
+}
+
+.monster-heart-empty ,
+.monster-heart-fill {
+    width: 100%;
+    height: 100%;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-position-y: 100%;
+    image-rendering: crisp-edges;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+}
+
+.monster-heart-empty {
+    background-image: url(../img/heart-empty.png);
+    background-size: 30px;
+}
+
+.monster-heart-fill {
+    background-image: url(../img/heart-fill.png);
+    background-size: 24px;
+}
+
+*/

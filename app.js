@@ -121,7 +121,7 @@ function startSite(){
 
                 var getStatsData = function(){
 
-                    var data = {                        
+                    var data = {
                         hasExp: BigNumber(userStats.exp).isGreaterThan(0),
                         hasLevel: BigNumber(userStats.level).isGreaterThan(0),
                         hasPrestige: BigNumber(userStats.prestige).isGreaterThan(0),
@@ -242,9 +242,108 @@ function startSite(){
 
         site.on('chat', {
             get: function(params, route){
-                console.log('site::chat');
+                var chatId = cryptr.decrypt(params.chatId);
+                var chat = storage.getChat(chatId);
+                var lexicon = Lexicon.lang('en');
+                var ctx = { state: { lexicon: lexicon, mexData: { chatId: chatId } } };
 
-                return {};
+                var templateData = {
+                    title: chat.title
+                };
+                
+                var getInfoData = function(){
+                    var data = {
+                        settings: [
+                            { value: chat.settings.notifyPenality,          target: lexicon.get('SETTINGS_NOTIFY_PENALITY',           { icon: '' }) },
+                            { value: chat.settings.notifyUserLevelup,       target: lexicon.get('SETTINGS_NOTIFY_LEVELUP',            { icon: '' }) },
+                            { value: chat.settings.notifyUserPrestige,      target: lexicon.get('SETTINGS_NOTIFY_PRESTIGE_AVAILABLE', { icon: '' }) },
+                            { value: chat.settings.notifyUserPickupItem,    target: lexicon.get('SETTINGS_NOTIFY_ITEM_PICKUP',        { icon: '' }) },
+                            { value: chat.settings.monsterEvent,            target: lexicon.get('SETTINGS_EVENT_MONSTER',             { icon: '' }) },
+                            { value: chat.settings.dungeonEvent,            target: lexicon.get('SETTINGS_EVENT_DUNGEON',             { icon: '' }) },
+                            { value: chat.settings.riddlesEvent,            target: lexicon.get('SETTINGS_EVENT_RIDDLES',             { icon: '' }) }
+                        ],
+                        
+                        items: [],
+                    };
+
+                    // dati del mostro
+                    var monster = monsters.getMonster(chatId);
+                    if (monster) {
+                        var healthDiff = BigNumber(monster.health).dividedBy(monster.healthMax);
+                            healthDiff = Number(healthDiff.valueOf());
+
+                        data.monsterActive = true;
+                        data.monsterData = {
+                            timeLimit: monster.timeLimit - (Date.now() / 1000),
+                            icon: monster.icon,
+                            level: monster.level + 1,
+                            health: utils.formatNumber(monster.health),
+                            healthmax: monster.healthMax,
+                            healthPercentage: (healthDiff * 100).toFixed(0),
+                        }
+                    }
+                    
+                    data.hasMonsterHistory = (chat.monsterDefeated + chat.monsterEscaped) > 0;
+                    data.monsterDefeated = chat.monsterDefeated;
+                    data.monsterEscaped = chat.monsterEscaped;
+
+                    // aggiunge l'elenco degli items/effetti attivi della chat
+
+                    data.hasItems = Object.keys(chat.items).length > 0;
+                    if (data.hasItems){
+
+                        utils.each(chat.items, function(key, value){
+                            var item = items.get(key);
+
+                            data.items.push({
+                                //rarityicon: items.getItemRarityIcon(key),
+                                target: lexicon.get('ITEMS_LIST_TARGETLONG_' + item.target.toUpperCase()),
+                                title: lexicon.get('ITEMS_TITLE_' + key),
+                                // description: lexicon.get('ITEMS_DESCRIPTION_' + key),
+                                buff: items.getItemBuffText(item),
+                                //quantity: item.timeout ? null : value,
+                                timeout: item.timeout ? (value + ( 60 * 60 * item.timeout) - (Date.now() / 1000)) : null,
+                            });
+                        });
+                    }
+
+                    return data;
+                };
+                var getUsersData = function(){
+                    var data = {
+                        list : []
+                    };
+                    
+                    storage.eachUsers(function(user){
+                        if (user.chats[chatId]) {
+                            let userStats = user.chats[chatId];
+
+                            data.list.push({
+                                chatId: cryptr.encrypt(chatId),
+
+                                id: cryptr.encrypt(user.id),
+                                username: user.username,
+                                
+                                //hasExp: BigNumber(userStats.exp).isGreaterThan(0),
+                                hasLevel: BigNumber(userStats.level).isGreaterThan(0),
+                                hasPrestige: BigNumber(userStats.prestige).isGreaterThan(0),
+            
+                                //exp: utils.formatNumber(userStats.exp, 0),
+                                level: utils.formatNumber(utils.toFloor(userStats.level), 0),
+                                prestige: utils.formatNumber(userStats.prestige, 0),
+            
+                                prestigeAvailable: userStats.prestigeAvailable,
+                            });
+                        }
+                    });
+
+                    return data;
+                };
+
+                templateData.info = getInfoData();
+                templateData.users = getUsersData();
+
+                return templateData;
             },
             post: function(){
 
@@ -335,7 +434,6 @@ function initSchedulerEvents(){
                 });
     
                 // calcola la barra della vita
-                var iconEmoji = ['🐁', '🐈', '🐩', '🐖', '🦨', '🦩', '🐺', '🐝', '🐗', '🐌', '🦋', '🕷', '🦟', '🐍', '🦑', '🦆', '🦉', '🐊', '🐋', '🐘', '🦧', '🐬', '🐟', '🦜', '🐫', '🦒', '🦐', '🦂', '🐢', '🦕', '🦖'];
                 var maxBarsLength = 10;
                 var healthBar = '';
                 var healthDiff = BigNumber(data.monster.health).dividedBy(data.monster.healthMax);
@@ -347,7 +445,7 @@ function initSchedulerEvents(){
     
                 // crea il testo del lexicon da mostrare
                 var messageText = lexicon.get('MONSTER_MESSAGE', { 
-                    icon: iconEmoji[data.monster.level % iconEmoji.length],
+                    icon: data.monster.icon,
                     level: data.monster.level + 1,
                     health: utils.formatNumber(data.monster.health),
                     healthmax: data.monster.healthMax,
@@ -2498,6 +2596,13 @@ function init(){
                     //items.insertItemTo(userStats.items, items.get('POISON'));
                     //items.insertItemTo(userStats.items, items.get('SHIT'));
 
+                
+                // droppa un item casuale di debuff
+                //var monsterItem = items.pickMonster();
+                //var chat = storage.getChat('-553783828')
+                //// aggiunge l'item droppato alla chat
+                //items.insertItemTo(chat.items, monsterItem);
+
         });
 
     })
@@ -2513,9 +2618,9 @@ function init(){
 // inizializza il bot
 init();
 
-// setTimeout(() => {
-//     scheduler.trigger('randomevent');
-// }, 3000);
+//setTimeout(() => {
+//    scheduler.trigger('monster');
+//}, 3000);
 
 // messages.q('sendMessage', {
 //     userId: 13112141

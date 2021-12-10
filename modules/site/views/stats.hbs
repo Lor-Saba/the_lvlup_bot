@@ -133,13 +133,7 @@
 
                                             {{#if timeout }}
                                                 <span class="item-timeouticon">{{> svg-icon name="clock"}}</span>
-                                                <span class="item-timeoutduration" data-timeout="{{ timeout }}">
-                                                    <div class="item-timeoutduration-h">99</div>
-                                                    <div class="item-timeoutduration-dots">:</div>
-                                                    <div class="item-timeoutduration-m">99</div>
-                                                    <div class="item-timeoutduration-dots">:</div>
-                                                    <div class="item-timeoutduration-s">99</div>
-                                                </span>
+                                                <span class="item-timeoutduration" data-timeout="{{ timeout }}"></span>
                                             {{/if}}
                                             
                                         </div>
@@ -154,13 +148,13 @@
             {{else}}
                 <div class="empty">
                     {{> svg-icon name="empty" }}
-                    <p>{{lexicon 'ITEMS_LIST_NOITEMS'}}</p>
+                    <p>{{lexicon 'ITEMS_LIST_NOITEMS_LABEL'}}</p>
                 </div>
             {{/if}}
         </div>
         <div class="tab-buttons">
-            <div class="tab-button active" onclick="changePage(this);" data-target="#page-stats">STATS</div>
-            <div class="tab-button"        onclick="changePage(this);" data-target="#page-items">ITEMS</div>
+            <div class="tab-button active" onclick="changePage(this);" data-target="#page-stats">{{lexicon 'STATS_PAGENAME_STATS'}}</div>
+            <div class="tab-button"        onclick="changePage(this);" data-target="#page-items">{{lexicon 'STATS_PAGENAME_ITEMS'}}</div>
         </div>
     </div>
 </div>
