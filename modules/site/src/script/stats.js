@@ -1,3 +1,4 @@
+//=require libs/zepto.min.js
 
 function changePage(el){
     var target = el.getAttribute('data-target');

@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compilestylus": "./node_modules/.bin/gulp compile-stylus",
+    "compilestyle": "./node_modules/.bin/gulp compile-stylus",
+    "compilescript": "./node_modules/.bin/gulp compile-script",
     "watch": "./node_modules/.bin/gulp watch",
     "deploy": "./node_modules/.bin/gulp"
   },
@@ -28,6 +29,7 @@
     "gulp": "^4.0.2",
     "gulp-clean": "^0.4.0",
     "gulp-copy": "^4.0.1",
+    "gulp-include": "^2.4.1",
     "gulp-shell": "^0.8.0",
     "gulp-stylus": "^2.7.0"
   }
