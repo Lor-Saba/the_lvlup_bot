@@ -1485,6 +1485,14 @@ function setBotCommands(){
 
     bot.command('chatstats', function(ctx){
         var lexicon = ctx.state.lexicon;
+        var chat = ctx.state.chat;
+        var button = Markup.inlineKeyboard(
+            [[ Markup.gameButton(lexicon.get('STATS_COMMAND_CHATSTATS_TITLE')) ]]
+        ).extra({ parse_mode: 'markdown' }); 
+
+        return bot.telegram.sendGame(chat.id, 'chatstats', button).catch(() => {});
+
+        var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
         var text = '';
 
@@ -1525,9 +1533,26 @@ function setBotCommands(){
         ctx.replyWithMarkdown(text).catch(()=>{});
     });
 
+    bot.command('mystats', function(ctx){
+        var lexicon = ctx.state.lexicon;
+        var chat = ctx.state.chat;
+        var button = Markup.inlineKeyboard(
+            [[ Markup.gameButton(lexicon.get('STATS_COMMAND_MYSTATS_TITLE')) ]]
+        ).extra({ parse_mode: 'markdown' }); 
+
+        return bot.telegram.sendGame(chat.id, 'mystats', button).catch(() => {});
+    });
+
     bot.command('challengeme', function(ctx){
 
-        return ctx.replyWithMarkdown('Nope').catch(() => {});
+        var replies = [
+            'Nooo', 'Nooooo', 'Nope', 
+            'alrigh.. no', 'Nah', 'Cingo brutto', 
+            '!ok', '** whistling sound **', 'DLC "Challenge" not available'
+        ];
+        var reply = replies[Math.random() * replies.length |0];
+
+        return ctx.replyWithMarkdown(reply).catch(() => {});
 
         var lexicon = ctx.state.lexicon;
         var mexData = ctx.state.mexData;
@@ -1587,6 +1612,31 @@ function setBotCommands(){
         bot.telegram.sendMessage(mexData.chatId, markupData.text, markupData.buttons).catch(() => {});
     });
 
+    bot.command('everyone', function(ctx){
+        // ottiene il riferimento alla chat
+        var chat = ctx.state.chat;
+        var messages = [];
+        var mentions = [];
+
+        utils.each(storage.getChatUsers(chat.id), function(index, user){
+
+            mentions.push('@' + user.username);
+            
+            if (mentions.length >= 40) {
+                messages.push(mentions.join(' '));
+                mentions.length = 0;
+            }
+        });
+
+        if (mentions.length) {
+            messages.push(mentions.join(' '));
+        }
+
+        utils.eachTimeout(messages, function(index, message){
+            ctx.reply(message).catch(() => { });
+        }, 250);
+    });
+
     bot.command('test1', function(ctx){
         var userId = ctx.from.id;
 
@@ -1598,32 +1648,6 @@ function setBotCommands(){
         ).extra({ parse_mode: 'markdown' }); 
 
         bot.telegram.sendGame(chat.id, 'dungeon', button).catch(() => {});
-    });
-
-    bot.command('test2', function(ctx){
-        var userId = ctx.from.id;
-        
-        if (md5(userId) !== 'be6d916dafd19cddfd2573f8bb0cee4f') return;
-
-        var chat = ctx.state.chat;
-        var button = Markup.inlineKeyboard(
-            [[ Markup.gameButton('Open the Leaderboard') ]]
-        ).extra({ parse_mode: 'markdown' }); 
-
-        bot.telegram.sendGame(chat.id, 'leaderboard', button).catch(() => {});
-    });
-
-    bot.command('test3', function(ctx){
-        var userId = ctx.from.id;
-        
-        if (md5(userId) !== 'be6d916dafd19cddfd2573f8bb0cee4f') return;
-
-        var chat = ctx.state.chat;
-        var button = Markup.inlineKeyboard(
-            [[ Markup.gameButton('Check the Stats') ]]
-        ).extra({ parse_mode: 'markdown' }); 
-
-        bot.telegram.sendGame(chat.id, 'stats', button).catch(() => {});
     });
 
     console.log("  - loaded bot commands");
@@ -1765,10 +1789,10 @@ function setBotEvents(){
             if (mexData.gameTitle == 'leaderboard') {
                 return ctx.answerGameQuery(process.env["siteurl"] + '/page/leaderboard/' + cryptr.encrypt(mexData.chatId)).catch(() => {});
             }
-            if (mexData.gameTitle == 'stats') {
+            if (mexData.gameTitle == 'mystats') {
                 return ctx.answerGameQuery(process.env["siteurl"] + '/page/stats/' + cryptr.encrypt(mexData.chatId) + '/' + cryptr.encrypt(mexData.userId)).catch(() => {});
             }
-            if (mexData.gameTitle == 'chat') {
+            if (mexData.gameTitle == 'chatstats') {
                 return ctx.answerGameQuery(process.env["siteurl"] + '/page/chat/' + cryptr.encrypt(mexData.chatId)).catch(() => {});
             }
 
@@ -2296,7 +2320,7 @@ function calcUserExpGain(ctx, user, messagesPower = 1, passive = false) {
 
             if (chat.settings.notifyUserPrestige) {
                 setTimeout(function(){
-                    ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: user.username })).catch(()=>{});
+                    ctx.replyWithMarkdown(lexicon.get('USER_PRESTIGE_AVAILABLE', { username: user.username, userid: user.id })).catch(()=>{});
                 }, 500);
             }
         }

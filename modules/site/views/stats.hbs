@@ -1,6 +1,8 @@
+<link rel="stylesheet" href="/style/stats.css">
+
 <div class="wrap">
     <div class="user-name">
-        <a href="/page/chat/{{chatId}}">{{> svg-icon name="angle-left" }}{{> svg-icon name="chat-group" }}</a>
+        <a class="loader-toggler" href="/page/chat/{{chatId}}">{{> svg-icon name="angle-left" }}{{> svg-icon name="chat-group" }}</a>
         <div class="user-penality" data-level="{{ penalityLevel }}"></div>
         <span>{{ username }}</span>
     </div>
@@ -159,6 +161,5 @@
     </div>
 </div>
 
-<link rel="stylesheet" href="/style/stats.css">
 <script type="text/javascript" src="/script/libs/zepto.min.js"></script>
 <script type="text/javascript" src="/script/stats.js"></script>

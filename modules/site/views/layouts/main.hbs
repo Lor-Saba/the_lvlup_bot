@@ -9,7 +9,7 @@
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-         <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Nunito:ital,wght@0,400;0,600;0,800;1,300;1,700&family=Oxanium:wght@400;600;700&display=swap" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Nunito:ital,wght@0,400;0,600;0,800;1,300;1,700&family=Oxanium:wght@400;600;700&display=swap" rel="stylesheet"> 
 
         {{!--
             font-family: 'Indie Flower', cursive;
@@ -21,5 +21,10 @@
         {{!-- <link rel="stylesheet" href="/style/{{viewName}}.css"> --}}
         {{!-- <script type="text/javascript" src="/script/{{viewName}}.js"></script> --}}
     </head>
-    <body>{{{body}}}</body>
+    <body>
+        {{{body}}}
+
+        <link rel="preload" href="/img/loader.gif" as="image">
+        <div id="loader"><div></div></div>
+    </body>
 </html>

@@ -2,5 +2,3 @@ node_modules
 .env
 .vscode
 *.dbtxt
-modules/site/public/style
-modules/site/public/script

@@ -5,8 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compilestyle": "./node_modules/.bin/gulp compile-stylus",
-    "compilescript": "./node_modules/.bin/gulp compile-script",
+    "compile": "./node_modules/.bin/gulp compile-site",
     "watch": "./node_modules/.bin/gulp watch",
     "deploy": "./node_modules/.bin/gulp"
   },

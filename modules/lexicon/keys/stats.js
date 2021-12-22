@@ -89,5 +89,12 @@ module.exports = {
     },
     "STATS_PAGENAME_ITEMS": {
         "en": "ITEMS"
+    },
+
+    "STATS_COMMAND_MYSTATS_TITLE": {
+        "en": "Check your stats and more!"
+    },
+    "STATS_COMMAND_CHATSTATS_TITLE": {
+        "en": "Check the chat stats and more!"
     }
 };

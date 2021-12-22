@@ -1,0 +1,251 @@
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+  user-select: none;
+}
+html {
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  margin: 0;
+  box-sizing: border-box;
+  opacity: 0;
+  animation: show-html 0.5s;
+  animation-fill-mode: forwards;
+}
+@-moz-keyframes show-html {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@-webkit-keyframes show-html {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@-o-keyframes show-html {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes show-html {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+body {
+  margin: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  color: #334;
+  overflow: hidden;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+}
+#loader {
+  display: none;
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: rgba(255,255,255,0.6);
+  z-index: 999;
+  opacity: 0;
+  animation: show-loader-outer 0.3s;
+  animation-fill-mode: forwards;
+}
+#loader > div {
+  display: inline-block;
+  width: 150px;
+  height: 150px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  background-image: url("../img/loader.gif");
+  background-position: 50% 50%;
+  background-size: cover;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #eee, 0 0 20px rgba(0,0,0,0.067);
+  animation: show-loader-inner 0.5s;
+  animation-fill-mode: forwards;
+}
+#loader.visible {
+  display: inline-block;
+}
+@-moz-keyframes show-loader-outer {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@-webkit-keyframes show-loader-outer {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@-o-keyframes show-loader-outer {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes show-loader-outer {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@-moz-keyframes show-loader-inner {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@-webkit-keyframes show-loader-inner {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@-o-keyframes show-loader-inner {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@keyframes show-loader-inner {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+.icon {
+  display: inline-flex;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+}
+html {
+  background-color: #111115;
+  color: #fff;
+}
+#body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  padding: 25px;
+  padding-bottom: 0;
+  box-sizing: border-box;
+}
+#canvas {
+  height: 100%;
+  width: 100%;
+  background: #050505;
+  outline: 1px solid #000;
+  font-size: 0;
+}
+#controls {
+  min-height: 200px;
+  padding: 50px 0;
+  width: 100%;
+}
+.arrows {
+  position: fixed;
+  display: inline-block;
+  width: 200px;
+  height: 200px;
+  bottom: 50px;
+  left: calc(50% - 100px);
+  overflow: hidden;
+  user-select: none;
+  border-radius: 60px;
+  background: rgba(34,34,34,0.2);
+  outline: 1px solid rgba(0,0,0,0.2);
+}
+.arrows img {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.5;
+}
+.arrows img.icon-angle-up {
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.arrows img.icon-angle-right {
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+}
+.arrows img.icon-angle-down {
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.arrows img.icon-angle-left {
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+}
+.arrows-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(45deg) scale(1.2);
+  transform-origin: 50%;
+}
+.arrows-buttons > div {
+  width: 50%;
+  height: 50%;
+  outline: 1px solid rgba(0,0,0,0.067);
+  cursor: pointer;
+}
+.arrows-buttons > div:hover {
+  background: rgba(34,34,34,0.2);
+}
+.arrows-buttons > div:active {
+  background: rgba(51,51,51,0.2);
+}

@@ -56,3 +56,40 @@ function toggleLoader(state) {
         $('#loader').removeClass('visible');
     }
 }
+
+function changePage(el){
+    var target = el.getAttribute('data-target');
+
+    if (target) {
+        $('.tab-page , .tab-button').removeClass('active');
+        $(target).addClass('active');
+        $(el).addClass('active');
+    }
+}
+
+function initComponents(){
+
+    var $users = $('.user');
+    $('#users-filter-input').on('input', function(){
+        var value = this.value.trim().toUpperCase();
+
+        $users.removeClass('hidden');
+
+        if (value) {
+            $users
+                .filter(function() { 
+                    return !this.getAttribute('data-username').includes(value); 
+                })
+                .addClass('hidden');
+        }
+    });
+}
+
+Zepto(function(){
+    initComponents();
+    setLiveTimeoutDate('.item-timeoutduration , .monster-timeoutduration');
+
+    $('.loader-toggler').on('click', function(){
+        toggleLoader(true);
+    });
+});

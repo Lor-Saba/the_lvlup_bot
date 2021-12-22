@@ -3,8 +3,7 @@ var clean = require('gulp-clean');
 var gulpCopy = require('gulp-copy');
 var shell = require('gulp-shell');
 var stylus = require('gulp-stylus');
-var include = require('gulp-include')
-var path = require('path');
+var include = require('gulp-include');
 
 /*
 Git alias:
@@ -39,36 +38,58 @@ gulp.task('copy', function(){
     .pipe(gulpCopy('../dist/'))
 });
 
-gulp.task('compile-stylus', function () {
+gulp.task('copy-site-script', function(){
+    return gulp.src('./modules/site/src/script/libs/*.js') 
+        .pipe(gulpCopy('./modules/site/public/script/libs', { prefix: 5 }))
+});
+
+gulp.task('compile-site-stylus', function () {
     return gulp.src('./modules/site/src/style/*.styl')
         .pipe(stylus())
         .pipe(gulp.dest('./modules/site/public/style'));
 });
-
-gulp.task('compile-script', function () {
+gulp.task('compile-site-script', function () {
     return gulp.src('./modules/site/src/script/*.js')
-        .pipe(include())
+        .pipe(include({
+            extensions: 'js',
+            hardFail: true,
+            separateInputs: true,
+            includePaths: './modules/site/src/script'
+          }))
         .pipe(gulp.dest('./modules/site/public/script'));
 });
+
+gulp.task('compile-site', gulp.series('copy-site-script', 'compile-site-stylus', 'compile-site-script'));
+
 
 gulp.task('shell', shell.task('cd ../dist/ && git cmp "deploy"'));
 gulp.task('watch', 
     gulp.series(
-        gulp.series(
-            'compile-stylus', 
-            'compile-script'
-        ), 
+        gulp.series('compile-site'), 
         function() {
-            gulp.watch([
-                './modules/site/src/style/*.styl',
-                './modules/site/src/style/blocks/*.styl'
-            ], gulp.series('compile-stylus'));
-            gulp.watch([
-                './modules/site/src/script/*.js',
-                './modules/site/src/script/libs/*.js',
-                './modules/site/src/script/common/*.js'
-            ], gulp.series('compile-script'));
+            gulp.watch(
+                [
+                    './modules/site/src/style/*.styl',
+                    './modules/site/src/style/common/*.styl'
+                ], 
+                gulp.series('compile-site-stylus')
+            );
+
+            gulp.watch(
+                [
+                    './modules/site/src/script/*.js',
+                    './modules/site/src/script/common/*.js'
+                ], 
+                gulp.series('compile-site-script')
+            );
+            
+            gulp.watch(
+                [
+                    './modules/site/src/script/libs/*.js',
+                ], 
+                gulp.series('copy-site-script')
+            );
         })
 );
 
-//gulp.task('default', gulp.series('clean', 'compile-stylus', 'copy', 'cleanbak', 'shell'));
+//gulp.task('default', gulp.series('clean', 'compile-site', 'copy', 'cleanbak', 'shell'));

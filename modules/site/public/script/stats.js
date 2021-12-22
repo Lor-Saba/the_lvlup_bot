@@ -56,3 +56,21 @@ function toggleLoader(state) {
         $('#loader').removeClass('visible');
     }
 }
+
+function changePage(el){
+    var target = el.getAttribute('data-target');
+
+    if (target) {
+        $('.tab-page , .tab-button').removeClass('active');
+        $(target).addClass('active');
+        $(el).addClass('active');
+    }
+}
+
+Zepto(function(){
+    setLiveTimeoutDate('.item-timeoutduration');
+
+    $('.loader-toggler').on('click', function(){
+        toggleLoader(true);
+    });
+});

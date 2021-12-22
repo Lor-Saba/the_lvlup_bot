@@ -7,7 +7,7 @@ module.exports = {
         "en": "*$(username)* has dropped to level  `$(level)`",
     },
     "USER_PRESTIGE_AVAILABLE": {
-        "en": "*$(username)*, you can now prestige!\ntype /prestige to proceed."
+        "en": "[@$(username)](tg://user?id=$(userid)) you can now prestige!\ntype /prestige to proceed."
     },
     "USER_SILENCED_LEVELUP": {
         "en": "\n_From now on you will no longer be notified in case of a level up._",
