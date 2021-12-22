@@ -7,12 +7,12 @@ module.exports = {
         path: '/page/leaderboard/:chatId/',
         view: 'leaderboard'
     },
-    'stats': {
-        path: '/page/stats/:chatId/:userId',
-        view: 'stats'
+    'mystats': {
+        path: '/page/mystats/:chatId/:userId',
+        view: 'mystats'
     },
-    'chat': {
-        path: '/page/chat/:chatId/',
-        view: 'chat'
+    'chatstats': {
+        path: '/page/chatstats/:chatId/',
+        view: 'chatstats'
     }
 }

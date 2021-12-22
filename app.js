@@ -100,7 +100,7 @@ function startSite(){
             }
         });
 
-        site.on('stats', {
+        site.on('mystats', {
             get: function(params, route){
                 var chatId = cryptr.decrypt(params.chatId);
                 var userId = cryptr.decrypt(params.userId);
@@ -240,7 +240,7 @@ function startSite(){
             }
         });
 
-        site.on('chat', {
+        site.on('chatstats', {
             get: function(params, route){
                 var chatId = cryptr.decrypt(params.chatId);
                 var chat = storage.getChat(chatId);
@@ -1790,10 +1790,10 @@ function setBotEvents(){
                 return ctx.answerGameQuery(process.env["siteurl"] + '/page/leaderboard/' + cryptr.encrypt(mexData.chatId)).catch(() => {});
             }
             if (mexData.gameTitle == 'mystats') {
-                return ctx.answerGameQuery(process.env["siteurl"] + '/page/stats/' + cryptr.encrypt(mexData.chatId) + '/' + cryptr.encrypt(mexData.userId)).catch(() => {});
+                return ctx.answerGameQuery(process.env["siteurl"] + '/page/mystats/' + cryptr.encrypt(mexData.chatId) + '/' + cryptr.encrypt(mexData.userId)).catch(() => {});
             }
             if (mexData.gameTitle == 'chatstats') {
-                return ctx.answerGameQuery(process.env["siteurl"] + '/page/chat/' + cryptr.encrypt(mexData.chatId)).catch(() => {});
+                return ctx.answerGameQuery(process.env["siteurl"] + '/page/chatstats/' + cryptr.encrypt(mexData.chatId)).catch(() => {});
             }
 
             return ctx.answerGameQuery(process.env["siteurl"] + '/404').catch(() => {});

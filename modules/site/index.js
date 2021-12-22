@@ -38,14 +38,12 @@ function init(port){
 
         utils.each(routes, function(name, route){
 
-            route.routeName = name;
-
             if (route.getHandler) {
                 app.get(route.path, function (req, res) {
                     let data = route.getHandler(req.params, route);
 
                     if (data != false) {
-                        res.render(route.view, Object.assign(data || {}, { viewName: route.name }));
+                        res.render(route.view, Object.assign(data || {}, { viewName: route.view }));
                     } else {
                         res.render('404', data);
                     }                    
