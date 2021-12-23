@@ -20,9 +20,8 @@ app.set("view engine", "hbs");
  * @param {function} preRender 
  * @param {function} callback 
  */
-function on(name, config){
+function on(name, config = {}){
 
-    if (!(config && config.constructor === Object)) return;
     if (!routes[name]) return;
 
     routes[name].getHandler   = config.get  || null;

@@ -1038,9 +1038,10 @@ function setBotCommands(){
     /*
         Lista comandi:
 
-        mystats - Check your stats in the current chat.
-        chatstats - Check the chat stats.
-        settings - Configure the bot. (Admins only)
+mystats - Check your stats in the current chat.
+chatstats - Check the chat stats.
+everyone - notify everyone in the chat 
+settings - Configure the bot. (Admins only)
 
 
         leaderboard - Check who's the boss of the chat.
