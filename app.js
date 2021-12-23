@@ -1038,13 +1038,15 @@ function setBotCommands(){
     /*
         Lista comandi:
 
+        mystats - Check your stats in the current chat.
+        chatstats - Check the chat stats.
+        settings - Configure the bot. (Admins only)
+
+
         leaderboard - Check who's the boss of the chat.
-        stats - Check your stats in the current chat.
+        prestige - Give up all your exp and levels to gain a prestige! This will let you grow faster.
         items - List your picked items.
         challengeme - Drop the glove! challenge others users for more Exp.
-        chatstats - Check the chat stats.
-        prestige - Give up all your exp and levels to gain a prestige! This will let you grow faster.
-        settings - Configure the bot. (Admins only)
 
     */
 

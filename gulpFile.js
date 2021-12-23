@@ -92,4 +92,4 @@ gulp.task('watch',
         })
 );
 
-//gulp.task('default', gulp.series('clean', 'compile-site', 'copy', 'cleanbak', 'shell'));
+gulp.task('default', gulp.series('clean', 'compile-site', 'copy', 'cleanbak', 'shell'));

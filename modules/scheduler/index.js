@@ -12,7 +12,7 @@ var scheduleMap = [
     // “At 12:00 on Monday, Wednesday, and Friday.” 
     { rule: '0 13 * * 1,3,5', type: 'dungeon' },
     // “At 11:00 on Saturday.” 
-    { rule: '0 12 * * 6', type: 'randomevent' },
+    { rule: '0 10 * * 6', type: 'randomevent' },
     // “At 08:00 on every day-of-week from Monday through Friday.” 
     { rule: '0 13,18 * * 1-5', type: 'riddles' },
     // “At 00:00 on day-of-month 25 in December.” 
