@@ -1,3 +1,13 @@
+# 1.2.1
+    - add new interface to handle Web-pages!
+        - add "mystats" and "chatstats" 
+    - change monster spawn from 12 to 13
+    - change dungeon spawn from 12 to 13
+    - change weekend event from 11 to 10
+    - add new command "everyone" to mention all users in group
+    - change dungeon fail chance from 10% to 5%
+    - add user mention on prestige available lexicon 
+
 # 1.2.0
     - add an experimental version of the 'site' side of the bot (HTML5 pages!)
     - add timezone "Europe/Rome" to scheduled events
