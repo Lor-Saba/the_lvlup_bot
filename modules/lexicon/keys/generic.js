@@ -50,5 +50,11 @@ module.exports = {
     },
     "ERROR_MARKUP_NOTFOUND": {
         "en": "_Modal disabled._"
-    }
+    },
+    "ADMINS_ONLY_PERMISSION": {
+        "en": "Sorry *$(username)*, this is for admins only."
+    },
+    "COMMAND_TIMEOUT": {
+        "en": "You can perform again this action in $(time)."
+    },
 };

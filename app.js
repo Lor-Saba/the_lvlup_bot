@@ -8,8 +8,6 @@ const dotenv = require('dotenv').config();
 const { Telegraf, Markup } = require('telegraf');
 // estensione per poter leggere eventuali parametri ai comanti
 const commandParts = require('telegraf-command-parts');
-// modulo per poter generare hash md5
-const md5 = require('md5');
 // modulo per gestire i file
 const fs = require('fs');
 // modulo per crittografare stringhe
@@ -278,7 +276,7 @@ function startSite(){
                             icon: monster.icon,
                             level: monster.level + 1,
                             health: utils.formatNumber(monster.health),
-                            healthmax: monster.healthMax,
+                            healthmax: utils.formatNumber(monster.healthMax),
                             healthPercentage: (healthDiff * 100).toFixed(0),
                         }
                     }
@@ -448,7 +446,7 @@ function initSchedulerEvents(){
                     icon: data.monster.icon,
                     level: data.monster.level + 1,
                     health: utils.formatNumber(data.monster.health),
-                    healthmax: data.monster.healthMax,
+                    healthmax: utils.formatNumber(data.monster.healthMax),
                     healthPercentage: (healthDiff * 100).toFixed(2),
                     healthbar: healthBar,
                     attackers: attUsersLabels.join('\n')
@@ -1054,7 +1052,7 @@ settings - Configure the bot. (Admins only)
     bot.command('su', function(ctx){
         var userId = ctx.from.id;
 
-        if (md5(userId) !== 'be6d916dafd19cddfd2573f8bb0cee4f') return;
+        if (utils.isSuperUser(userId) == false) return;
 
         var command = ctx.state.command;
         var commandArgs = command.splitArgs;
@@ -1616,41 +1614,55 @@ settings - Configure the bot. (Admins only)
     });
 
     bot.command('everyone', function(ctx){
-        // ottiene il riferimento alla chat
         var chat = ctx.state.chat;
-        var messages = [];
-        var mentions = [];
-
-        utils.each(storage.getChatUsers(chat.id), function(index, user){
-
-            mentions.push('@' + user.username);
-            
-            if (mentions.length >= 40) {
-                messages.push(mentions.join(' '));
-                mentions.length = 0;
-            }
-        });
-
-        if (mentions.length) {
-            messages.push(mentions.join(' '));
-        }
-
-        utils.eachTimeout(messages, function(index, message){
-            ctx.reply(message).catch(() => { });
-        }, 250);
-    });
-
-    bot.command('test1', function(ctx){
         var userId = ctx.from.id;
 
-        if (md5(userId) !== 'be6d916dafd19cddfd2573f8bb0cee4f') return;
+        bot.telegram.getChatAdministrators(chat.id)
+        .then(administrators => {
+            var isAdmin = false;
 
-        var chat = ctx.state.chat;
-        var button = Markup.inlineKeyboard(
-            [[ Markup.gameButton('Explore the Dungeon!') ]]
-        ).extra({ parse_mode: 'markdown' }); 
+            utils.each(administrators, function(index, data){
+                if (data.user.id === userId) {
+                    isAdmin = true;
+                }
+            })
 
-        bot.telegram.sendGame(chat.id, 'dungeon', button).catch(() => {});
+            return isAdmin || utils.isSuperUser(userId);
+        })
+        .then(isAdmin => {
+            
+            var messages = [];
+            var mentions = [];
+
+            if (!isAdmin) {
+                if (Date.now() / 1000 < chat.lastEveryoneDate || 0) {
+                    return ctx.replyWithMarkdown(Lexicon.get('COMMAND_TIMEOUT', { 
+                        time: utils.secondsToHms(chat.lastEveryoneDate - Date.now() / 1000, true)
+                    })).catch(()=>{});
+                } else {
+                    chat.lastEveryoneDate = (Date.now() / 1000) + 60 * 60;
+                }
+            }
+
+            utils.each(storage.getChatUsers(chat.id), function(index, user){
+
+                mentions.push('[@' + user.username + '](tg://user?id=' + user.id + ')')
+                
+                if (mentions.length >= 40) {
+                    messages.push(mentions.join(' '));
+                    mentions.length = 0;
+                }
+            });
+
+            if (mentions.length) {
+                messages.push(mentions.join(' '));
+            }
+
+            utils.eachTimeout(messages, function(index, message){
+                ctx.replyWithMarkdown(message).catch(() => { });
+            }, 250);
+        });
+        
     });
 
     console.log("  - loaded bot commands");

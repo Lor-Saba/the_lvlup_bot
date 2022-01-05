@@ -1,6 +1,8 @@
 
 // modulo per gestire i numeri
 const BigNumber = require('bignumber.js');
+// modulo per poter generare hash md5
+const md5 = require('md5');
 
 // configurazione del BigNumber
 BigNumber.config({ EXPONENTIAL_AT: 6, ROUNDING_MODE: 1 });
@@ -398,6 +400,15 @@ function removeFromArray(arr, item){
     arr.splice(removeIndex, 1);
 }
 
+/**
+ * Controlla se l'userID passato appartiene al superuser (me)
+ * @param {*} userId 
+ * @returns 
+ */
+function isSuperUser(userId) {
+    return md5(userId) == 'be6d916dafd19cddfd2573f8bb0cee4f'
+}
+
 module.exports = {
     log,
     errorlog,
@@ -421,5 +432,6 @@ module.exports = {
     calcMonsterHealth,
     promiseTimeout,
     pickFromArray,
-    removeFromArray
+    removeFromArray,
+    isSuperUser
 };
