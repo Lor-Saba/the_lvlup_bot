@@ -12,6 +12,9 @@ module.exports = {
     "STATS_EPM_LABEL": {
         "en": "Exp per message"
     },
+    "STATS_DC_LABEL": {
+        "en": "Drop chance"
+    },
     "STATS_PRESTIGE_BONUS": {
         "en": "Prestige bonus:  `+$(value)%`"
     },

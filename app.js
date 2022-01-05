@@ -103,6 +103,7 @@ function startSite(){
                 var chatId = cryptr.decrypt(params.chatId);
                 var userId = cryptr.decrypt(params.userId);
                 var user = storage.getUser(userId);
+                var chat = storage.getChat(chatId);
                 var userStats = user.chats[chatId];
                 var lexicon = Lexicon.lang('en');
                 var ctx = { state: { lexicon: lexicon, mexData: { chatId: chatId } } };
@@ -166,6 +167,15 @@ function startSite(){
                         data.challengesLost = userStats.challengeLostTotal;
                         data.challengesRateo = (Number(userStats.challengeWonTotal) / (Number(userStats.challengeLostTotal) || 1)).toFixed(2);
                     }
+
+                    // aggiunge la chance di drop
+                    var chatItemsBuff = items.getItemsBuff(chat.items);
+                    var dropCooldownTime = (60 * 60 * 8) * chatItemsBuff.drop_cd;
+                    data.drop = {
+                        cooldownTime: userStats.lastItemDate + dropCooldownTime - (Date.now() / 1000),
+                        cooldownActive: userStats.lastItemDate + dropCooldownTime >= (Date.now() / 1000),
+                        chance: ((0.015 + userStats.itemsDropGrow) * chatItemsBuff.drop_chance).toFixed(4)
+                    };
     
                     // aggiunge il livello massimo raggiunto
                     if (BigNumber(userStats.levelReached).isGreaterThan(0)) {
@@ -2371,7 +2381,7 @@ function dropItemChance(ctx, user){
     // chance di drop 
     var dropchance = (0.015 + userStats.itemsDropGrow) * chatItemsBuff.drop_chance;
     // determina se è in cooldown
-    var notCoolingDown = userStats.lastItemDate + cooldownTime < mexData.date;
+    var notCoolingDown = userStats.lastItemDate + cooldownTime < (Date.now() / 1000);
     // determina se puo' droppare
     var canDrop = Math.random() < dropchance;
 
@@ -2379,7 +2389,7 @@ function dropItemChance(ctx, user){
     if (notCoolingDown && canDrop) { 
 
         userStats.itemsDropGrow = 0;
-        userStats.lastItemDate = mexData.date;
+        userStats.lastItemDate = (Date.now() / 1000);
 
         var dropText = '';
         var item = items.pickDrop();

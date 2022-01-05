@@ -27,9 +27,21 @@
 
                     <div class="field-separator"></div>
 
-                    <div class="field">
+                    <div class="field half">
                         <div class="field-title">{{lexicon 'STATS_EPM_LABEL'}}</div>
                         <div class="field-value">{{ stats.expPerMessage }}</div>
+                    </div>
+                    <div class="field half">
+                        <div class="field-title">{{lexicon 'STATS_DC_LABEL'}}</div>
+                        <div class="field-value">
+                            
+                            {{#if stats.drop.cooldownActive}}
+                                <span class="field-timeouticon">{{> svg-icon name="clock"}}</span>
+                                <span class="field-timeoutduration" data-timeout="{{ stats.drop.cooldownTime }}"></span>
+                            {{else}}
+                                {{ stats.drop.chance }} %
+                            {{/if}}
+                        </div>
                     </div>
                     {{#if stats.hasChallenges}}
                         <div class="field half">
